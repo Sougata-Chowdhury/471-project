@@ -1,7 +1,8 @@
 import { Controller, Post, Body, Get, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AuthDto } from './dto';
+import { JwtAuthGuard } from '../../common/jwt-auth.guard';
+import { Request as ExpressRequest } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +20,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Request() req: ExpressRequest & { user: unknown }) {
     return req.user;
   }
 }

@@ -1,32 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Alumni } from './schemas/alumni.schema';
+import { Alumni, AlumniDocument } from './schemas/alumni.schema';
 import { CreateAlumniDto } from './dto/create-alumni.dto';
 import { UpdateAlumniDto } from './dto/update-alumni.dto';
 
 @Injectable()
 export class AlumniService {
-  constructor(@InjectModel(Alumni.name) private alumniModel: Model<Alumni>) {}
+  constructor(@InjectModel(Alumni.name) private alumniModel: Model<AlumniDocument>) {}
 
-  async create(createAlumniDto: CreateAlumniDto): Promise<Alumni> {
+  async create(createAlumniDto: CreateAlumniDto): Promise<AlumniDocument> {
     const newAlumni = new this.alumniModel(createAlumniDto);
     return newAlumni.save();
   }
 
-  async findAll(): Promise<Alumni[]> {
+  async findAll(): Promise<AlumniDocument[]> {
     return this.alumniModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Alumni> {
-    return this.alumniModel.findById(id).exec();
+  async findOne(id: string): Promise<AlumniDocument> {
+    const alumni = await this.alumniModel.findById(id).exec();
+    if (!alumni) throw new NotFoundException('Alumni not found');
+    return alumni;
   }
 
-  async update(id: string, updateAlumniDto: UpdateAlumniDto): Promise<Alumni> {
-    return this.alumniModel.findByIdAndUpdate(id, updateAlumniDto, { new: true }).exec();
+  async update(id: string, updateAlumniDto: UpdateAlumniDto): Promise<AlumniDocument> {
+    const alumni = await this.alumniModel.findByIdAndUpdate(id, updateAlumniDto, { new: true }).exec();
+    if (!alumni) throw new NotFoundException('Alumni not found');
+    return alumni;
   }
 
-  async remove(id: string): Promise<Alumni> {
-    return this.alumniModel.findByIdAndRemove(id).exec();
+  async remove(id: string): Promise<AlumniDocument> {
+    const alumni = await this.alumniModel.findByIdAndDelete(id).exec();
+    if (!alumni) throw new NotFoundException('Alumni not found');
+    return alumni;
   }
 }
