@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/bracunet
+      - JWT_SECRET=your_jwt_secret
+      - GOOGLE_CLIENT_ID=your_google_client_id
+      - GOOGLE_CLIENT_SECRET=your_google_client_secret
+      - LINKEDIN_CLIENT_ID=your_linkedin_client_id
+      - LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
+      - SENDGRID_API_KEY=your_sendgrid_api_key
+      - STRIPE_SECRET_KEY=your_stripe_secret_key
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

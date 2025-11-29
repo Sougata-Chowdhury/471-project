@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bracunet-backend
+  labels:
+    app: bracunet
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: bracunet-backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bracunet-frontend
+  labels:
+    app: bracunet
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: bracunet-frontend

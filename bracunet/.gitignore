@@ -1,0 +1,3 @@
+# Redundant - root .gitignore controls ignores for the repo.
+# Keep this file minimal to avoid duplication.
+.env

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bracunet-backend
+  labels:
+    app: bracunet
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bracunet
+  template:
+    metadata:
+      labels:
+        app: bracunet
+    spec:
+      containers:
+        - name: backend
+          image: bracunet-backend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: uri
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: secret
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sendgrid-secret
+                  key: api_key
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-secret
+                  key: client_id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: google-secret
+                  key: client_secret
+            - name: LINKEDIN_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: linkedin-secret
+                  key: client_id
+            - name: LINKEDIN_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: linkedin-secret
+                  key: client_secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bracunet-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: bracunet

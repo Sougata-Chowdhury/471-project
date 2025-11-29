@@ -1,0 +1,45 @@
+{
+  "name": "bracunet",
+  "version": "1.0.0",
+  "description": "A university alumni platform for connecting alumni and providing various services.",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "node dist/main.js",
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@nestjs/common": "^9.0.0",
+    "@nestjs/core": "^9.0.0",
+    "@nestjs/mongoose": "^9.0.0",
+    "@nestjs/passport": "^9.0.0",
+    "@nestjs/jwt": "^9.0.0",
+    "mongoose": "^6.0.0",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "bcrypt": "^5.0.0",
+    "dotenv": "^10.0.0",
+    "stripe": "^8.0.0",
+    "@sendgrid/mail": "^7.0.0",
+    "google-auth-library": "^7.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-linkedin-oauth2": "^2.0.0"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^9.0.0",
+    "typescript": "^4.0.0",
+    "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.0.0",
+    "eslint": "^7.0.0",
+    "jest": "^27.0.0",
+    "@types/jest": "^27.0.0",
+    "@types/bcrypt": "^5.0.0",
+    "@types/node": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "license": "MIT"
+}
