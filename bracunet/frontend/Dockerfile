@@ -1,16 +1,27 @@
-FROM node:16
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json ./
-COPY package-lock.json ./
-
-RUN npm install
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
-
 RUN npm run build
 
-CMD ["npm", "start"]
+# Production stage
+FROM nginx:alpine
 
-EXPOSE 3000
+# Copy built frontend from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx config
+COPY infra/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

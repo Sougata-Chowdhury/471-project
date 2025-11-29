@@ -1,26 +1,28 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AlumniModule } from './modules/alumni/alumni.module';
-import { EventsModule } from './modules/events/events.module';
-import { JobsModule } from './modules/jobs/jobs.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
-import { configuration } from './config/configuration';
+import { HealthController } from './health.controller';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
+      isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('databaseUrl'),
+      }),
+    }),
     AuthModule,
     UsersModule,
     AlumniModule,
-    EventsModule,
-    JobsModule,
-    NotificationsModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}

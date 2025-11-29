@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7-alpine
+    container_name: bracunet-mongo-prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: bracunet
+    volumes:
+      - mongo_data_prod:/data/db
+    networks:
+      - bracunet-network
+    healthcheck:
+      test: echo 'db.adminCommand("ping")' | mongosh -u $MONGO_ROOT_USER -p $MONGO_ROOT_PASSWORD --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: bracunet-backend:latest
+    container_name: bracunet-backend-prod
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/bracunet?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - bracunet-network
+    healthcheck:
+      test: ["GET", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  frontend:
+    image: bracunet-frontend:latest
+    container_name: bracunet-frontend-prod
+    restart: always
+    environment:
+      - VITE_API_URL=https://api.yourdomain.com
+    networks:
+      - bracunet-network
+    healthcheck:
+      test: ["GET", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+networks:
+  bracunet-network:
+    driver: bridge
+
+volumes:
+  mongo_data_prod:
+    driver: local

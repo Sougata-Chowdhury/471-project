@@ -6,7 +6,8 @@ export class StripeClient {
   private stripe: Stripe;
 
   constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    const secretKey = process.env.STRIPE_SECRET_KEY || '';
+    this.stripe = new Stripe(secretKey, {
       apiVersion: '2022-11-15',
     });
   }
@@ -17,6 +18,4 @@ export class StripeClient {
       currency,
     });
   }
-
-  // Additional methods for handling Stripe operations can be added here
 }

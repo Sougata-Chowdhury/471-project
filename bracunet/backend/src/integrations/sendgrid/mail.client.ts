@@ -8,16 +8,17 @@ export class MailClient {
 
   constructor(private configService: ConfigService) {
     this.mailService = new MailService();
-    this.mailService.setApiKey(this.configService.get<string>('SENDGRID_API_KEY'));
+    const apiKey = this.configService.get<string>('SENDGRID_API_KEY') || '';
+    this.mailService.setApiKey(apiKey);
   }
 
   async sendEmail(to: string, subject: string, text: string, html?: string) {
     const msg = {
       to,
-      from: this.configService.get<string>('SENDGRID_FROM_EMAIL'),
+      from: this.configService.get<string>('SENDGRID_FROM_EMAIL') || 'noreply@bracunet.com',
       subject,
       text,
-      html,
+      html: html || text,
     };
 
     try {

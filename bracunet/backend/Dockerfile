@@ -1,22 +1,38 @@
-FROM node:14
+# Build stage
+FROM node:20-alpine AS builder
 
-# Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY backend/package*.json ./
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
 
-# Install dependencies
-RUN npm install
+COPY src ./src
+COPY tsconfig.json ./
+RUN npm run build
 
-# Copy the rest of the application code
-COPY backend/src ./src
+# Production stage
+FROM node:20-alpine
 
-# Copy environment variables example
-# Do not copy example env file; expect environment to be provided at runtime
+WORKDIR /app
 
-# Expose the application port
+# Install dumb-init to handle signals properly
+RUN apk add --no-cache dumb-init
+
+# Copy built application from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
+
+USER nestjs
+
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/main.js"]
