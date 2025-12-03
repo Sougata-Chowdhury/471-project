@@ -54,7 +54,7 @@ The project is organized into three main directories:
 
 ## Deployment
 
-The project can be deployed using Docker or Kubernetes. Refer to the `infra` directory for Docker Compose and Kubernetes configuration files.
+This repository is configured for local development and no longer includes Docker Compose files. Use the "Getting Started" sections above to run the backend and frontend locally. For production, build the frontend (`npm run build`) and deploy the backend to a server or container platform as appropriate.
 
 ## Contributing
 

@@ -25,6 +25,8 @@ Before starting, ensure you have:
 
 ## 🚀 Setup Instructions
 
+Note: Docker files have been removed from this repository. Use the native scripts below to run the app locally.
+
 ### Step 1: MongoDB Setup
 
 #### Option A: Local MongoDB
@@ -82,6 +84,17 @@ npm run dev
 ```
 
 **Frontend runs on:** `http://localhost:3001`
+
+### Quick start (one command)
+
+From the repository root you can start both services in separate PowerShell windows using the included helper:
+
+```powershell
+cd <repo-root>
+.\scripts\start-all.ps1
+```
+
+This opens two PowerShell windows (backend and frontend) and runs the dev servers.
 
 ---
 

@@ -18,15 +18,28 @@ export const AuthProvider = ({ children }) => {
         ...options,
       });
 
-      const data = await response.json();
+      // Read raw text first to safely handle empty or non-JSON responses
+      const text = await response.text();
+      let data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseErr) {
+          // Response wasn't valid JSON
+          data = { message: text };
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || 'API Error');
+        const message = data?.message || response.statusText || 'API Error';
+        throw new Error(message);
       }
 
       return data;
     } catch (err) {
-      setError(err.message);
+      // Network errors will reach here (e.g., failed to fetch)
+      const msg = err?.message || 'Network error';
+      setError(msg);
       throw err;
     }
   }, []);
