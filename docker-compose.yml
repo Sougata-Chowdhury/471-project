@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: bracunet-mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: bracunet
+    networks:
+      - bracunet-network
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: bracunet-backend
+    ports:
+      - '3000:3000'
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/bracunet
+      JWT_SECRET: docker_secret_key
+      NODE_ENV: development
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      - mongodb
+    networks:
+      - bracunet-network
+    volumes:
+      - ./Backend/src:/app/src
+
+volumes:
+  mongodb_data:
+
+networks:
+  bracunet-network:
+    driver: bridge
