@@ -15,7 +15,8 @@ export const config = {
     env: process.env.NODE_ENV || 'development',
   },
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    // Default to the frontend dev server port (3001) to avoid CORS issues during local development
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
     credentials: true,
   },
   cloudinary: {
