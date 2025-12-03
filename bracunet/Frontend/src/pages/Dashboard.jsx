@@ -19,7 +19,7 @@ export const Dashboard = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
         <p className="text-gray-500">Loading...</p>
       </div>
     );
@@ -76,7 +76,7 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
       <nav className="bg-white shadow">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">BracuNet</h1>
@@ -100,13 +100,13 @@ export const Dashboard = () => {
 
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <h2 className="text-4xl font-bold text-gray-800 mb-2">{config.title}</h2>
-          <p className="text-gray-600">Welcome, {user.name}!</p>
+          <h2 className="text-4xl font-bold text-white mb-2">{config.title}</h2>
+          <p className="text-white/90">Welcome, {user.name}!</p>
         </div>
 
         {/* Verification Alert */}
         {!user.isVerified && user.verificationStatus !== 'pending' && user.role !== 'admin' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+          <div className="bg-blue-100/90 backdrop-blur-sm border border-blue-300 rounded-lg p-6 mb-8">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-blue-800 mb-2">
@@ -127,7 +127,7 @@ export const Dashboard = () => {
         )}
 
         {user.verificationStatus === 'pending' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+          <div className="bg-yellow-100/90 backdrop-blur-sm border border-yellow-300 rounded-lg p-6 mb-8">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-yellow-800 mb-2">
@@ -148,7 +148,7 @@ export const Dashboard = () => {
         )}
 
         {user.verificationStatus === 'rejected' && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+          <div className="bg-red-100/90 backdrop-blur-sm border border-red-300 rounded-lg p-6 mb-8">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-red-800 mb-2">
@@ -169,7 +169,7 @@ export const Dashboard = () => {
         )}
 
         {user.role === 'admin' && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-8">
+          <div className="bg-purple-100/90 backdrop-blur-sm border border-purple-300 rounded-lg p-6 mb-8">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-purple-800 mb-2">
@@ -193,37 +193,37 @@ export const Dashboard = () => {
           {config.features.map((feature, index) => (
             <div
               key={index}
-              className={`bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer border-t-4 border-${config.color}-500`}
+              className={`bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-${config.color}-400`}
               onClick={() => {
                 if (feature === 'Verification Requests') {
                   navigate('/admin/verification');
                 }
               }}
             >
-              <h3 className="font-bold text-gray-800 text-lg">{feature}</h3>
-              <p className="text-gray-600 text-sm mt-2">Explore {feature.toLowerCase()}</p>
+              <h3 className="font-bold text-white text-lg">{feature}</h3>
+              <p className="text-white/80 text-sm mt-2">Explore {feature.toLowerCase()}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">User Information</h3>
+        <div className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-bold text-white mb-4">User Information</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-gray-600 text-sm">Name</p>
-              <p className="text-gray-800 font-semibold">{user.name}</p>
+              <p className="text-white/70 text-sm">Name</p>
+              <p className="text-white font-semibold">{user.name}</p>
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Email</p>
-              <p className="text-gray-800 font-semibold">{user.email}</p>
+              <p className="text-white/70 text-sm">Email</p>
+              <p className="text-white font-semibold">{user.email}</p>
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Role</p>
-              <p className="text-gray-800 font-semibold capitalize">{user.role}</p>
+              <p className="text-white/70 text-sm">Role</p>
+              <p className="text-white font-semibold capitalize">{user.role}</p>
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Member Since</p>
-              <p className="text-gray-800 font-semibold">
+              <p className="text-white/70 text-sm">Member Since</p>
+              <p className="text-white font-semibold">
                 {new Date(user.createdAt).toLocaleDateString()}
               </p>
             </div>
