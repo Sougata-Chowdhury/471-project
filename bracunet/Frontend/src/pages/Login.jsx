@@ -27,9 +27,9 @@ export const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-2xl p-8 w-full max-w-md border border-white/20">
+      <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-2xl p-8 w-full max-w-sm border border-white/20">
         <h1 className="text-3xl font-bold text-white mb-2">BracuNet</h1>
-        <p className="text-white/90 mb-6">Welcome back</p>
+        <p className="text-white/90 mb-6">Welcome! </p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -80,15 +80,6 @@ export const Login = () => {
           </a>
         </p>
 
-        <div className="mt-8 p-4 bg-white/10 rounded border border-white/20">
-          <p className="text-xs font-semibold text-white mb-2">Demo Credentials:</p>
-          <p className="text-xs text-white/80">
-            <strong>Admin:</strong> admin@bracunet.edu / admin123
-          </p>
-          <p className="text-xs text-white/80">
-            <strong>Student:</strong> student@bracunet.edu / student123
-          </p>
-        </div>
       </div>
     </div>
   );
