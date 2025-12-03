@@ -18,4 +18,9 @@ export const config = {
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
   },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'demo',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+  },
 };

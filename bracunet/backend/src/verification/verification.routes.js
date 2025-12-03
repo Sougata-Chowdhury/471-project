@@ -1,15 +1,45 @@
 import express from 'express';
 import { verificationService } from './verification.service.js';
 import { protect, authorize } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
+import path from 'path';
 
 const router = express.Router();
 
-// Submit verification request (authenticated users)
-router.post('/request', protect, async (req, res) => {
+// Submit verification request (authenticated users) - with file upload
+router.post('/request', protect, (req, res, next) => {
+  upload.single('proofDocument')(req, res, (err) => {
+    if (err) {
+      console.error('Upload error:', err);
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'File upload failed',
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
+    console.log('File uploaded:', req.file);
+    
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Proof document is required',
+      });
+    }
+
+    // Store Cloudinary URL (accessible from anywhere)
+    const requestData = {
+      ...req.body,
+      proofDocument: req.file.path, // Cloudinary URL
+    };
+
+    console.log('Creating verification request with data:', requestData);
+
     const request = await verificationService.submitRequest(
       req.user._id,
-      req.body
+      requestData
     );
 
     res.status(201).json({
@@ -18,6 +48,7 @@ router.post('/request', protect, async (req, res) => {
       data: request,
     });
   } catch (error) {
+    console.error('Verification request error:', error);
     res.status(400).json({
       success: false,
       message: error.message,

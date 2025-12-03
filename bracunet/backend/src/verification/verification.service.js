@@ -20,6 +20,11 @@ export const verificationService = {
       throw new Error('Your account is already verified');
     }
 
+    // Ensure request type matches user's registered role
+    if (requestData.requestType !== user.role) {
+      throw new Error(`You can only request verification for your registered role: ${user.role}`);
+    }
+
     const request = await VerificationRequest.create({
       user: userId,
       ...requestData,

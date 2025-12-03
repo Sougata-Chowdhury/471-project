@@ -41,6 +41,10 @@ const verificationRequestSchema = new mongoose.Schema(
       },
     },
     additionalInfo: String,
+    proofDocument: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

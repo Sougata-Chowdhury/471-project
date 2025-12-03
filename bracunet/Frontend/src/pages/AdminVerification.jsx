@@ -175,23 +175,23 @@ export const AdminVerification = () => {
         {/* Statistics */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white/20 backdrop-blur-md rounded-lg shadow p-6 border border-white/30">
               <p className="text-gray-600 text-sm">Pending</p>
               <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white/20 backdrop-blur-md rounded-lg shadow p-6 border border-white/30">
               <p className="text-gray-600 text-sm">Approved</p>
               <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white/20 backdrop-blur-md rounded-lg shadow p-6 border border-white/30">
               <p className="text-gray-600 text-sm">Rejected</p>
               <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white/20 backdrop-blur-md rounded-lg shadow p-6 border border-white/30">
               <p className="text-gray-600 text-sm">Total Users</p>
               <p className="text-3xl font-bold text-blue-600">{stats.totalUsers}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white/20 backdrop-blur-md rounded-lg shadow p-6 border border-white/30">
               <p className="text-gray-600 text-sm">Verified Users</p>
               <p className="text-3xl font-bold text-purple-600">{stats.verifiedUsers}</p>
             </div>
@@ -199,8 +199,8 @@ export const AdminVerification = () => {
         )}
 
         {/* Filter Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="flex border-b">
+        <div className="bg-white/20 backdrop-blur-md rounded-lg shadow mb-6 border border-white/30">
+          <div className="flex border-b border-white/20">
             <button
               onClick={() => setFilter('pending')}
               className={`px-6 py-3 font-medium ${
@@ -240,13 +240,13 @@ export const AdminVerification = () => {
             <p className="text-gray-500">Loading...</p>
           </div>
         ) : requests.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
+          <div className="bg-white/20 backdrop-blur-md rounded-lg shadow p-12 text-center border border-white/30">
             <p className="text-gray-500">No {filter} verification requests found</p>
           </div>
         ) : (
           <div className="space-y-4">
             {requests.map((request) => (
-              <div key={request._id} className="bg-white rounded-lg shadow p-6">
+              <div key={request._id} className="bg-white/20 backdrop-blur-md rounded-lg shadow p-6 border border-white/30">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-bold text-gray-800">{request.user.name}</h3>
@@ -302,6 +302,38 @@ export const AdminVerification = () => {
                   </div>
                 )}
 
+                {request.proofDocument && (
+                  <div className="mb-4">
+                    <p className="text-gray-600 text-sm mb-2">Proof Document</p>
+                    {request.proofDocument.match(/\.(jpg|jpeg|png)$/i) || request.proofDocument.includes('image/upload') ? (
+                      <div>
+                        <img 
+                          src={request.proofDocument} 
+                          alt="Proof Document"
+                          className="max-w-full h-auto max-h-64 rounded-lg border border-gray-300 mb-2"
+                        />
+                        <a 
+                          href={request.proofDocument} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline text-sm"
+                        >
+                          Open in new tab
+                        </a>
+                      </div>
+                    ) : (
+                      <a 
+                        href={request.proofDocument} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition"
+                      >
+                        📄 View Document
+                      </a>
+                    )}
+                  </div>
+                )}
+
                 {request.status === 'pending' && (
                   <div className="flex gap-2">
                     <button
@@ -341,7 +373,7 @@ export const AdminVerification = () => {
         {/* Reject Modal */}
         {selectedRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+            <div className="bg-white/20 backdrop-blur-md rounded-lg shadow-xl p-6 max-w-md w-full border border-white/30">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Reject Verification Request</h3>
               <p className="text-gray-600 mb-4">Please provide a reason for rejection:</p>
               <textarea
