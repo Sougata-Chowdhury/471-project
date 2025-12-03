@@ -26,6 +26,8 @@ const seedDB = async () => {
         email: 'admin@bracunet.edu',
         password: 'admin123',
         role: 'admin',
+        isVerified: true,
+        verificationStatus: 'approved',
       });
       await admin.save();
       console.log('✓ Admin user created: admin@bracunet.edu / admin123');

@@ -24,10 +24,27 @@ const userSchema = new mongoose.Schema(
       default: 'student',
     },
     studentId: String,
-    departmentId: String,
+    department: String,
+    batch: String,
+    graduationYear: Number,
+    officialEmail: String,
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    verifiedAt: Date,
+    verificationStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
     },
   },
   { timestamps: true }

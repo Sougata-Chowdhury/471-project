@@ -5,6 +5,9 @@ import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
+import { VerificationRequest } from './pages/VerificationRequest';
+import { AdminVerification } from './pages/AdminVerification';
+import { MyVerificationRequests } from './pages/MyVerificationRequests';
 import './index.css';
 
 function App() {
@@ -16,6 +19,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/verification-request" element={<VerificationRequest />} />
+          <Route path="/my-verification-requests" element={<MyVerificationRequests />} />
+          <Route path="/admin/verification" element={<AdminVerification />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>

@@ -4,7 +4,7 @@ dotenv.config();
 
 export const config = {
   mongodb: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/bracunet',
+    uri: process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/bracunet',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'dev_secret_key',

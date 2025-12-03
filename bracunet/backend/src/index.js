@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { config } from './config/index.js';
 import authRoutes from './auth/auth.routes.js';
 import userRoutes from './users/user.routes.js';
+import verificationRoutes from './verification/verification.routes.js';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // Dashboard routes (role-based)
 app.get('/api/dashboard/student', (req, res) => {
@@ -57,10 +59,28 @@ const connectDB = async () => {
     await mongoose.connect(config.mongodb.uri);
     console.log('✓ MongoDB connected');
 
-    app.listen(config.server.port, () => {
+    const server = app.listen(config.server.port, () => {
       console.log(`✓ Server running on port ${config.server.port}`);
       console.log(`✓ Environment: ${config.server.env}`);
       console.log(`✓ CORS Origin: ${config.cors.origin}`);
+      console.log(`✓ Server is listening and ready to accept connections`);
+    });
+
+    server.on('error', (error) => {
+      console.error('✗ Server error:', error.message);
+      process.exit(1);
+    });
+
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, closing server...');
+      server.close(() => {
+        console.log('Server closed');
+        mongoose.connection.close(false, () => {
+          console.log('MongoDB connection closed');
+          process.exit(0);
+        });
+      });
     });
   } catch (error) {
     console.error('✗ MongoDB connection failed:', error.message);

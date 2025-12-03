@@ -110,8 +110,10 @@ export const Register = () => {
               <option value="student">Student</option>
               <option value="alumni">Alumni</option>
               <option value="faculty">Faculty</option>
-              <option value="admin">Admin</option>
             </select>
+            <p className="text-gray-500 text-sm mt-1">
+              Note: You'll need to submit verification after registration to access full features
+            </p>
           </div>
 
           <button
