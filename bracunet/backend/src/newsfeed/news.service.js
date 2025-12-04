@@ -1,9 +1,10 @@
+
+
 import News from "./news.model.js";
 
 export const createNews = async (data) => {
-  return await News.create(data); // status default "pending"
+  return await News.create(data);
 };
-
 export const getAllNews = async ({ page, limit, category }) => {
   const filter = { status: "approved" };
 
@@ -17,7 +18,8 @@ export const getAllNews = async ({ page, limit, category }) => {
     News.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .populate("createdBy", "name role"),
     News.countDocuments(filter),
   ]);
 
@@ -30,9 +32,17 @@ export const getAllNews = async ({ page, limit, category }) => {
   };
 };
 
-export const getNewsById = async (id) => {
-  return await News.findById(id);
+
+export const getMyNews = async (userId) => {
+  return await News.find({ createdBy: userId })
+    .sort({ createdAt: -1 })
+    .populate("createdBy", "name role");
 };
+
+export const getNewsById = async (id) => {
+  return await News.findById(id).populate("createdBy", "name role");
+};
+
 
 export const updateNewsStatus = async (id, status) => {
   return await News.findByIdAndUpdate(
