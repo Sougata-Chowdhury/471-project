@@ -8,6 +8,7 @@ import { config } from './config/index.js';
 import authRoutes from './auth/auth.routes.js';
 import userRoutes from './users/user.routes.js';
 import verificationRoutes from './verification/verification.routes.js';
+import newsRoutes from "./newsfeed/news.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +25,7 @@ app.use(
     credentials: config.cors.credentials,
   })
 );
-
+app.use("/api/news", newsRoutes);
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 

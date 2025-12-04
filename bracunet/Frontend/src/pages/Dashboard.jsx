@@ -16,6 +16,7 @@ export const Dashboard = () => {
     await logout();
     navigate('/login');
   };
+  
 
   if (!user) {
     return (
@@ -88,6 +89,11 @@ export const Dashboard = () => {
             >
               {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
             </span>
+            <button
+              onClick={() => navigate('/news')}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
+              Newsfeed & Announcement Board
+            </button>
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
@@ -222,6 +228,8 @@ export const Dashboard = () => {
               <p className="text-white font-semibold capitalize">{user.role}</p>
             </div>
             <div>
+            
+
               <p className="text-white/70 text-sm">Member Since</p>
               <p className="text-white font-semibold">
                 {new Date(user.createdAt).toLocaleDateString()}

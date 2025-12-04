@@ -9,7 +9,9 @@ export const AuthProvider = ({ children }) => {
 
   const apiCall = useCallback(async (endpoint, options = {}) => {
     try {
-      const response = await fetch(endpoint, {
+      const API_BASE = "http://localhost:3000";
+      // const response = await fetch(endpoint, {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
         credentials: 'include', // Include cookies
         headers: {
           'Content-Type': 'application/json',
