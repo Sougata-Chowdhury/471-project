@@ -16,6 +16,15 @@ export const Dashboard = () => {
     await logout();
     navigate('/login');
   };
+
+  const handleFeatureClick = (feature) => {
+    const key = feature.toLowerCase();
+    if (key.includes('announcement')) return navigate('/news/university-updates');
+    if (key.includes('news') || key.includes('feed')) return navigate('/news');
+    if (feature === 'Verification Requests' || feature === 'Manage Verifications') return navigate('/admin/verification');
+    // fallback: open news
+    return navigate('/news');
+  };
   
 
   if (!user) {
@@ -92,7 +101,12 @@ export const Dashboard = () => {
             <button
               onClick={() => navigate('/news')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
-              Newsfeed & Announcement Board
+              Newsfeed
+            </button>
+            <button
+              onClick={() => navigate('/news')}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition">
+              Announcements
             </button>
             <button
               onClick={handleLogout}
@@ -211,6 +225,9 @@ export const Dashboard = () => {
               onClick={() => {
                 if (feature === 'Verification Requests') {
                   navigate('/admin/verification');
+                }
+                if (feature === 'Manage Users') {
+                  navigate('/admin/users');
                 }
               }}
             >

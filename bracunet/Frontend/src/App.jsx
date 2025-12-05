@@ -9,6 +9,7 @@ import { VerificationRequest } from './pages/VerificationRequest';
 import { AdminVerification } from './pages/AdminVerification';
 import { MyVerificationRequests } from './pages/MyVerificationRequests';
 import AdminNewsModeration from './pages/AdminNewsModeration';
+import AdminUsers from './pages/AdminUsers';
 import NewsCategoryPage from "./pages/NewsCategoryPage";
 import NewsList from "./pages/NewsList";
 import './index.css';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/my-verification-requests" element={<MyVerificationRequests />} />
           <Route path="/admin/verification" element={<AdminVerification />} />
           <Route path="/admin/news" element={<AdminNewsModeration />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           {/* <Route path="*" element={<Navigate to="/" />} /> */}
           <Route path="/news" element={<NewsList />} />
           {/* <Route path="/news" element={<NewsList />} /> */}

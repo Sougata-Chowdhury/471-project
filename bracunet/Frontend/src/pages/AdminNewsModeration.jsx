@@ -14,35 +14,21 @@ function AdminNewsModeration() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-<<<<<<< HEAD
     if (!user || user.role !== "admin") {
       navigate("/dashboard");
       return;
     }
     fetchNews();
   }, [user, statusFilter, navigate]);
-=======
-  }, [user, statusFilter, navigate]);
->>>>>>> 441e3ac (Feat: add VerifiedUser collection, verified-users API, update verification approval to populate VerifiedUser; admin news moderation & routing fixes; auth/logout & UI fixes)
 
   const fetchNews = async () => {
     try {
       setLoading(true);
-<<<<<<< HEAD
-
       const statusParam = statusFilter !== "all" ? `&status=${statusFilter}` : "";
       const res = await fetch(`${API_BASE}/api/news/admin/all?category=all&page=1&limit=100${statusParam}`, {
         credentials: "include",
       });
       const data = await res.json();
-
-=======
-      const statusParam = statusFilter !== "all" ? `&status=${statusFilter}` : "";
-      const res = await fetch(`${API_BASE}/api/news/admin/all?category=all&page=1&limit=100${statusParam}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
->>>>>>> 441e3ac (Feat: add VerifiedUser collection, verified-users API, update verification approval to populate VerifiedUser; admin news moderation & routing fixes; auth/logout & UI fixes)
       setItems(data.items || []);
     } catch (err) {
       console.error("Failed to fetch news for admin", err);
