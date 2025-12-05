@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
+  // Clear any previous errors when login page mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

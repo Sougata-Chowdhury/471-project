@@ -66,24 +66,51 @@ export const createNews = async (data) => {
 
 /**
  * getAllNews
- * - default (status undefined): sudhu approved (public use)
- * - jodi status param pathano hoy (pending/approved/rejected/all) then shetai use
+ * - if `status` is omitted -> public default returns only approved posts
+ * - if `status` is provided and is 'all' -> returns all statuses
+ * - otherwise returns posts matching the provided status
  */
 export const getAllNews = async ({ page, limit, category, status }) => {
   const filter = {};
 
-  // status handling
   if (!status) {
-    // kono status param nai -> public default
-    filter.status = "approved";
-  } else if (status === "all") {
-    // admin chay sob status -> kono status filter dibo na
-  } else if (["pending", "approved", "rejected"].includes(status)) {
+    filter.status = "approved"; // public default
+  } else if (status !== "all" && ["pending", "approved", "rejected"].includes(status)) {
     filter.status = status;
-  
   }
 
-  // category handling
+  if (category && category !== "all") {
+    filter.category = category;
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    News.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("createdBy", "name role"),
+    News.countDocuments(filter),
+  ]);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+};
+
+// Admin helper (keeps older API intact)
+export const getAllNewsForAdmin = async ({ page, limit, category, status }) => {
+  const filter = {};
+
+  if (status && status !== "all") {
+    filter.status = status;
+  }
+
   if (category && category !== "all") {
     filter.category = category;
   }

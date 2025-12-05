@@ -90,11 +90,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     setIsLoading(true);
+    setError(null); // Clear any existing errors
     try {
       await apiCall('/api/auth/logout', { method: 'POST' });
       setUser(null);
     } catch (err) {
-      setError(err.message);
+      // Don't show logout errors - just clear the user
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +109,7 @@ export const AuthProvider = ({ children }) => {
       return data.user;
     } catch (err) {
       setUser(null);
-      // This is expected if user is not logged in
+      setError(null); // Clear error - this is expected if user is not logged in
     }
   }, [apiCall]);
 

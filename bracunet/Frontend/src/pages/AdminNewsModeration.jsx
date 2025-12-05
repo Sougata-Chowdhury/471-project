@@ -14,31 +14,35 @@ function AdminNewsModeration() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (!user || user.role !== "admin") {
       navigate("/dashboard");
       return;
     }
     fetchNews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, statusFilter]);
+  }, [user, statusFilter, navigate]);
+=======
+  }, [user, statusFilter, navigate]);
+>>>>>>> 441e3ac (Feat: add VerifiedUser collection, verified-users API, update verification approval to populate VerifiedUser; admin news moderation & routing fixes; auth/logout & UI fixes)
 
   const fetchNews = async () => {
     try {
       setLoading(true);
+<<<<<<< HEAD
 
-      const params = new URLSearchParams({
-        category: "all",
-        page: "1",
-        limit: "100",
-        status: statusFilter, // backend e status filter
+      const statusParam = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+      const res = await fetch(`${API_BASE}/api/news/admin/all?category=all&page=1&limit=100${statusParam}`, {
+        credentials: "include",
       });
-
-      const res = await fetch(
-        `${API_BASE}/api/news?${params.toString()}`,
-        { credentials: "include" }
-      );
       const data = await res.json();
 
+=======
+      const statusParam = statusFilter !== "all" ? `&status=${statusFilter}` : "";
+      const res = await fetch(`${API_BASE}/api/news/admin/all?category=all&page=1&limit=100${statusParam}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+>>>>>>> 441e3ac (Feat: add VerifiedUser collection, verified-users API, update verification approval to populate VerifiedUser; admin news moderation & routing fixes; auth/logout & UI fixes)
       setItems(data.items || []);
     } catch (err) {
       console.error("Failed to fetch news for admin", err);
@@ -122,7 +126,14 @@ function AdminNewsModeration() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-white">News Moderation</h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={fetchNews}
+              className="px-3 py-1 rounded-full text-sm border bg-white/20 text-white border-white/60 hover:bg-white/30"
+              title="Refresh list"
+            >
+              🔄 Refresh
+            </button>
             {["all", "pending", "approved", "rejected"].map((s) => (
               <button
                 key={s}

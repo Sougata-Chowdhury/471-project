@@ -182,15 +182,23 @@ export const Dashboard = () => {
                   Admin Panel
                 </h3>
                 <p className="text-purple-700">
-                  Manage verification requests and user access
+                  Manage verification requests and moderate news posts
                 </p>
               </div>
-              <button
-                onClick={() => navigate('/admin/verification')}
-                className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition font-semibold"
-              >
-                Manage Verifications
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => navigate('/admin/verification')}
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition font-semibold"
+                >
+                  Manage Verifications
+                </button>
+                <button
+                  onClick={() => navigate('/admin/news')}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition font-semibold"
+                >
+                  Moderate News
+                </button>
+              </div>
             </div>
           </div>
         )}

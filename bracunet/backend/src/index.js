@@ -8,6 +8,7 @@ import { config } from './config/index.js';
 import authRoutes from './auth/auth.routes.js';
 import userRoutes from './users/user.routes.js';
 import verificationRoutes from './verification/verification.routes.js';
+import verifiedUserRoutes from './users/verifiedUser.routes.js';
 import newsRoutes from "./newsfeed/news.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -38,6 +39,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/verified-users', verifiedUserRoutes);
 
 // Dashboard routes (role-based)
 app.get('/api/dashboard/student', (req, res) => {
