@@ -19,22 +19,27 @@ function AdminNewsModeration() {
       return;
     }
     fetchNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, statusFilter]);
 
   const fetchNews = async () => {
     try {
       setLoading(true);
-      // backend e jodi status filter support na kore, sob niye eshe frontend e filter korbo
-      const res = await fetch(`${API_BASE}/api/news?category=all&page=1&limit=100`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      let list = data.items || [];
 
-      if (statusFilter !== "all") {
-        list = list.filter((n) => n.status === statusFilter);
-      }
-      setItems(list);
+      const params = new URLSearchParams({
+        category: "all",
+        page: "1",
+        limit: "100",
+        status: statusFilter, // backend e status filter
+      });
+
+      const res = await fetch(
+        `${API_BASE}/api/news?${params.toString()}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+
+      setItems(data.items || []);
     } catch (err) {
       console.error("Failed to fetch news for admin", err);
     } finally {
@@ -193,7 +198,9 @@ function AdminNewsModeration() {
                 <div className="flex flex-wrap gap-2">
                   {item.status !== "approved" && (
                     <button
-                      onClick={() => handleStatusChange(item._id, "approved")}
+                      onClick={() =>
+                        handleStatusChange(item._id, "approved")
+                      }
                       className="px-3 py-1 text-xs rounded-lg bg-green-500 hover:bg-green-600 text-white"
                     >
                       Approve
@@ -201,7 +208,9 @@ function AdminNewsModeration() {
                   )}
                   {item.status !== "pending" && (
                     <button
-                      onClick={() => handleStatusChange(item._id, "pending")}
+                      onClick={() =>
+                        handleStatusChange(item._id, "pending")
+                      }
                       className="px-3 py-1 text-xs rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white"
                     >
                       Mark Pending
@@ -209,7 +218,9 @@ function AdminNewsModeration() {
                   )}
                   {item.status !== "rejected" && (
                     <button
-                      onClick={() => handleStatusChange(item._id, "rejected")}
+                      onClick={() =>
+                        handleStatusChange(item._id, "rejected")
+                      }
                       className="px-3 py-1 text-xs rounded-lg bg-red-500 hover:bg-red-600 text-white"
                     >
                       Reject
