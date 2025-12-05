@@ -1,3 +1,4 @@
+
 // src/pages/NewsList.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,10 +17,8 @@ function NewsList() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // approved feed
-  const [items, setItems] = useState([]);
-  // own posts (pending+approved+rejected)
-  const [myItems, setMyItems] = useState([]);
+  const [items, setItems] = useState([]);       // approved feed
+  const [myItems, setMyItems] = useState([]);   // own posts (all status)
   const [loading, setLoading] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
@@ -30,7 +29,6 @@ function NewsList() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [createError, setCreateError] = useState("");
 
-  // -------- helpers --------
   const formatCategory = (cat) => {
     if (cat === "announcement") return "University Update";
     if (cat === "achievement") return "Alumni Achievement";
@@ -47,11 +45,11 @@ function NewsList() {
   const events = items.filter((i) => i.category === "event");
   const announcements = items.filter((i) => i.category === "announcement");
   const achievements = items.filter((i) => i.category === "achievement");
+
   const approvedPosts = items.filter((item) => item.status === "approved");
   const myExtraPosts = myItems.filter((item) => item.status !== "approved");
   const latestPosts = [...myExtraPosts, ...approvedPosts].slice(0, 5);
 
-  // -------- API calls --------
   const fetchNews = async () => {
     try {
       setLoading(true);
@@ -60,7 +58,6 @@ function NewsList() {
         limit: "20",
         category: "all",
       });
-
       const res = await fetch(`${API_BASE}/api/news?${params.toString()}`, {
         credentials: "include",
       });
@@ -106,7 +103,6 @@ function NewsList() {
     }
   };
 
-  // Cloudinary upload helper
   const uploadToCloudinary = async (file) => {
     const data = new FormData();
     data.append("file", file);
@@ -192,9 +188,30 @@ function NewsList() {
     }
   };
 
+  const handleStatusChange = async (id, status) => {
+    if (!window.confirm(`Set this post as ${status}?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/news/${id}/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.message || "Failed to update status");
+        return;
+      }
+      await fetchNews();
+      await fetchMyNews();
+    } catch (err) {
+      console.error("Status update failed", err);
+      alert("Status update failed");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
-      {/* header navbar */}
       <nav className="bg-white shadow">
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <h1 className="text-xl font-bold text-blue-600">BracuNet</h1>
@@ -216,7 +233,6 @@ function NewsList() {
           place.
         </p>
 
-        {/* top buttons */}
         <div className="flex flex-wrap gap-2 mb-6">
           {categories.map((c) => (
             <button
@@ -229,11 +245,9 @@ function NewsList() {
           ))}
         </div>
 
-        {/* three-column layout */}
         <div className="grid gap-4 md:grid-cols-4">
           {/* left column */}
           <div className="md:col-span-1 space-y-4">
-            {/* Latest News (announcements) with bigger image */}
             <section className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
               <h3 className="text-sm font-semibold text-white mb-2">
                 Latest News
@@ -265,7 +279,6 @@ function NewsList() {
               </div>
             </section>
 
-            {/* Upcoming Events – full image */}
             <section className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
               <h3 className="text-sm font-semibold text-white mb-2">
                 Upcoming Events
@@ -300,7 +313,6 @@ function NewsList() {
 
           {/* middle column */}
           <div className="md:col-span-2 space-y-4">
-            {/* create post box */}
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
               <p className="text-sm font-semibold text-white mb-2">
                 Create your post here:
@@ -359,7 +371,6 @@ function NewsList() {
               </button>
             </div>
 
-            {/* latest posts */}
             <section className="space-y-3">
               <h3 className="text-lg font-semibold text-white">
                 Latest Posts
@@ -371,6 +382,7 @@ function NewsList() {
                   item.createdBy &&
                   String(item.createdBy._id || item.createdBy) ===
                     String(user._id);
+                const isAdmin = user && user.role === "admin";
 
                 return (
                   <div
@@ -390,7 +402,7 @@ function NewsList() {
                         {item.title}
                       </h4>
                       <div className="flex items-center gap-2">
-                        {isMine && (
+                        {(isMine || isAdmin) && (
                           <span
                             className={
                               "text-[10px] px-2 py-0.5 rounded-full " +
@@ -419,16 +431,54 @@ function NewsList() {
                       {item.body}
                     </p>
 
-                    {isMine && (
-                      <div className="mt-3 flex justify-end">
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(isMine || isAdmin) && (
                         <button
                           onClick={() => handleDeletePost(item._id)}
                           className="text-xs px-3 py-1 rounded-lg bg-red-500/90 hover:bg-red-600 text-white"
                         >
                           Delete
                         </button>
-                      </div>
-                    )}
+                      )}
+
+                      {isAdmin && (
+                        <>
+                          {item.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleStatusChange(item._id, "approved")
+                                }
+                                className="text-xs px-3 py-1 rounded-lg bg-green-500 hover:bg-green-600 text-white"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleStatusChange(item._id, "rejected")
+                                }
+                                className="text-xs px-3 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+
+                          {item.status === "rejected" && (
+                            <button
+                              onClick={() =>
+                                handleStatusChange(item._id, "approved")
+                              }
+                              className="text-xs px-3 py-1 rounded-lg bg-green-500 hover:bg-green-600 text-white"
+                            >
+                              Approve
+                            </button>
+                          )}
+
+                          
+                        </>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -440,7 +490,6 @@ function NewsList() {
 
           {/* right column */}
           <div className="md:col-span-1 space-y-4">
-            {/* Announcements – same style as Upcoming */}
             <section className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
               <h3 className="text-sm font-semibold text-white mb-2">
                 Announcements
@@ -474,7 +523,6 @@ function NewsList() {
               </div>
             </section>
 
-            {/* Alumni achievements – same style as Upcoming */}
             <section className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
               <h3 className="text-sm font-semibold text-white mb-2">
                 Alumni Achievements

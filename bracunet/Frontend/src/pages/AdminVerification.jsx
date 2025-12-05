@@ -155,6 +155,12 @@ export const AdminVerification = () => {
             >
               Dashboard
             </button>
+            <button
+              onClick={() => navigate('/admin/news')}
+              className="text-gray-600 hover:text-gray-800">
+              News moderation
+            </button>
+
             <span className="text-gray-700">{user.name}</span>
             <span className="px-3 py-1 rounded bg-red-500 text-white text-sm font-semibold">
               Admin
