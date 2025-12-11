@@ -99,15 +99,30 @@ export const Dashboard = () => {
               {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
             </span>
             <button
+              onClick={() => navigate('/badges')}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
+              title="My Badges">
+              🏆 Badges
+            </button>
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition"
+              title="Leaderboard">
+              🏅 Rank
+            </button>
+            <button
               onClick={() => navigate('/news')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
               Newsfeed
             </button>
-            <button
-              onClick={() => navigate('/news')}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition">
-              Announcements
-            </button>
+            {user.role !== 'admin' && (
+              <button
+                onClick={() => navigate('/settings')}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
+                title="Settings">
+                ⚙️
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"

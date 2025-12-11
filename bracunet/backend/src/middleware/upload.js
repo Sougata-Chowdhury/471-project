@@ -11,8 +11,8 @@ cloudinary.config({
   api_secret: config.cloudinary.apiSecret,
 });
 
-// Configure Cloudinary storage
-const storage = new CloudinaryStorage({
+// Configure Cloudinary storage for verification proofs
+const verificationStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'bracunet/verification-proofs',
@@ -24,6 +24,38 @@ const storage = new CloudinaryStorage({
     },
   },
 });
+
+// Configure Cloudinary storage for profile pictures
+const profilePictureStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'bracunet/profile-pictures',
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+    resource_type: 'image',
+    transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }],
+    public_id: (req, file) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      return 'profile-' + uniqueSuffix;
+    },
+  },
+});
+
+// Determine storage based on field name
+const storage = (req, file, cb) => {
+  if (file.fieldname === 'profilePicture') {
+    profilePictureStorage._handleFile(req, file, cb);
+  } else {
+    verificationStorage._handleFile(req, file, cb);
+  }
+};
+
+const removeFile = (req, file, cb) => {
+  if (file.fieldname === 'profilePicture') {
+    profilePictureStorage._removeFile(req, file, cb);
+  } else {
+    verificationStorage._removeFile(req, file, cb);
+  }
+};
 
 // File filter - only accept images and PDFs
 const fileFilter = (req, file, cb) => {
@@ -38,9 +70,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Create multer upload instance
+// Create multer upload instance with dynamic storage
 export const upload = multer({
-  storage: storage,
+  storage: {
+    _handleFile: storage,
+    _removeFile: removeFile
+  },
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },

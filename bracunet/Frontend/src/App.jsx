@@ -12,6 +12,9 @@ import AdminNewsModeration from './pages/AdminNewsModeration';
 import AdminUsers from './pages/AdminUsers';
 import NewsCategoryPage from "./pages/NewsCategoryPage";
 import NewsList from "./pages/NewsList";
+import { Settings } from './pages/Settings';
+import { Badges } from './pages/Badges';
+import { Leaderboard } from './pages/Leaderboard';
 import './index.css';
 
 function App() {
@@ -28,6 +31,9 @@ function App() {
           <Route path="/admin/verification" element={<AdminVerification />} />
           <Route path="/admin/news" element={<AdminNewsModeration />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/badges" element={<Badges />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           {/* <Route path="*" element={<Navigate to="/" />} /> */}
           <Route path="/news" element={<NewsList />} />
           {/* <Route path="/news" element={<NewsList />} /> */}

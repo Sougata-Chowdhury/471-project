@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema(
       enum: ['student', 'alumni', 'faculty', 'admin'],
       default: 'student',
     },
+    profilePicture: {
+      type: String,
+      default: null,
+    },
     studentId: String,
     department: String,
     batch: String,

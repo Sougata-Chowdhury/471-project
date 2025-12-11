@@ -59,9 +59,19 @@
 
 // backend/src/newsfeed/news.service.js
 import News from "./news.model.js";
+import { trackActivity } from '../gamification/gamification.service.js';
 
 export const createNews = async (data) => {
-  return await News.create(data);
+  const news = await News.create(data);
+  
+  // Track activity: creating a news post
+  try {
+    await trackActivity(data.createdBy, 'newsPosts', 1, 10);
+  } catch (error) {
+    console.error('Error tracking news post activity:', error);
+  }
+  
+  return news;
 };
 
 /**
@@ -146,11 +156,22 @@ export const getNewsById = async (id) => {
 };
 
 export const updateNewsStatus = async (id, status) => {
-  return await News.findByIdAndUpdate(
+  const news = await News.findByIdAndUpdate(
     id,
     { status },
     { new: true }
   );
+  
+  // Award bonus points when news is approved
+  if (status === 'approved' && news) {
+    try {
+      await trackActivity(news.createdBy, 'newsPosts', 0, 15); // Bonus 15 points for approval
+    } catch (error) {
+      console.error('Error tracking news approval:', error);
+    }
+  }
+  
+  return news;
 };
 
 export const deleteNews = async (id) => {
