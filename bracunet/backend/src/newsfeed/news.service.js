@@ -132,7 +132,7 @@ export const getAllNewsForAdmin = async ({ page, limit, category, status }) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("createdBy", "name role"),
+      .populate("createdBy", "name role profilePicture"),
     News.countDocuments(filter),
   ]);
 
@@ -148,11 +148,11 @@ export const getAllNewsForAdmin = async ({ page, limit, category, status }) => {
 export const getMyNews = async (userId) => {
   return await News.find({ createdBy: userId })
     .sort({ createdAt: -1 })
-    .populate("createdBy", "name role");
+    .populate("createdBy", "name role profilePicture");
 };
 
 export const getNewsById = async (id) => {
-  return await News.findById(id).populate("createdBy", "name role");
+  return await News.findById(id).populate("createdBy", "name role profilePicture");
 };
 
 export const updateNewsStatus = async (id, status) => {

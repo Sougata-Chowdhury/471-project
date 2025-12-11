@@ -148,6 +148,31 @@ function AdminNewsModeration() {
                 key={item._id}
                 className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4"
               >
+                {/* User info with profile picture */}
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-white/20">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center flex-shrink-0">
+                    {item.createdBy?.profilePicture ? (
+                      <img
+                        src={item.createdBy.profilePicture}
+                        alt={item.createdBy.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-600 text-lg">👤</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-white">
+                      {item.createdBy?.name || 'Unknown User'}
+                    </p>
+                    <p className="text-xs text-white/70">
+                      {item.createdAt
+                        ? new Date(item.createdAt).toLocaleString()
+                        : ''}
+                    </p>
+                  </div>
+                </div>
+
                 {item.image && (
                   <img
                     src={item.image}
@@ -161,13 +186,6 @@ function AdminNewsModeration() {
                     <h3 className="font-semibold text-lg text-white">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-white/80">
-                      {item.createdAt
-                        ? new Date(item.createdAt).toLocaleString()
-                        : ""}
-                      {" · "}
-                      {item.createdBy?.name || "Unknown user"}
-                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
