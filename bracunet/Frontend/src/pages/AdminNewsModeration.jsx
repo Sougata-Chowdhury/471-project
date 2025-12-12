@@ -261,25 +261,30 @@ function AdminNewsModeration() {
   const [statusFilter, setStatusFilter] = useState("all"); // all | pending | approved | rejected
   const [loading, setLoading] = useState(false);
 
-  // Fetch news
+  useEffect(() => {
+    if (!user || user.role !== "admin") {
+      navigate("/dashboard");
+      return;
+    }
+    fetchNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, statusFilter]);
+
   const fetchNews = async () => {
     try {
       setLoading(true);
-
-      const token = localStorage.getItem("token"); // JWT token
 
       const params = new URLSearchParams({
         category: "all",
         page: "1",
         limit: "100",
-        status: statusFilter,
+        status: statusFilter, // backend e status filter
       });
 
-      const res = await fetch(`${API_BASE}/api/news?${params.toString()}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${API_BASE}/api/news?${params.toString()}`,
+        { credentials: "include" }
+      );
       const data = await res.json();
       setItems(data.items || []);
     } catch (err) {
@@ -379,7 +384,14 @@ function AdminNewsModeration() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-white">News Moderation</h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={fetchNews}
+              className="px-3 py-1 rounded-full text-sm border bg-white/20 text-white border-white/60 hover:bg-white/30"
+              title="Refresh list"
+            >
+              🔄 Refresh
+            </button>
             {["all", "pending", "approved", "rejected"].map((s) => (
               <button
                 key={s}
@@ -408,6 +420,31 @@ function AdminNewsModeration() {
                 key={item._id}
                 className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4"
               >
+                {/* User info with profile picture */}
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-white/20">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center flex-shrink-0">
+                    {item.createdBy?.profilePicture ? (
+                      <img
+                        src={item.createdBy.profilePicture}
+                        alt={item.createdBy.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-600 text-lg">👤</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-white">
+                      {item.createdBy?.name || 'Unknown User'}
+                    </p>
+                    <p className="text-xs text-white/70">
+                      {item.createdAt
+                        ? new Date(item.createdAt).toLocaleString()
+                        : ''}
+                    </p>
+                  </div>
+                </div>
+
                 {item.image && (
                   <img
                     src={item.image}
@@ -421,13 +458,6 @@ function AdminNewsModeration() {
                     <h3 className="font-semibold text-lg text-white">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-white/80">
-                      {item.createdAt
-                        ? new Date(item.createdAt).toLocaleString()
-                        : ""}
-                      {" · "}
-                      {item.createdBy?.name || "Unknown user"}
-                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">

@@ -290,6 +290,7 @@ export const Dashboard = () => {
     await logout();
     navigate('/login');
   };
+  
 
   if (!user) {
     return (
@@ -363,10 +364,36 @@ export const Dashboard = () => {
               {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
             </span>
             <button
+              onClick={() => navigate('/badges')}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
+              title="My Badges">
+              🏆 Badges
+            </button>
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition"
+              title="Leaderboard">
+              🏅 Rank
+            </button>
+            <button
+              onClick={() => navigate('/directory')}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition"
+              title="Alumni Directory">
+              📖 Directory
+            </button>
+            <button
               onClick={() => navigate('/news')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
-              Newsfeed & Announcement Board
+              Newsfeed
             </button>
+            {user.role !== 'admin' && (
+              <button
+                onClick={() => navigate('/settings')}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
+                title="Settings">
+                ⚙️
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
@@ -455,15 +482,23 @@ export const Dashboard = () => {
                   Admin Panel
                 </h3>
                 <p className="text-purple-700">
-                  Manage verification requests and user access
+                  Manage verification requests and moderate news posts
                 </p>
               </div>
-              <button
-                onClick={() => navigate('/admin/verification')}
-                className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition font-semibold"
-              >
-                Manage Verifications
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => navigate('/admin/verification')}
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition font-semibold"
+                >
+                  Manage Verifications
+                </button>
+                <button
+                  onClick={() => navigate('/admin/news')}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition font-semibold"
+                >
+                  Moderate News
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -477,6 +512,9 @@ export const Dashboard = () => {
               onClick={() => {
                 if (feature === 'Verification Requests') {
                   navigate('/admin/verification');
+                }
+                if (feature === 'Manage Users') {
+                  navigate('/admin/users');
                 }
               }}
             >

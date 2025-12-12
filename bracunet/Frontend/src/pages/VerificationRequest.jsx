@@ -7,15 +7,41 @@ function UploadResourcePage() {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
 
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("title", title);
+    if (!proofFile) {
+      setError('Please upload a proof document (ID card, gradesheet, or relevant document)');
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const res = await resourceApi.uploadResource(fd);
-      alert("Uploaded successfully!");
-      console.log(res);
+      const formDataToSend = new FormData();
+      formDataToSend.append('requestType', formData.requestType);
+      formDataToSend.append('studentId', formData.studentId);
+      formDataToSend.append('department', formData.department);
+      formDataToSend.append('batch', formData.batch);
+      formDataToSend.append('graduationYear', formData.graduationYear);
+      formDataToSend.append('officialEmail', formData.officialEmail);
+      formDataToSend.append('additionalInfo', formData.additionalInfo);
+      formDataToSend.append('proofDocument', proofFile);
+
+      const response = await fetch('/api/verification/request', {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit verification request');
+      }
+
+      setSuccess('Verification request submitted successfully! An admin will review it soon.');
+      setTimeout(() => navigate('/dashboard'), 2000);
     } catch (err) {
       alert("Upload failed");
       console.log(err);

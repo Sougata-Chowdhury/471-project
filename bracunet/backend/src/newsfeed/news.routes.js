@@ -5,6 +5,7 @@ import { protect, authorize } from "../middleware/auth.js";
 import {
   createNews,
   getAllNews,
+  getAllNewsForAdmin,
   getMyNews,
   getNewsById,
   updateNewsStatus,
@@ -29,7 +30,40 @@ router.get("/", async (req, res) => {
       .json({ success: false, message: "Cannot fetch news" });
   }
 });
+/**
+ * GET /api/news/admin/all
+ * Admin-only: fetch ALL posts (pending, approved, rejected)
+ */
+router.get("/admin/all", protect, authorize("admin"), async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 100;
+    const category = req.query.category || "all";
+    const status = req.query.status || "all";
 
+    console.log("Admin fetching all news with filters:", { page, limit, category, status });
+
+    const result = await getAllNewsForAdmin({ page, limit, category, status });
+    
+    console.log("Admin news result:", { 
+      total: result.total, 
+      itemsCount: result.items?.length,
+      statuses: result.items?.map(item => ({ id: item._id, status: item.status }))
+    });
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Get all news for admin error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Cannot fetch news for admin" });
+  }
+});
+
+/**
+ * GET /api/news/me/mine
+ * Current user's ALL posts (pending + approved + rejected)
+ */
 router.get("/me/mine", protect, async (req, res) => {
   try {
     const items = await getMyNews(req.user._id);

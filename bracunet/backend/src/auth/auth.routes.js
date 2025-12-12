@@ -7,9 +7,9 @@ const router = express.Router();
 // Public routes
 router.post('/register', authService.register);
 router.post('/login', authService.login);
+router.post('/logout', authService.logout); // Logout should be public - clears cookie regardless of token validity
 
 // Protected routes
-router.post('/logout', verifyToken, authService.logout);
 router.get('/me', verifyToken, authService.getCurrentUser);
 
 export default router;

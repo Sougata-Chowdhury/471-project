@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../users/user.model.js';
 import { config } from '../config/index.js';
+import { getUserActivity } from '../gamification/gamification.service.js';
 
 export const register = async (req, res) => {
   try {
@@ -95,6 +96,15 @@ export const login = async (req, res) => {
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
+    // Update login streak
+    try {
+      const activity = await getUserActivity(user._id);
+      activity.updateStreak();
+      await activity.save();
+    } catch (error) {
+      console.error('Error updating login streak:', error);
+    }
 
     return res.status(200).json({
       message: 'Login successful',

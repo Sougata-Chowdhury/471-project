@@ -1,5 +1,6 @@
 import { VerificationRequest } from './verification.model.js';
 import { User } from '../users/user.model.js';
+import { VerifiedUser } from '../users/verifiedUser.model.js';
 
 export const verificationService = {
   // Submit a verification request
@@ -101,6 +102,25 @@ export const verificationService = {
     if (request.officialEmail) user.officialEmail = request.officialEmail;
     
     await user.save();
+
+    // Add to VerifiedUser collection
+    const existingVerified = await VerifiedUser.findOne({ user: user._id });
+    if (!existingVerified) {
+      await VerifiedUser.create({
+        user: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        studentId: user.studentId,
+        department: user.department,
+        batch: user.batch,
+        graduationYear: user.graduationYear,
+        officialEmail: user.officialEmail,
+        verifiedBy: adminId,
+        verifiedAt: new Date(),
+        verificationRequestId: requestId,
+      });
+    }
 
     await request.populate('user', 'name email role isVerified');
     return request;
