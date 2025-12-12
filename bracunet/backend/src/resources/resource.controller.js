@@ -133,12 +133,22 @@ export const approveResource = async (req, res) => {
     }
 
     const { approve } = req.body; // true or false
+    // Use findById to check existence first
     const resource = await Resource.findById(req.params.id);
     if (!resource) return res.status(404).json({ message: "Resource not found" });
 
-    resource.status = approve ? "approved" : "rejected";
-    await resource.save();
-    res.json({ message: `Resource ${resource.status}`, resource });
+    // If older records are missing `type`, set a sensible default to avoid required-field validation errors
+    const update = { status: approve ? "approved" : "rejected" };
+    if (!resource.type) update.type = resource.type || "Other";
+
+    // Update without triggering strict validation issues on legacy docs
+    const updated = await Resource.findByIdAndUpdate(
+      req.params.id,
+      { $set: update },
+      { new: true, runValidators: false }
+    ).populate("uploadedBy", "name email role");
+
+    res.json({ message: `Resource ${updated.status}`, resource: updated });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
