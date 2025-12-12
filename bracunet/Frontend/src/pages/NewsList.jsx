@@ -16,8 +16,8 @@ function NewsList() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [items, setItems] = useState([]);      // main feed
-  const [myItems, setMyItems] = useState([]);  // own posts
+  const [items, setItems] = useState([]);     
+  const [myItems, setMyItems] = useState([]);  
   const [loading, setLoading] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
@@ -47,7 +47,6 @@ function NewsList() {
   const announcements = items.filter((i) => i.category === "announcement");
   const achievements = items.filter((i) => i.category === "achievement");
 
-  // Latest posts:
   const approvedPosts = items.filter((item) => item.status === "approved");
   const myExtraPosts = myItems.filter((item) => item.status !== "approved");
   const latestPosts = [...myExtraPosts, ...approvedPosts].slice(0, 20);
@@ -63,11 +62,8 @@ function NewsList() {
       });
 
       if (isAdmin) {
-        // admin: sob status
         params.set("status", "all");
       }
-      // user: backend default only approved
-
       const res = await fetch(`${API_BASE}/api/news?${params.toString()}`, {
         credentials: "include",
       });
@@ -244,7 +240,7 @@ function NewsList() {
           place.
         </p>
 
-        {/* top buttons */}
+
         <div className="flex flex-wrap gap-2 mb-6">
           {categories.map((c) => (
             <button
@@ -258,9 +254,8 @@ function NewsList() {
         </div>
 
         {isAdmin ? (
-          /* ============= ADMIN VIEW: single column ============= */
+
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* create post */}
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
               <p className="text-sm font-semibold text-white mb-2">
                 Create your post here:
@@ -319,7 +314,6 @@ function NewsList() {
               </button>
             </div>
 
-            {/* admin latest posts */}
             <section className="space-y-3">
               <h3 className="text-lg font-semibold text-white">All Posts</h3>
               {loading && <p className="text-white/80">Loading...</p>}
@@ -379,7 +373,6 @@ function NewsList() {
                     </p>
 
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {/* admin can always delete */}
                       <button
                         onClick={() => handleDeletePost(item._id)}
                         className="text-xs px-3 py-1 rounded-lg bg-red-500/90 hover:bg-red-600 text-white"
@@ -428,9 +421,9 @@ function NewsList() {
             </section>
           </div>
         ) : (
-          /* ============= USER VIEW: 3-column with sidebars ============= */
+
           <div className="grid gap-4 md:grid-cols-4">
-            {/* left sidebar */}
+        
             <div className="md:col-span-1 space-y-4">
               <section className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
                 <h3 className="text-sm font-semibold text-white mb-2">
@@ -497,9 +490,7 @@ function NewsList() {
               </section>
             </div>
 
-            {/* middle column */}
             <div className="md:col-span-2 space-y-4">
-              {/* create post box */}
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
                 <p className="text-sm font-semibold text-white mb-2">
                   Create your post here:
@@ -562,8 +553,6 @@ function NewsList() {
                     : "POST"}
                 </button>
               </div>
-
-              {/* Latest posts for user */}
               <section className="space-y-3">
                 <h3 className="text-lg font-semibold text-white">
                   Latest Posts
@@ -594,7 +583,7 @@ function NewsList() {
                           {item.title}
                         </h4>
                         <div className="flex items-center gap-2">
-                          {/* user: status badge only for own posts */}
+                  
                           {isMine && (
                             <span
                               className={
@@ -642,8 +631,6 @@ function NewsList() {
                 )}
               </section>
             </div>
-
-            {/* right sidebar */}
             <div className="md:col-span-1 space-y-4">
               <section className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
                 <h3 className="text-sm font-semibold text-white mb-2">
