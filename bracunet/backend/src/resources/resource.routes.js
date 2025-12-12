@@ -29,7 +29,7 @@ import {
   deleteResource,
   approveResource,
 } from "./resource.controller.js";
-import { cloudinaryUpload } from "../middleware/upload.js";
+import { cloudinaryResourceUpload } from "../middleware/upload.js";
 import { protect, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -38,7 +38,7 @@ const router = express.Router();
 router.get("/", getResources);
 
 // UPLOAD RESOURCE
-router.post("/", protect, cloudinaryUpload.single("file"), createResource);
+router.post("/", protect, cloudinaryResourceUpload.single("file"), createResource);
 
 // DELETE RESOURCE
 router.delete("/:id", protect, deleteResource);

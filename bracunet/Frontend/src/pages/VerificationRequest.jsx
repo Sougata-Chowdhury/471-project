@@ -97,4 +97,9 @@ const VerificationRequest = () => {
   );
 };
 
-export default VerificationRequest;
+
+// export default VerificationRequest;
+
+// export default UploadResourcePage;
+export { UploadResourcePage as VerificationRequest };
+
