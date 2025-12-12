@@ -9,6 +9,11 @@ import authRoutes from './auth/auth.routes.js';
 import userRoutes from './users/user.routes.js';
 import verificationRoutes from './verification/verification.routes.js';
 import newsRoutes from "./newsfeed/news.routes.js";
+import resourceRoutes from './resources/resource.routes.js';
+import forumRoutes from "./forums/forum.routes.js";
+// import postRoutes from "./forums/post.routes.js";
+// import commentRoutes from "./forums/comment.routes.js";
+// import forumRoutes from './forums/forum.controller.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +43,10 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use("/api/forums", forumRoutes);
+// app.use("/api/posts", postRoutes);
+// app.use("/api/comments", commentRoutes);
 
 // Dashboard routes (role-based)
 app.get('/api/dashboard/student', (req, res) => {

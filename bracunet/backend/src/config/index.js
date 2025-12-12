@@ -20,8 +20,8 @@ export const config = {
     credentials: true,
   },
   cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'demo',
-    apiKey: process.env.CLOUDINARY_API_KEY || '',
-    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'dg0xhxxla',
+    apiKey: process.env.CLOUDINARY_API_KEY || '917816188474383',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || 'hK3S3BSxqK1d4x6kcLc4jXG89EM',
   },
 };

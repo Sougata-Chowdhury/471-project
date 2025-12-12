@@ -1,14 +1,14 @@
 import express from 'express';
 import { verificationService } from './verification.service.js';
 import { protect, authorize } from '../middleware/auth.js';
-import { upload } from '../middleware/upload.js';
+import { cloudinaryUpload } from '../middleware/upload.js';
 import path from 'path';
 
 const router = express.Router();
 
 // Submit verification request (authenticated users) - with file upload
 router.post('/request', protect, (req, res, next) => {
-  upload.single('proofDocument')(req, res, (err) => {
+  cloudinaryUpload.single('proofDocument')(req, res, (err) => {
     if (err) {
       console.error('Upload error:', err);
       return res.status(400).json({
