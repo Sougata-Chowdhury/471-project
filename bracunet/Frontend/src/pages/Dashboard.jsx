@@ -258,6 +258,9 @@ export const Dashboard = () => {
                 if (feature === 'Manage Users') {
                   navigate('/admin/users');
                 }
+                if (feature === 'Update Profile') {
+                  navigate('/settings');
+                }
               }}
             >
               <h3 className="font-bold text-white text-lg">{feature}</h3>

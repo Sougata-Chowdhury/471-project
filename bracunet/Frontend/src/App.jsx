@@ -10,6 +10,7 @@ import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import VerificationRequest from './pages/VerificationRequest';
 import { AdminVerification } from './pages/AdminVerification';
+import AdminUsers from './pages/AdminUsers';
 import { MyVerificationRequests } from './pages/MyVerificationRequests';
 import NewsCategoryPage from "./pages/NewsCategoryPage";
 import NewsList from "./pages/NewsList";
@@ -28,8 +29,6 @@ import AdminNewsModeration from './pages/AdminNewsModeration';
 import './index.css';
 
 
-function AppContent() {
-
 function App() {
 
   return (
@@ -43,7 +42,7 @@ function App() {
           <Route path="/verification-request" element={<VerificationRequest />} />
           <Route path="/my-verification-requests" element={<MyVerificationRequests />} />
           <Route path="/admin/verification" element={<AdminVerification />} />
-
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/news" element={<AdminNewsModeration />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/badges" element={<Badges />} />
@@ -81,6 +80,4 @@ function App() {
       </AuthProvider>
     </Router>
   );
-}
-
 }
