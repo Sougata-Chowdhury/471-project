@@ -68,7 +68,7 @@ export const VerificationRequest = () => {
       formDataToSend.append('additionalInfo', formData.additionalInfo);
       formDataToSend.append('proofDocument', proofFile);
 
-      const response = await fetch('/api/verification/request', {
+      const response = await fetch('http://localhost:3000/api/verification/request', {
         method: 'POST',
         credentials: 'include',
         body: formDataToSend,

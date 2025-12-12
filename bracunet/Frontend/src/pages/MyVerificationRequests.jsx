@@ -18,7 +18,7 @@ export const MyVerificationRequests = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch('/api/verification/my-requests', {
+      const response = await fetch('http://localhost:3000/api/verification/my-requests', {
         credentials: 'include',
       });
       const data = await response.json();

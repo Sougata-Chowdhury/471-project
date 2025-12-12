@@ -226,12 +226,20 @@ function NewsList() {
       <nav className="bg-white shadow">
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <h1 className="text-xl font-bold text-blue-600">BracuNet</h1>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-sm text-blue-600 font-semibold hover:text-blue-700"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate("/directory")}
+              className="text-sm text-purple-600 font-semibold hover:text-purple-700"
+            >
+              📖 Directory
+            </button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-sm text-blue-600 font-semibold hover:text-blue-700"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </nav>
 

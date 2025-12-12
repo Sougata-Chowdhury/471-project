@@ -25,6 +25,7 @@ const verifiedUserSchema = new mongoose.Schema(
     department: String,
     batch: String,
     graduationYear: Number,
+    company: String,
     officialEmail: String,
     verifiedBy: {
       type: mongoose.Schema.Types.ObjectId,

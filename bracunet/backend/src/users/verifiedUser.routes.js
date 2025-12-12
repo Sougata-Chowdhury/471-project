@@ -37,6 +37,77 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * GET /api/verified-users/directory
+ * Alumni Directory with smart search and filters
+ * Accessible to all verified users
+ */
+router.get('/directory', verifyToken, async (req, res) => {
+  try {
+    const { search, department, graduationYear, sortAlpha = 'asc', page = 1, limit = 12 } = req.query;
+    const filter = {};
+
+    // Build search filter
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { department: { $regex: search, $options: 'i' } },
+        { studentId: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (department && department !== 'all') {
+      filter.department = department;
+    }
+
+    if (graduationYear && graduationYear !== 'all') {
+      filter.graduationYear = parseInt(graduationYear);
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await VerifiedUser.countDocuments(filter);
+    
+    // Determine sort order
+    const sortOrder = sortAlpha === 'desc' ? -1 : 1;
+    
+    const verifiedUsers = await VerifiedUser.find(filter)
+      .populate('user', 'name email profilePicture')
+      .select('name email role department batch graduationYear company studentId')
+      .sort({ name: sortOrder })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get unique filter options
+    const [departments, years] = await Promise.all([
+      VerifiedUser.distinct('department', { department: { $ne: null, $ne: '' } }),
+      VerifiedUser.distinct('graduationYear', { graduationYear: { $ne: null } }),
+    ]);
+
+    res.json({
+      success: true,
+      users: verifiedUsers,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit)),
+      },
+      filters: {
+        departments: departments.sort(),
+        years: years.sort((a, b) => b - a),
+      },
+    });
+  } catch (error) {
+    console.error('Get directory error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch directory',
+    });
+  }
+});
+
+/**
  * GET /api/verified-users/:id
  * Get single verified user details
  */

@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema(
     department: String,
     batch: String,
     graduationYear: Number,
+    company: String,
     officialEmail: String,
     isActive: {
       type: Boolean,
