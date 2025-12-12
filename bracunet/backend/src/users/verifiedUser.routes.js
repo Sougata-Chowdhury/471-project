@@ -44,7 +44,12 @@ router.get('/', async (req, res) => {
 router.get('/directory', verifyToken, async (req, res) => {
   try {
     const { search, department, graduationYear, sortAlpha = 'asc', page = 1, limit = 12 } = req.query;
-    const filter = {};
+    const filter = { role: 'alumni' };
+
+    // Non-admin users only see visible alumni
+    if (req.user.role !== 'admin') {
+      filter.isVisible = true;
+    }
 
     // Build search filter
     if (search) {
@@ -73,7 +78,7 @@ router.get('/directory', verifyToken, async (req, res) => {
     
     const verifiedUsers = await VerifiedUser.find(filter)
       .populate('user', 'name email profilePicture')
-      .select('name email role department batch graduationYear company studentId')
+      .select('name email role department batch graduationYear company studentId isVisible')
       .sort({ name: sortOrder })
       .skip(skip)
       .limit(parseInt(limit));
@@ -203,6 +208,40 @@ router.delete('/:id', verifyToken, authorize('admin'), async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to remove verified user',
+    });
+  }
+});
+
+/**
+ * PUT /api/verified-users/admin/:id/toggle-visibility
+ * Toggle alumni visibility in directory (admin only)
+ */
+router.put('/admin/:id/toggle-visibility', verifyToken, authorize('admin'), async (req, res) => {
+  try {
+    const verifiedUser = await VerifiedUser.findById(req.params.id);
+    
+    if (!verifiedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verified user not found',
+      });
+    }
+
+    const newVisibility = !verifiedUser.isVisible;
+    await VerifiedUser.findByIdAndUpdate(req.params.id, {
+      isVisible: newVisibility,
+    });
+
+    res.json({
+      success: true,
+      message: `Alumni ${newVisibility ? 'shown' : 'hidden'} in directory`,
+      isVisible: newVisibility,
+    });
+  } catch (error) {
+    console.error('Toggle visibility error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to toggle visibility',
     });
   }
 });

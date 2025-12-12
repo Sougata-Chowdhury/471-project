@@ -40,6 +40,10 @@ const verifiedUserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'VerificationRequest',
     },
+    isVisible: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );
