@@ -72,7 +72,19 @@ const API_BASE = "http://localhost:3000/api";
 
 async function request(path, options = {}) {
   const url = path.startsWith('/') ? `${API_BASE}${path}` : `${API_BASE}/${path}`;
-  const res = await fetch(url, { credentials: 'include', ...options });
+  
+  // Add Bearer token to headers if available
+  const token = localStorage.getItem('token');
+  const headers = { ...options.headers };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const res = await fetch(url, { 
+    credentials: 'include',
+    ...options,
+    headers 
+  });
 
   const contentType = res.headers.get('content-type') || '';
   let data = null;

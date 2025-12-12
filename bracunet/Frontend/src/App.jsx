@@ -26,7 +26,6 @@ import ResourceList from './pages/ResourceList';
 import ResourceUpload from './pages/ResourceUpload';
 import Messages from './pages/Messages';
 import AdminNewsModeration from './pages/AdminNewsModeration';
-import './index.css';
 
 
 function App() {
@@ -81,3 +80,5 @@ function App() {
     </Router>
   );
 }
+
+export default App;

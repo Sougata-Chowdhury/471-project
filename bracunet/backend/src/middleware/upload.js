@@ -242,7 +242,7 @@ const removeFile = (req, file, cb) => {
   }
 };
 
-// File filter
+// File filter for resources
 const resourceFileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|pdf|doc|docx|ppt|pptx|mp4|mpeg|mp3|zip|rar|txt|csv|xls|xlsx/;
   const extname = allowedTypes.test(file.originalname.toLowerCase());
@@ -251,13 +251,31 @@ const resourceFileFilter = (req, file, cb) => {
   else cb(new Error("Unsupported file type"));
 };
 
-// Create multer upload instance
+// File filter for verification/profile pictures
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  if (mimetype && extname) cb(null, true);
+  else cb(new Error('Only images (JPEG, JPG, PNG) are allowed!'));
+};
+
+// Create multer upload instance for profile pictures
 export const upload = multer({
   storage: profilePictureStorage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
   fileFilter: fileFilter,
+});
+
+// Create multer upload instance for resources (larger files)
+export const cloudinaryResourceUpload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB for resources
+  },
+  fileFilter: resourceFileFilter,
 });
 
 // verification.routes.js এর জন্য default export

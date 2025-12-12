@@ -6,14 +6,29 @@ import { useNavigate } from "react-router-dom";
 
 const ForumList = () => {
   const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    setLoading(true);
     getGroups()
-      .then((res) => setGroups(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+      .then((res) => {
+        setGroups(res.data || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching groups:', err);
+        setError(err.message || 'Failed to load groups');
+        setLoading(false);
+      });
+  }, [user, navigate]);
 
   const handleJoinRequest = async (groupId) => {
     try {
@@ -28,12 +43,30 @@ const ForumList = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 flex items-center justify-center">
+        <div className="text-gray-600">Loading forums...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Discussion Forum</h1>
 
       {/* Create Group (Admin/Faculty/Alumni only) */}
-      {["admin", "faculty", "alumni"].includes(user.role) && (
+      {user && ["admin", "faculty", "alumni"].includes(user.role) && (
         <div className="mb-6">
           <CreateGroup
             onCreated={(group) => setGroups([...groups, group])}
@@ -42,8 +75,16 @@ const ForumList = () => {
       )}
 
       {/* Groups List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {groups.map((group) => {
+      {groups.length === 0 ? (
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-600 mb-4">No discussion groups available yet.</p>
+          {user && ["admin", "faculty", "alumni"].includes(user.role) && (
+            <p className="text-gray-500 text-sm">Create one using the form above!</p>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {groups.map((group) => {
           const joined = group.joinStatus === "approved";
           const pending = group.joinStatus === "pending";
 
@@ -87,7 +128,8 @@ const ForumList = () => {
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
