@@ -21,7 +21,7 @@ const router = express.Router();
 
 // Groups
 router.get("/groups", protect, groupController.getAllGroups);
-router.post("/groups", protect, authorize("admin"), groupController.createGroup);
+router.post("/groups", protect, authorize("admin", "faculty", "alumni"), groupController.createGroup);
 router.post("/groups/:id/join", protect, groupController.joinGroup);
 router.post("/groups/:groupId/approve/:userId", protect, authorize("admin"), groupController.approveJoinRequest);
 

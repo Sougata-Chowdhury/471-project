@@ -4,8 +4,25 @@ import { User } from "../users/user.model.js";
 // Get all groups
 export const getAllGroups = async (req, res) => {
   try {
-    const groups = await Group.find();
-    res.status(200).json({ success: true, groups });
+    const groups = await Group.find().populate('createdBy', 'name email');
+    
+    // Add joinStatus for current user
+    const groupsWithStatus = groups.map(group => {
+      const groupObj = group.toObject();
+      const userId = req.user._id.toString();
+      
+      if (group.members.some(m => m.toString() === userId)) {
+        groupObj.joinStatus = 'approved';
+      } else if (group.requests.some(r => r.toString() === userId)) {
+        groupObj.joinStatus = 'pending';
+      } else {
+        groupObj.joinStatus = 'none';
+      }
+      
+      return groupObj;
+    });
+    
+    res.status(200).json({ success: true, groups: groupsWithStatus });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Failed to get groups" });
