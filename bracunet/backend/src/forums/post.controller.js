@@ -1,4 +1,4 @@
-import Post from "./post.model.js";
+import Post from "./Post.model.js";
 import Group from "./groups.model.js";
 
 // ================== Get Posts of a Group ==================

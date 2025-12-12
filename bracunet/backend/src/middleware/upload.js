@@ -111,6 +111,7 @@
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import path from 'path';
 
 // Cloudinary config
 cloudinary.config({
@@ -119,8 +120,8 @@ cloudinary.config({
   api_secret: "hK3S3BSxqK1d4x6kcLc4jXG89EM",
 });
 
-// Configure Cloudinary storage
-const storage = new CloudinaryStorage({
+// Configure Cloudinary storage for resources
+const resourceStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "bracunet/resources",
@@ -130,6 +131,20 @@ const storage = new CloudinaryStorage({
     resource_type: "auto",
     public_id: (req, file) => `resource-${Date.now()}-${Math.round(Math.random() * 1e9)}`
   }
+});
+
+// Configure Cloudinary storage for verification proofs
+const verificationStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'bracunet/verification-proofs',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
+    resource_type: 'auto',
+    public_id: (req, file) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      return 'proof-' + uniqueSuffix;
+    },
+  },
 });
 
 // Configure Cloudinary storage for profile pictures
@@ -147,24 +162,19 @@ const profilePictureStorage = new CloudinaryStorage({
   },
 });
 
-// Determine storage based on field name
-const storage = (req, file, cb) => {
-  if (file.fieldname === 'profilePicture') {
-    profilePictureStorage._handleFile(req, file, cb);
+// File filter for verification proofs (images and PDFs)
+const verificationFileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|pdf/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  if (mimetype && extname) {
+    return cb(null, true);
   } else {
-    verificationStorage._handleFile(req, file, cb);
+    cb(new Error('Only images (JPEG, JPG, PNG) and PDF files are allowed!'));
   }
 };
 
-const removeFile = (req, file, cb) => {
-  if (file.fieldname === 'profilePicture') {
-    profilePictureStorage._removeFile(req, file, cb);
-  } else {
-    verificationStorage._removeFile(req, file, cb);
-  }
-};
-
-// File filter
+// File filter for resources (broader file types)
 const resourceFileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|pdf|doc|docx|ppt|pptx|mp4|mpeg|mp3|zip|rar|txt|csv|xls|xlsx/;
   const extname = allowedTypes.test(file.originalname.toLowerCase());
@@ -173,11 +183,41 @@ const resourceFileFilter = (req, file, cb) => {
   else cb(new Error("Unsupported file type"));
 };
 
-// Create multer upload instance
-export const upload = multer({
-  storage: storage,
+// File filter for profile pictures (images only)
+const profilePictureFileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Only images (JPEG, JPG, PNG) are allowed for profile pictures!'));
+  }
+};
+
+// Create multer upload instance for verification proofs
+export const cloudinaryUpload = multer({
+  storage: verificationStorage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  fileFilter: fileFilter,
+  fileFilter: verificationFileFilter,
+});
+
+// Create multer upload instance for profile pictures
+export const upload = multer({
+  storage: profilePictureStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: profilePictureFileFilter,
+});
+
+// Create multer upload instance for resources
+export const cloudinaryResourceUpload = multer({
+  storage: resourceStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB for resources
+  },
+  fileFilter: resourceFileFilter,
 });

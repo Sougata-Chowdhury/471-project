@@ -65,3 +65,4 @@ function UploadResourcePage() {
 }
 
 export default UploadResourcePage;
+export { UploadResourcePage as VerificationRequest };

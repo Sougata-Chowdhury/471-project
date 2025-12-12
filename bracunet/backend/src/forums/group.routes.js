@@ -1,20 +1,18 @@
 // routes/group.routes.js
 import express from "express";
-import { protect, authorize, isAdmin } from "../middlewares/auth.js";
+import { protect, authorize, isAdmin } from "../middleware/auth.js";
 import {
-  getGroups,
+  getAllGroups,
   createGroup,
-  requestToJoinGroup,
-  getJoinRequests,
+  joinGroup,
   approveJoinRequest,
-} from "../controllers/group.controller.js";
+} from "./group.controller.js";
 
 const router = express.Router();
 
-router.get("/groups", protect, getGroups); // all groups
+router.get("/groups", protect, getAllGroups); // all groups
 router.post("/groups", protect, authorize("admin", "faculty", "alumni"), createGroup); 
-router.post("/groups/:id/join", protect, requestToJoinGroup); // user join request
-router.get("/groups/:id/requests", protect, authorize("admin"), getJoinRequests); // admin view requests
-router.post("/groups/:groupId/requests/:requestId/approve", protect, authorize("admin"), approveJoinRequest); 
+router.post("/groups/:id/join", protect, joinGroup); // user join request
+router.post("/groups/:groupId/approve/:userId", protect, authorize("admin"), approveJoinRequest); 
 
 export default router;

@@ -364,30 +364,35 @@ export const Dashboard = () => {
               {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
             </span>
             <button
+              type="button"
               onClick={() => navigate('/badges')}
               className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
               title="My Badges">
               🏆 Badges
             </button>
             <button
+              type="button"
               onClick={() => navigate('/leaderboard')}
               className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition"
               title="Leaderboard">
               🏅 Rank
             </button>
             <button
+              type="button"
               onClick={() => navigate('/directory')}
               className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition"
               title="Alumni Directory">
               📖 Directory
             </button>
             <button
+              type="button"
               onClick={() => navigate('/news')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
               Newsfeed
             </button>
             {user.role !== 'admin' && (
               <button
+                type="button"
                 onClick={() => navigate('/settings')}
                 className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
                 title="Settings">
@@ -395,6 +400,7 @@ export const Dashboard = () => {
               </button>
             )}
             <button
+              type="button"
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
             >
@@ -423,6 +429,7 @@ export const Dashboard = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => navigate('/verification-request')}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition font-semibold"
               >
@@ -444,6 +451,7 @@ export const Dashboard = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => navigate('/my-verification-requests')}
                 className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg transition font-semibold"
               >
@@ -465,6 +473,7 @@ export const Dashboard = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => navigate('/verification-request')}
                 className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition font-semibold"
               >
@@ -487,12 +496,14 @@ export const Dashboard = () => {
               </div>
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => navigate('/admin/verification')}
                   className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition font-semibold"
                 >
                   Manage Verifications
                 </button>
                 <button
+                  type="button"
                   onClick={() => navigate('/admin/news')}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition font-semibold"
                 >

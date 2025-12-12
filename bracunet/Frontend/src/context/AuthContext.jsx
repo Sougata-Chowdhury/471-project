@@ -147,12 +147,21 @@ export const AuthProvider = ({ children }) => {
   const apiCall = useCallback(async (endpoint, options = {}) => {
     try {
       const API_BASE = "http://localhost:3000";
+      const token = localStorage.getItem("token");
+      
+      const headers = {
+        "Content-Type": "application/json",
+        ...options.headers,
+      };
+      
+      // Add token to headers if available
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_BASE}${endpoint}`, {
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
+        headers,
         ...options,
       });
 
@@ -167,12 +176,20 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (!response.ok) {
-        throw new Error(data?.message || response.statusText || "API Error");
+        // Don't set global error for auth endpoints - they handle their own errors
+        const error = new Error(data?.message || response.statusText || "API Error");
+        if (!endpoint.includes('/auth/')) {
+          setError(error.message);
+        }
+        throw error;
       }
 
       return data;
     } catch (err) {
-      setError(err.message || "Network error");
+      // Only set error if it's not an auth endpoint
+      if (!endpoint.includes('/auth/')) {
+        setError(err.message || "Network error");
+      }
       throw err;
     }
   }, []);

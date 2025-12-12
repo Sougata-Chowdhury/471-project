@@ -224,12 +224,14 @@ function NewsList() {
           <h1 className="text-xl font-bold text-blue-600">BracuNet</h1>
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={() => navigate("/directory")}
               className="text-sm text-purple-600 font-semibold hover:text-purple-700"
             >
               📖 Directory
             </button>
             <button
+              type="button"
               onClick={() => navigate("/dashboard")}
               className="text-sm text-blue-600 font-semibold hover:text-blue-700"
             >
@@ -252,6 +254,7 @@ function NewsList() {
         <div className="flex flex-wrap gap-2 mb-6">
           {categories.map((c) => (
             <button
+              type="button"
               key={c.value}
               onClick={() => handleTopButton(c.value)}
               className="px-3 py-1 rounded-full text-sm border bg-white/90 text-gray-800 border-white/80 hover:bg-blue-50"
@@ -308,6 +311,7 @@ function NewsList() {
               />
 
               <button
+                type="button"
                 onClick={handleCreatePost}
                 disabled={
                   creating || uploadingImage || !newTitle.trim() || !newBody.trim()
@@ -382,6 +386,7 @@ function NewsList() {
 
                     <div className="mt-2 flex flex-wrap gap-2">
                       <button
+                        type="button"
                         onClick={() => handleDeletePost(item._id)}
                         className="text-xs px-3 py-1 rounded-lg bg-red-500/90 hover:bg-red-600 text-white"
                       >
@@ -391,6 +396,7 @@ function NewsList() {
                       {item.status === "pending" && (
                         <>
                           <button
+                            type="button"
                             onClick={() =>
                               handleStatusChange(item._id, "approved")
                             }
@@ -399,6 +405,7 @@ function NewsList() {
                             Approve
                           </button>
                           <button
+                            type="button"
                             onClick={() =>
                               handleStatusChange(item._id, "rejected")
                             }
@@ -411,6 +418,7 @@ function NewsList() {
 
                       {item.status === "rejected" && (
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusChange(item._id, "approved")
                           }
@@ -545,6 +553,7 @@ function NewsList() {
                 />
 
                 <button
+                  type="button"
                   onClick={handleCreatePost}
                   disabled={
                     creating ||
@@ -644,6 +653,7 @@ function NewsList() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         {isMine && (
                           <button
+                            type="button"
                             onClick={() => handleDeletePost(item._id)}
                             className="text-xs px-3 py-1 rounded-lg bg-red-500/90 hover:bg-red-600 text-white"
                           >

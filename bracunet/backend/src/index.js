@@ -10,6 +10,12 @@ import userRoutes from './users/user.routes.js';
 import verificationRoutes from './verification/verification.routes.js';
 import verifiedUserRoutes from './users/verifiedUser.routes.js';
 import newsRoutes from "./newsfeed/news.routes.js";
+import gamificationRoutes from './gamification/gamification.routes.js';
+import settingsRoutes from './settings/settings.routes.js';
+import resourceRoutes from './resources/resource.routes.js';
+import forumRoutes from './forums/forum.routes.js';
+import groupRoutes from './forums/group.routes.js';
+import { seedBadges } from './gamification/gamification.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +45,12 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/verified-users', verifiedUserRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/forums', forumRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Dashboard routes (role-based)
 app.get('/api/dashboard/student', (req, res) => {
@@ -69,8 +81,8 @@ const connectDB = async () => {
     await mongoose.connect(config.mongodb.uri);
     console.log('✓ MongoDB connected');
     
-    // Seed badges on startup
-    await seedBadges();
+    // Seed badges on startup (non-blocking with timeout)
+    seedBadges().catch(err => console.error('Badge seeding error:', err));
 
     const server = app.listen(config.server.port, () => {
       console.log(`✓ Server running on port ${config.server.port}`);
