@@ -1,8 +1,7 @@
 import express from 'express';
 import { verificationService } from './verification.service.js';
 import { protect, authorize } from '../middleware/auth.js';
-import { cloudinaryUpload } from '../middleware/upload.js';
-import path from 'path';
+import cloudinaryUpload from '../middleware/upload.js'; import path from 'path';
 
 const router = express.Router();
 

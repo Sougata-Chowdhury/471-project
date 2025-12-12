@@ -81,5 +81,9 @@ const seedDB = async () => {
     process.exit(1);
   }
 };
+export const seedBadges = async () => {
+  console.log('Seeding badges...');
+  
+};
 
 seedDB();

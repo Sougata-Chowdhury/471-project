@@ -1,3 +1,4 @@
+
 // import React, { useEffect, useState, useContext } from "react";
 // import { useParams } from "react-router-dom";
 // import { AuthContext } from "../context/AuthContext";
@@ -6,9 +7,8 @@
 //   createPost,
 //   getPostComments,
 //   addComment,
-//   upvotePost,
-//   upvoteComment,
-// } from "../api";
+//   reactPost,
+// } from "../api/forum"; 
 
 // const ForumDetail = () => {
 //   const { forumId } = useParams();
@@ -20,31 +20,34 @@
 
 //   useEffect(() => {
 //     fetchPosts();
+//     // eslint-disable-next-line
 //   }, [forumId]);
 
 //   const fetchPosts = async () => {
 //     try {
 //       const res = await getGroupPosts(forumId);
-//       setPosts(res.data);
+//       const postsData = res.data.posts || []; // backend থেকে আসা posts array
+//       setPosts(postsData);
 
 //       // Fetch comments for each post
-//       res.data.forEach(async (post) => {
+//       postsData.forEach(async (post) => {
 //         const commentsRes = await getPostComments(post._id);
-//         setComments((prev) => ({ ...prev, [post._id]: commentsRes.data }));
+//         const commentsData = commentsRes.data.comments || [];
+//         setComments((prev) => ({ ...prev, [post._id]: commentsData }));
 //       });
 //     } catch (err) {
-//       console.error(err);
+//       console.error("Failed to fetch posts:", err);
 //     }
 //   };
 
 //   const handlePostSubmit = async () => {
 //     if (!newPost.trim()) return;
 //     try {
-//       await createPost({ groupId: forumId, content: newPost });
+//       await createPost(forumId, { content: newPost }); // backend expects groupId in URL
 //       setNewPost("");
 //       fetchPosts();
 //     } catch (err) {
-//       console.error(err);
+//       console.error("Failed to create post:", err);
 //       alert("Failed to create post");
 //     }
 //   };
@@ -54,30 +57,21 @@
 //     if (!content?.trim()) return;
 
 //     try {
-//       await addComment({ postId, content });
+//       await addComment(postId, { content });
 //       setCommentInput((prev) => ({ ...prev, [postId]: "" }));
 //       fetchPosts();
 //     } catch (err) {
-//       console.error(err);
+//       console.error("Failed to add comment:", err);
 //       alert("Failed to add comment");
 //     }
 //   };
 
-//   const handleUpvotePost = async (postId) => {
+//   const handleReactPost = async (postId) => {
 //     try {
-//       await upvotePost(postId);
+//       await reactPost(postId);
 //       fetchPosts();
 //     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const handleUpvoteComment = async (commentId) => {
-//     try {
-//       await upvoteComment(commentId);
-//       fetchPosts();
-//     } catch (err) {
-//       console.error(err);
+//       console.error("Failed to react to post:", err);
 //     }
 //   };
 
@@ -110,7 +104,7 @@
 //               <h3 className="font-bold">{post.author.name}</h3>
 //               <button
 //                 className="text-blue-500"
-//                 onClick={() => handleUpvotePost(post._id)}
+//                 onClick={() => handleReactPost(post._id)}
 //               >
 //                 👍 {post.upvotes || 0}
 //               </button>
@@ -129,7 +123,7 @@
 //                   </p>
 //                   <button
 //                     className="text-blue-500"
-//                     onClick={() => handleUpvoteComment(comment._id)}
+//                     onClick={() => handleReactPost(comment._id)} // যদি comment react আলাদা API হয়, পরিবর্তন করো
 //                   >
 //                     👍 {comment.upvotes || 0}
 //                   </button>
@@ -166,43 +160,28 @@
 
 
 
-
+// src/pages/ForumDetail.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import {
-  getGroupPosts,
-  createPost,
-  getPostComments,
-  addComment,
-  reactPost,
-} from "../api/forum"; // নিশ্চিত করো path ঠিক আছে
+import { getGroupPosts, createPost, addComment, reactPost } from "../api/forum.js";
 
 const ForumDetail = () => {
   const { forumId } = useParams();
   const { user } = useContext(AuthContext);
+
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
-  const [comments, setComments] = useState({}); // { postId: [comments] }
   const [commentInput, setCommentInput] = useState({}); // { postId: text }
 
   useEffect(() => {
     fetchPosts();
-    // eslint-disable-next-line
   }, [forumId]);
 
   const fetchPosts = async () => {
     try {
       const res = await getGroupPosts(forumId);
-      const postsData = res.data.posts || []; // backend থেকে আসা posts array
-      setPosts(postsData);
-
-      // Fetch comments for each post
-      postsData.forEach(async (post) => {
-        const commentsRes = await getPostComments(post._id);
-        const commentsData = commentsRes.data.comments || [];
-        setComments((prev) => ({ ...prev, [post._id]: commentsData }));
-      });
+      setPosts(res.data);
     } catch (err) {
       console.error("Failed to fetch posts:", err);
     }
@@ -211,12 +190,12 @@ const ForumDetail = () => {
   const handlePostSubmit = async () => {
     if (!newPost.trim()) return;
     try {
-      await createPost(forumId, { content: newPost }); // backend expects groupId in URL
+      await createPost(forumId, { content: newPost });
       setNewPost("");
       fetchPosts();
     } catch (err) {
       console.error("Failed to create post:", err);
-      alert("Failed to create post");
+      alert(err.response?.data?.message || "Failed to create post");
     }
   };
 
@@ -230,7 +209,7 @@ const ForumDetail = () => {
       fetchPosts();
     } catch (err) {
       console.error("Failed to add comment:", err);
-      alert("Failed to add comment");
+      alert(err.response?.data?.message || "Failed to add comment");
     }
   };
 
@@ -239,7 +218,7 @@ const ForumDetail = () => {
       await reactPost(postId);
       fetchPosts();
     } catch (err) {
-      console.error("Failed to react to post:", err);
+      console.error("Failed to react:", err);
     }
   };
 
@@ -264,37 +243,28 @@ const ForumDetail = () => {
         </button>
       </div>
 
-      {/* Posts List */}
+      {/* Posts */}
       <div className="space-y-6">
         {posts.map((post) => (
           <div key={post._id} className="bg-white p-4 rounded shadow">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-bold">{post.author.name}</h3>
+              <h3 className="font-bold">{post.author?.name || "Unknown"}</h3>
               <button
                 className="text-blue-500"
                 onClick={() => handleReactPost(post._id)}
               >
-                👍 {post.upvotes || 0}
+                👍 {post.reactions?.length || 0}
               </button>
             </div>
             <p className="text-gray-700">{post.content}</p>
 
             {/* Comments */}
-            <div className="mt-3 ml-4">
-              {(comments[post._id] || []).map((comment) => (
-                <div
-                  key={comment._id}
-                  className="flex justify-between items-center mb-1"
-                >
+            <div className="mt-3 ml-4 space-y-1">
+              {post.comments?.map((comment) => (
+                <div key={comment._id} className="flex justify-between items-center">
                   <p className="text-gray-600">
-                    <span className="font-semibold">{comment.author.name}:</span> {comment.content}
+                    <span className="font-semibold">{comment.author?.name || "Unknown"}:</span> {comment.content}
                   </p>
-                  <button
-                    className="text-blue-500"
-                    onClick={() => handleReactPost(comment._id)} // যদি comment react আলাদা API হয়, পরিবর্তন করো
-                  >
-                    👍 {comment.upvotes || 0}
-                  </button>
                 </div>
               ))}
 

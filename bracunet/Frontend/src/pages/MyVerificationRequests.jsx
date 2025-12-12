@@ -164,3 +164,4 @@ export const MyVerificationRequests = () => {
     </div>
   );
 };
+export default MyVerificationRequests;

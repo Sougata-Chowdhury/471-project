@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { VerifiedUser } from './verifiedUser.model.js';
 import { verifyToken, authorize } from '../middleware/auth.js';
+// import { cloudinaryUpload } from '../middleware/upload.js';
 
 const router = Router();
 

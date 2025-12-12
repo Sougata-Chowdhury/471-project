@@ -14,4 +14,4 @@ export const addComment = (postId, data) => API.post(`/forums/posts/${postId}/co
 export const reactPost = (postId) => API.post(`/forums/posts/${postId}/react`);
 
 // **Add this for fetching comments**
-export const getPostComments = (postId) => API.get(`/forums/posts/${postId}/comments`);
+// export const getPostComments = (postId) => API.get(`/forums/posts/${postId}/comments`);

@@ -10,6 +10,7 @@ import userRoutes from './users/user.routes.js';
 import verificationRoutes from './verification/verification.routes.js';
 import verifiedUserRoutes from './users/verifiedUser.routes.js';
 import newsRoutes from "./newsfeed/news.routes.js";
+import { seedBadges } from '../scripts/seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,7 +71,7 @@ const connectDB = async () => {
     console.log('✓ MongoDB connected');
     
     // Seed badges on startup
-    await seedBadges();
+    // await seedBadges();
 
     const server = app.listen(config.server.port, () => {
       console.log(`✓ Server running on port ${config.server.port}`);
