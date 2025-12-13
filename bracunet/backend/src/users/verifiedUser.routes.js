@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
 router.get('/directory', verifyToken, async (req, res) => {
   try {
     const { search, department, graduationYear, sortAlpha = 'asc', page = 1, limit = 12 } = req.query;
-    const filter = { role: { $in: ['alumni', 'student'] } };
+    const filter = { role: 'alumni' };
 
     // Non-admin users only see visible alumni
     if (req.user.role !== 'admin') {
