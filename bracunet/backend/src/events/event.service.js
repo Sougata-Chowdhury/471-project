@@ -1,5 +1,6 @@
 import Event from "./event.model.js";
 import { trackActivity } from "../gamification/gamification.service.js";
+import { createNotification, notificationTemplates } from "../notifications/notification.service.js";
 
 /**
  * Create a new event
@@ -84,8 +85,27 @@ export async function updateEvent(eventId, userId, updates) {
     throw new Error("Not authorized to update this event");
   }
   
+  // Check if event has RSVPs to send update notifications
+  const hasRsvps = event.rsvps.length > 0;
+  
   Object.assign(event, updates);
   await event.save();
+  
+  // Send notifications to users who RSVP'd
+  if (hasRsvps) {
+    const rsvpedUsers = event.rsvps.map((rsvp) => rsvp.user);
+    const updateTemplate = notificationTemplates.event_updated(event.title);
+    for (const rsvpUserId of rsvpedUsers) {
+      await createNotification({
+        userId: rsvpUserId,
+        type: "event_updated",
+        title: updateTemplate.title,
+        message: updateTemplate.message,
+        relatedModel: "Event",
+        relatedId: eventId
+      });
+    }
+  }
   
   return event;
 }
@@ -152,6 +172,17 @@ export async function rsvpToEvent(eventId, userId, status = "going") {
   // Record gamification activity
   if (status === "going") {
     await trackActivity(userId, "event_rsvp", 1, 5);
+    
+    // Send notification for event registration
+    const registrationTemplate = notificationTemplates.event_registered(event.title);
+    await createNotification({
+      userId,
+      type: "event_registered",
+      title: registrationTemplate.title,
+      message: registrationTemplate.message,
+      relatedModel: "Event",
+      relatedId: eventId
+    });
   }
   
   return event;

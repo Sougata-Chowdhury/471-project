@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
 
 export const Dashboard = () => {
   const { user, logout, getCurrentUser } = useAuth();
@@ -87,6 +88,7 @@ export const Dashboard = () => {
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">BracuNet</h1>
           <div className="flex items-center gap-4">
+            <NotificationBell />
             <span className="text-gray-700">{user.name}</span>
             {getVerificationBadge()}
             <span
@@ -120,13 +122,6 @@ export const Dashboard = () => {
               onClick={() => navigate('/news')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
               Newsfeed
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/events')}
-              className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition"
-              title="Events">
-              📅 Events
             </button>
             {user.role !== 'admin' && (
               <button
