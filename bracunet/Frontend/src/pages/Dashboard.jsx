@@ -121,6 +121,13 @@ export const Dashboard = () => {
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
               Newsfeed
             </button>
+            <button
+              type="button"
+              onClick={() => navigate('/events')}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition"
+              title="Events">
+              📅 Events
+            </button>
             {user.role !== 'admin' && (
               <button
                 type="button"
@@ -282,6 +289,13 @@ export const Dashboard = () => {
           >
             <h3 className="font-bold text-white text-lg">Resource Library</h3>
             <p className="text-white/80 text-sm mt-2">Browse study materials and guides</p>
+          </div>
+          <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-pink-400"
+            onClick={() => navigate('/events')}
+          >
+            <h3 className="font-bold text-white text-lg">📅 Events</h3>
+            <p className="text-white/80 text-sm mt-2">Faculty-Alumni meetups, webinars, and reunions</p>
           </div>
         </div>
 

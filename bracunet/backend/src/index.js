@@ -10,6 +10,7 @@ import userRoutes from './users/user.routes.js';
 import verificationRoutes from './verification/verification.routes.js';
 import verifiedUserRoutes from './users/verifiedUser.routes.js';
 import newsRoutes from "./newsfeed/news.routes.js";
+import eventRoutes from "./events/event.routes.js";
 
 import gamificationRoutes from './gamification/gamification.routes.js';
 import settingsRoutes from './settings/settings.routes.js';
@@ -35,6 +36,7 @@ app.use(
   })
 );
 app.use("/api/news", newsRoutes);
+app.use("/api/events", eventRoutes);
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
