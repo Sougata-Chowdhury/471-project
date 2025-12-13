@@ -54,12 +54,19 @@ router.get('/directory', verifyToken, async (req, res) => {
 
     // Build search filter
     if (search) {
-      filter.$or = [
+      const searchConditions = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
         { department: { $regex: search, $options: 'i' } },
         { studentId: { $regex: search, $options: 'i' } },
       ];
+      
+      // If search is a number, also search by graduation year
+      if (!isNaN(search)) {
+        searchConditions.push({ graduationYear: parseInt(search) });
+      }
+      
+      filter.$or = searchConditions;
     }
 
     if (department && department !== 'all') {
