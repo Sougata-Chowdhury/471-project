@@ -16,7 +16,9 @@ import settingsRoutes from './settings/settings.routes.js';
 import resourceRoutes from './resources/resource.routes.js';
 import forumRoutes from './forums/forum.routes.js';
 import groupRoutes from './forums/group.routes.js';
+import groupMessageRoutes from './forums/groupMessage.routes.js';
 import { seedBadges } from './gamification/gamification.service.js';
+import { Server as IOServer } from 'socket.io';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -53,6 +55,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/forums', forumRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/group-messages', groupMessageRoutes);
 
 // Dashboard routes (role-based)
 app.get('/api/dashboard/student', (req, res) => {
@@ -93,6 +96,33 @@ const connectDB = async () => {
       console.log(`✓ Environment: ${config.server.env}`);
       console.log(`✓ CORS Origin: ${config.cors.origin}`);
       console.log(`✓ Server is listening and ready to accept connections`);
+    });
+
+    // Socket.IO setup for real-time messaging and meeting rooms
+    const io = new IOServer(server, {
+      cors: {
+        origin: config.cors.origin,
+        methods: ['GET', 'POST'],
+        credentials: true,
+      },
+    });
+
+    io.on('connection', (socket) => {
+      console.log('Socket connected:', socket.id);
+
+      socket.on('joinGroupRoom', ({ groupId }) => {
+        if (groupId) socket.join(`group_${groupId}`);
+      });
+
+      socket.on('leaveGroupRoom', ({ groupId }) => {
+        if (groupId) socket.leave(`group_${groupId}`);
+      });
+
+      socket.on('groupMessage', (msg) => {
+        if (msg && msg.groupId) {
+          io.to(`group_${msg.groupId}`).emit('groupMessage', msg);
+        }
+      });
     });
 
     server.on('error', (error) => {

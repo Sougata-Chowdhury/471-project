@@ -20,7 +20,15 @@ const groupSchema = new mongoose.Schema({
   description: { type: String },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  requests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+  requests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  meetings: [
+    {
+      url: { type: String },
+      dailyRoomName: { type: String },
+      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      createdAt: { type: Date, default: Date.now },
+    }
+  ]
 }, { timestamps: true });
 
 export default mongoose.model("Group", groupSchema);

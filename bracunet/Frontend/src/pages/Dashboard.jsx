@@ -277,6 +277,13 @@ export const Dashboard = () => {
             <p className="text-white/80 text-sm mt-2">Join topic-based discussions</p>
           </div>
           <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-indigo-400"
+            onClick={() => navigate('/groups')}
+          >
+            <h3 className="font-bold text-white text-lg">Interest Groups</h3>
+            <p className="text-white/80 text-sm mt-2">Create or join groups, chat and host meetings</p>
+          </div>
+          <div
             className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-green-400"
             onClick={() => navigate('/resources')}
           >

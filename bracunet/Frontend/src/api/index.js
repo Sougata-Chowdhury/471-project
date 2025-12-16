@@ -140,6 +140,14 @@ export const upvotePost = (id) => API.post(`/forums/posts/${id}/upvote`);
 export const upvoteComment = (id) => API.post(`/forums/comments/${id}/upvote`);
 export const createGroup = (data) => API.post("/forums/groups", data);
 
+// Groups & Group Messages (use backend /api/groups and /api/group-messages)
+export const fetchGroups = () => API.get('/groups/groups');
+export const requestJoinGroup = (id) => API.post(`/groups/${id}/join`);
+export const createGroupMeeting = (id) => API.post(`/groups/${id}/meetings`);
+
+export const fetchGroupMessages = (groupId) => API.get(`/group-messages/${groupId}/messages`);
+export const postGroupMessage = (groupId, body) => API.post(`/group-messages/${groupId}/messages`, body);
+
 // Add this named export
 export const setAuthToken = (token) => {
   if (token) localStorage.setItem("token", token);
