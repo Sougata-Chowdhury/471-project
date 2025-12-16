@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-
     "seed": "node scripts/seed.js",
     "seed-groups": "node scripts/seed-groups.js"
   },
@@ -30,7 +29,8 @@
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "pusher": "^5.2.0",
-    "pusher-js": "^8.4.0"
+    "pusher-js": "^8.4.0",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

@@ -51,6 +51,18 @@ const userSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
     },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    goals: {
+      type: [String],
+      default: [],
+    },
+    interests: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

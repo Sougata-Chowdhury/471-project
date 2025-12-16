@@ -30,6 +30,15 @@ export const Settings = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
 
+  // Skills, Goals, Interests
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [selectedGoals, setSelectedGoals] = useState([]);
+  const [selectedInterests, setSelectedInterests] = useState([]);
+  const [options, setOptions] = useState({ skills: [], goals: [], interests: [] });
+  const [skillSearch, setSkillSearch] = useState('');
+  const [goalSearch, setGoalSearch] = useState('');
+  const [interestSearch, setInterestSearch] = useState('');
+
   useEffect(() => {
     if (!user) {
       getCurrentUser().catch(() => navigate('/login'));
@@ -42,8 +51,29 @@ export const Settings = () => {
         studentId: user.studentId || '',
       });
       setProfilePicturePreview(user.profilePicture);
+      setSelectedSkills(user.skills || []);
+      setSelectedGoals(user.goals || []);
+      setSelectedInterests(user.interests || []);
     }
   }, [user, getCurrentUser, navigate]);
+
+  // Fetch options on mount
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/settings/options`, {
+          credentials: 'include',
+        });
+        const data = await response.json();
+        if (data.success) {
+          setOptions(data.options);
+        }
+      } catch (error) {
+        console.error('Failed to fetch options:', error);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -55,7 +85,12 @@ export const Settings = () => {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileForm),
+        body: JSON.stringify({
+          ...profileForm,
+          skills: selectedSkills,
+          goals: selectedGoals,
+          interests: selectedInterests,
+        }),
       });
       
       const data = await response.json();
@@ -311,6 +346,122 @@ export const Settings = () => {
               {loading ? 'Saving...' : 'Save Profile'}
             </button>
           </form>
+        </div>
+
+        {/* Skills, Goals, Interests Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">Skills, Goals & Interests</h3>
+          
+          {/* Skills */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+            <input
+              type="text"
+              placeholder="Search skills..."
+              value={skillSearch}
+              onChange={(e) => setSkillSearch(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+            />
+            <div className="flex flex-wrap gap-2 mb-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              {options.skills.filter(skill => 
+                skill.toLowerCase().includes(skillSearch.toLowerCase())
+              ).map(skill => (
+                <button
+                  key={skill}
+                  type="button"
+                  onClick={() => {
+                    if (selectedSkills.includes(skill)) {
+                      setSelectedSkills(selectedSkills.filter(s => s !== skill));
+                    } else {
+                      setSelectedSkills([...selectedSkills, skill]);
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full text-sm transition ${
+                    selectedSkills.includes(skill)
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {skill} {selectedSkills.includes(skill) && '✓'}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">Selected: {selectedSkills.length}</p>
+          </div>
+
+          {/* Goals */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Career Goals</label>
+            <input
+              type="text"
+              placeholder="Search goals..."
+              value={goalSearch}
+              onChange={(e) => setGoalSearch(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+            />
+            <div className="flex flex-wrap gap-2 mb-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              {options.goals.filter(goal => 
+                goal.toLowerCase().includes(goalSearch.toLowerCase())
+              ).map(goal => (
+                <button
+                  key={goal}
+                  type="button"
+                  onClick={() => {
+                    if (selectedGoals.includes(goal)) {
+                      setSelectedGoals(selectedGoals.filter(g => g !== goal));
+                    } else {
+                      setSelectedGoals([...selectedGoals, goal]);
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full text-sm transition ${
+                    selectedGoals.includes(goal)
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {goal} {selectedGoals.includes(goal) && '✓'}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">Selected: {selectedGoals.length}</p>
+          </div>
+
+          {/* Interests */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Interests</label>
+            <input
+              type="text"
+              placeholder="Search interests..."
+              value={interestSearch}
+              onChange={(e) => setInterestSearch(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+            />
+            <div className="flex flex-wrap gap-2 mb-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              {options.interests.filter(interest => 
+                interest.toLowerCase().includes(interestSearch.toLowerCase())
+              ).map(interest => (
+                <button
+                  key={interest}
+                  type="button"
+                  onClick={() => {
+                    if (selectedInterests.includes(interest)) {
+                      setSelectedInterests(selectedInterests.filter(i => i !== interest));
+                    } else {
+                      setSelectedInterests([...selectedInterests, interest]);
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full text-sm transition ${
+                    selectedInterests.includes(interest)
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {interest} {selectedInterests.includes(interest) && '✓'}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">Selected: {selectedInterests.length}</p>
+          </div>
         </div>
 
         {/* Password Section */}

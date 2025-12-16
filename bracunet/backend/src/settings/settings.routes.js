@@ -22,7 +22,7 @@ router.get('/me/settings', verifyToken, async (req, res) => {
 // Update user profile (name, department, etc.)
 router.patch('/me/settings', verifyToken, async (req, res) => {
   try {
-    const { name, department, batch, graduationYear, studentId } = req.body;
+    const { name, department, batch, graduationYear, studentId, skills, goals, interests } = req.body;
     
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -35,6 +35,9 @@ router.patch('/me/settings', verifyToken, async (req, res) => {
     if (batch) user.batch = batch;
     if (graduationYear) user.graduationYear = graduationYear;
     if (studentId) user.studentId = studentId;
+    if (skills !== undefined) user.skills = skills;
+    if (goals !== undefined) user.goals = goals;
+    if (interests !== undefined) user.interests = interests;
     
     await user.save();
     
@@ -122,6 +125,24 @@ router.delete('/me/profile-picture', verifyToken, async (req, res) => {
     await user.save();
     
     res.json({ success: true, message: 'Profile picture removed successfully', user: user.toJSON() });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+});
+
+// Get BRACU options (skills, goals, interests)
+router.get('/options', async (req, res) => {
+  try {
+    const { BRACU_OPTIONS, getAllSkills } = await import('../config/bracuOptions.js');
+    
+    res.json({
+      success: true,
+      options: {
+        skills: getAllSkills(),
+        goals: BRACU_OPTIONS.goals,
+        interests: BRACU_OPTIONS.interests,
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
