@@ -33,7 +33,8 @@ import EventList from './pages/EventList';
 import EventDetail from './pages/EventDetail';
 import CreateEvent from './pages/CreateEvent';
 import MyRsvps from './pages/MyRsvps';
-
+import Mentorship from './pages/Mentorship';
+import MyMentorshipRequests from './pages/MyMentorshipRequests';
 
 function App() {
 
@@ -91,6 +92,8 @@ function App() {
             }
           />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/mentorship" element={<Mentorship />} />
+          <Route path="/mentorship/requests" element={<MyMentorshipRequests />} />
         </Routes>
       </AuthProvider>
     </Router>

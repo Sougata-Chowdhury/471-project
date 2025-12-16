@@ -269,6 +269,13 @@ export const Dashboard = () => {
               <p className="text-white/80 text-sm mt-2">Explore {feature.toLowerCase()}</p>
             </div>
           ))}
+          <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-blue-400"
+            onClick={() => navigate('/mentorship')}
+          >
+            <h3 className="font-bold text-white text-lg">Mentorship</h3>
+            <p className="text-white/80 text-sm mt-2">Find mentors and send requests</p>
+          </div>
 
           {/* ⭐ NEW: Discussion Forum Card */}
           <div

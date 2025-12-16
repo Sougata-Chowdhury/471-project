@@ -23,7 +23,7 @@ import { protect } from './middleware/auth.js';
 import groupMessageRoutes from './forums/groupMessage.routes.js';
 import { seedBadges } from './gamification/gamification.service.js';
 import { Server as IOServer } from 'socket.io';
-
+import mentorshipRoutes from "./mentorship/mentorship.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +45,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/notifications", notificationRoutes);
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use("/api/mentorship", mentorshipRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
