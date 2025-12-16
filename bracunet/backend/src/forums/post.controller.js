@@ -25,15 +25,25 @@ export const createPost = async (req, res) => {
     const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (!group.members.includes(req.user._id)) {
+    // Allow posting if user is a member or an admin
+    const isMember = group.members.some(m => m.toString() === req.user._id.toString());
+    const isAdmin = req.user && req.user.role === 'admin';
+    if (!isMember && !isAdmin) {
       return res.status(403).json({ message: "You are not a member of this group" });
     }
 
-    const post = await Post.create({
+    const postData = {
       content,
       group: id,
       author: req.user._id,
-    });
+    };
+
+    // If an image was uploaded via multer/cloudinary, attach its URL
+    if (req.file) {
+      postData.image = req.file.path || req.file.secure_url || req.file.url || req.file?.location || null;
+    }
+
+    const post = await Post.create(postData);
 
     res.status(201).json(post);
   } catch (err) {

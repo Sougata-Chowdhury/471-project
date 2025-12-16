@@ -132,13 +132,16 @@ const API = {
 // Named exports for forum
 export const getGroups = () => API.get("/forums/groups");
 export const joinGroup = (id) => API.post(`/forums/groups/${id}/join`);
-export const getGroupPosts = (groupId) => API.get(`/forums/groups/${groupId}/posts`);
+// forum group posts helper moved to src/api/forum.js to avoid name collisions
+// export const getGroupPosts = (groupId) => API.get(`/forums/groups/${groupId}/posts`);
 export const createPost = (data) => API.post("/forums/posts", data);
 export const getPostComments = (postId) => API.get(`/forums/posts/${postId}/comments`);
 export const addComment = (data) => API.post("/forums/comments", data);
 export const upvotePost = (id) => API.post(`/forums/posts/${id}/upvote`);
 export const upvoteComment = (id) => API.post(`/forums/comments/${id}/upvote`);
 export const createGroup = (data) => API.post("/forums/groups", data);
+// Create an interest group (backend mounted at /api/groups -> route /groups)
+export const createInterestGroup = (data) => API.post('/groups/groups', data);
 
 // Groups & Group Messages (use backend /api/groups and /api/group-messages)
 export const fetchGroups = () => API.get('/groups/groups');
@@ -147,6 +150,23 @@ export const createGroupMeeting = (id) => API.post(`/groups/${id}/meetings`);
 
 export const fetchGroupMessages = (groupId) => API.get(`/group-messages/${groupId}/messages`);
 export const postGroupMessage = (groupId, body) => API.post(`/group-messages/${groupId}/messages`, body);
+
+// Admin: group join requests
+export const getGroupRequests = (groupId) => API.get(`/groups/${groupId}/requests`);
+export const approveJoinRequest = (groupId, userId) => API.post(`/groups/${groupId}/approve/${userId}`);
+export const rejectJoinRequest = (groupId, userId) => API.post(`/groups/${groupId}/reject/${userId}`);
+
+// Group posts (feed)
+export const getGroupPosts = (groupId) => API.get(`/groups/${groupId}/posts`);
+export const createGroupPost = (groupId, body) => API.post(`/groups/${groupId}/posts`, body);
+export const reactToPost = (postId, body) => API.post(`/posts/${postId}/react`, body);
+export const addPostComment = (postId, body) => API.post(`/posts/${postId}/comments`, body);
+
+// Group details
+export const getGroupDetails = (groupId) => API.get(`/groups/${groupId}/details`);
+
+// Meeting token
+export const createMeetingToken = (groupId, roomName) => API.post(`/groups/${groupId}/meetings/${roomName}/token`);
 
 // Add this named export
 export const setAuthToken = (token) => {

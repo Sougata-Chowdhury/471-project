@@ -82,6 +82,26 @@ export const protect = async (req, res, next) => {
   }
 };
 
+// Optional authentication: if token present, set req.user, otherwise continue anonymously
+export const optionalAuth = async (req, res, next) => {
+  try {
+    let token = req.cookies.authToken;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) return next();
+
+    const decoded = jwt.verify(token, config.jwt.secret);
+    const userId = decoded.userId || decoded.id;
+    req.user = await User.findById(userId).select('-password');
+    return next();
+  } catch (err) {
+    // If token invalid, ignore and continue unauthenticated
+    return next();
+  }
+};
+
 // Roles-based authorization
 export const authorize = (...roles) => {
   return (req, res, next) => {

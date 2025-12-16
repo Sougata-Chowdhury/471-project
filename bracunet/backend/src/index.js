@@ -18,6 +18,8 @@ import settingsRoutes from './settings/settings.routes.js';
 import resourceRoutes from './resources/resource.routes.js';
 import forumRoutes from './forums/forum.routes.js';
 import groupRoutes from './forums/group.routes.js';
+import { joinGroup, getGroupDetails } from './forums/group.controller.js';
+import { protect } from './middleware/auth.js';
 import groupMessageRoutes from './forums/groupMessage.routes.js';
 import { seedBadges } from './gamification/gamification.service.js';
 import { Server as IOServer } from 'socket.io';
@@ -60,6 +62,10 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/forums', forumRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/group-messages', groupMessageRoutes);
+
+// Ensure join endpoint is also available directly on the app in case router mounting fails
+app.post('/api/groups/:id/join', protect, joinGroup);
+app.get('/api/groups/:id/details', protect, getGroupDetails);
 
 // Dashboard routes (role-based)
 app.get('/api/dashboard/student', (req, res) => {

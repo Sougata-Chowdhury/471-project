@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "seed": "node scripts/seed.js"
+
+    "seed": "node scripts/seed.js",
+    "seed-groups": "node scripts/seed-groups.js"
   },
   "keywords": [
     "bracunet",
@@ -27,7 +29,8 @@
     "mongoose": "^7.5.0",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
-    "pusher": "^5.2.0"
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

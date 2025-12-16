@@ -21,6 +21,7 @@ const groupSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   requests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  image: { type: String },
   meetings: [
     {
       url: { type: String },

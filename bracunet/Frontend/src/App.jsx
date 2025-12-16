@@ -26,6 +26,7 @@ import GroupDetail from './pages/GroupDetail';
 import ResourceLibrary from './pages/ResourceLibrary';
 import ResourceList from './pages/ResourceList';
 import ResourceUpload from './pages/ResourceUpload';
+import GroupRequests from './pages/GroupRequests';
 import Messages from './pages/Messages';
 import AdminNewsModeration from './pages/AdminNewsModeration';
 import EventList from './pages/EventList';
@@ -57,6 +58,7 @@ function App() {
           <Route path="/forum/:id" element={<ForumDetail />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/groups/:id" element={<GroupDetail />} />
+          <Route path="/groups/:id/requests" element={<GroupRequests />} />
           <Route path="/groups/create" element={<CreateGroup />} />
           <Route path="/resources" element={<ResourceLibrary />} />
           <Route path="/resources/list" element={<ResourceList />} />

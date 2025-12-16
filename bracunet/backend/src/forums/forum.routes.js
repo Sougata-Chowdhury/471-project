@@ -16,6 +16,7 @@ import express from "express";
 import * as groupController from "./group.controller.js";
 import * as postController from "./post.controller.js";
 import { protect, authorize } from "../middleware/auth.js";
+import { cloudinaryResourceUpload } from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.post("/groups/:groupId/approve/:userId", protect, authorize("admin"), gro
 
 // Posts
 router.get("/groups/:id/posts", protect, postController.getPosts);
-router.post("/groups/:id/posts", protect, postController.createPost);
+router.post("/groups/:id/posts", protect, cloudinaryResourceUpload.single('image'), postController.createPost);
 router.post("/posts/:id/comments", protect, postController.addComment);
 router.post("/posts/:id/react", protect, postController.reactPost);
 

@@ -32,6 +32,7 @@ const postSchema = new mongoose.Schema(
   {
     content: { type: String, required: true },
     group: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
+    image: { type: String },
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     comments: [commentSchema],
     reactions: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

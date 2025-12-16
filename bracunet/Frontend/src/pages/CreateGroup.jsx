@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { createGroup } from "../api";
+import { createInterestGroup } from "../api";
 
 export const CreateGroup = ({ onCreated }) => {
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -13,14 +14,25 @@ export const CreateGroup = ({ onCreated }) => {
 
     try {
       setLoading(true);
-      const res = await createGroup({ name, topic, description });
+      let res;
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('topic', topic);
+        fd.append('description', description);
+        fd.append('image', imageFile);
+        res = await createInterestGroup(fd);
+      } else {
+        res = await createInterestGroup({ name, topic, description });
+      }
       console.log('Create group response:', res);
       // Backend returns { success: true, group: {...} }
       const newGroup = res.data?.group || res.data;
-      onCreated(newGroup);
+      if (onCreated) onCreated(newGroup);
       setName("");
       setTopic("");
       setDescription("");
+      setImageFile(null);
       alert("Group created successfully!");
     } catch (err) {
       console.error(err);
@@ -39,36 +51,56 @@ export const CreateGroup = ({ onCreated }) => {
       
       <div className="space-y-4">
         <div>
-          <label className="text-white font-semibold text-sm block mb-2">Group Name *</label>
+          <label className="text-gray-700 font-semibold text-sm block mb-2">Group Name *</label>
           <input
             type="text"
             placeholder="e.g., Career Development, Alumni Networking"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 border border-white/30 rounded-lg bg-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+            className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             required
           />
         </div>
-        
+
         <div>
-          <label className="text-white font-semibold text-sm block mb-2">Topic *</label>
+          <label className="text-gray-700 font-semibold text-sm block mb-2">Group Image (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files[0] || null)}
+            className="w-full"
+          />
+
+          {imageFile && (
+            <div className="mt-3">
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="preview"
+                className="max-h-40 rounded shadow-sm"
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="text-gray-700 font-semibold text-sm block mb-2">Topic *</label>
           <input
             type="text"
             placeholder="e.g., Job Opportunities, Academic Research"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="w-full p-3 border border-white/30 rounded-lg bg-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+            className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             required
           />
         </div>
-        
+
         <div>
-          <label className="text-white font-semibold text-sm block mb-2">Description (Optional)</label>
+          <label className="text-gray-700 font-semibold text-sm block mb-2">Description (Optional)</label>
           <textarea
             placeholder="Provide more details about this group..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-3 border border-white/30 rounded-lg bg-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent resize-none"
+            className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none"
             rows={3}
           />
         </div>

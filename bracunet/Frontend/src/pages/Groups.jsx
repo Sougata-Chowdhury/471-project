@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { fetchGroups, requestJoinGroup } from '../api';
 import GroupCard from '../components/GroupCard';
 
 export default function Groups() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +26,26 @@ export default function Groups() {
       // optimistic UI: mark pending
       setGroups(prev => prev.map(g => g._id === id ? { ...g, joinStatus: 'pending' } : g));
     } catch (err) {
-      alert('Failed to request join');
+      console.error('Join error:', err);
+      // Show detailed error when available
+      const details = err?.data ? JSON.stringify(err.data) : (err?.message || 'Failed to request join');
+      alert(`Join failed: ${details}`);
+    }
+  };
+
+  const addToDashboard = (group) => {
+    try {
+      const pinned = JSON.parse(localStorage.getItem('pinnedGroups') || '[]');
+      if (!pinned.includes(group._id)) {
+        pinned.push(group._id);
+        localStorage.setItem('pinnedGroups', JSON.stringify(pinned));
+        alert('Added to dashboard (local)');
+      } else {
+        alert('Already added');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to add');
     }
   };
 
@@ -34,28 +57,65 @@ export default function Groups() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">Interest Groups</h2>
+          {user && user.role === 'admin' && (
+            <button
+              onClick={() => navigate('/groups/create')}
+              className="bg-white text-indigo-600 px-4 py-2 rounded shadow hover:opacity-90"
+            >
+              + Create Group
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.map(group => (
             <div key={group._id}>
               <GroupCard group={group} />
-              <div className="mt-2 flex gap-2">
-                {group.joinStatus !== 'approved' && (
+              <div className="mt-3 flex gap-2">
+                {!user ? (
                   <button
-                    onClick={() => handleJoin(group._id)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded"
+                    onClick={() => navigate('/login')}
+                    className="bg-white text-indigo-600 px-3 py-1 rounded border"
                   >
-                    Join
+                    Login to Join
                   </button>
-                )}
-                {group.joinStatus === 'approved' && (
+                ) : user.role === 'admin' ? (
                   <button
-                    onClick={() => window.location.assign(`/groups/${group._id}`)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                    onClick={() => navigate(`/groups/${group._id}/requests`)}
+                    className="bg-white text-indigo-600 px-3 py-1 rounded border"
                   >
-                    Open
+                    Manage
                   </button>
+                ) : group.joinStatus !== 'approved' ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleJoin(group._id)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded"
+                    >
+                      {group.joinStatus === 'pending' ? 'Requested' : 'Join'}
+                    </button>
+                    <button
+                      onClick={() => addToDashboard(group)}
+                      className="bg-white text-indigo-600 px-3 py-1 rounded border"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => window.location.assign(`/groups/${group._id}`)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                    >
+                      Open
+                    </button>
+                    <button
+                      onClick={() => addToDashboard(group)}
+                      className="bg-white text-indigo-600 px-3 py-1 rounded border"
+                    >
+                      Add
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

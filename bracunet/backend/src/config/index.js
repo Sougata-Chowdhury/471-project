@@ -24,16 +24,15 @@ export const config = {
     apiKey: process.env.CLOUDINARY_API_KEY || '917816188474383',
     apiSecret: process.env.CLOUDINARY_API_SECRET || 'hK3S3BSxqK1d4x6kcLc4jXG89EM',
   },
-
   daily: {
     apiKey: process.env.DAILY_API_KEY || '',
     apiBase: process.env.DAILY_API_BASE || 'https://api.daily.co/v1',
+  },
 
   pusher: {
-    appId: process.env.PUSHER_APP_ID,
-    key: process.env.PUSHER_KEY,
-    secret: process.env.PUSHER_SECRET,
+    appId: process.env.PUSHER_APP_ID || '',
+    key: process.env.PUSHER_KEY || '',
+    secret: process.env.PUSHER_SECRET || '',
     cluster: process.env.PUSHER_CLUSTER || 'ap2',
-
   },
-  }}
+};
