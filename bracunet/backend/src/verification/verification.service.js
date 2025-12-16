@@ -1,6 +1,7 @@
 import { VerificationRequest } from './verification.model.js';
 import { User } from '../users/user.model.js';
 import { VerifiedUser } from '../users/verifiedUser.model.js';
+import { createNotification, notificationTemplates } from '../notifications/notification.service.js';
 
 export const verificationService = {
   // Submit a verification request
@@ -32,6 +33,18 @@ export const verificationService = {
     });
 
     await request.populate('user', 'name email role');
+    
+    // Send notification
+    await createNotification({
+      userId,
+      type: 'verification_submitted',
+      title: notificationTemplates.verification_submitted.title,
+      message: notificationTemplates.verification_submitted.message,
+      relatedId: request._id,
+      relatedModel: 'Verification',
+      link: '/my-verification-requests',
+    });
+    
     return request;
   },
 
@@ -102,6 +115,17 @@ export const verificationService = {
     if (request.officialEmail) user.officialEmail = request.officialEmail;
     
     await user.save();
+    
+    // Send notification
+    await createNotification({
+      userId: request.user,
+      type: 'verification_approved',
+      title: notificationTemplates.verification_approved.title,
+      message: notificationTemplates.verification_approved.message,
+      relatedId: request._id,
+      relatedModel: 'Verification',
+      link: '/dashboard',
+    });
 
     // Add to VerifiedUser collection
     const existingVerified = await VerifiedUser.findOne({ user: user._id });
@@ -148,6 +172,17 @@ export const verificationService = {
     const user = await User.findById(request.user);
     user.verificationStatus = 'rejected';
     await user.save();
+    
+    // Send notification
+    await createNotification({
+      userId: request.user,
+      type: 'verification_rejected',
+      title: notificationTemplates.verification_rejected.title,
+      message: notificationTemplates.verification_rejected.message,
+      relatedId: request._id,
+      relatedModel: 'Verification',
+      link: '/my-verification-requests',
+    });
 
     await request.populate('user', 'name email role');
     return request;

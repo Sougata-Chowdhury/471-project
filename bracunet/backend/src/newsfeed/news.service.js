@@ -3,6 +3,7 @@
 
 import News from "./news.model.js";
 import { trackActivity } from '../gamification/gamification.service.js';
+import { createNotification, notificationTemplates } from '../notifications/notification.service.js';
 
 export const createNews = async (data) => {
   const news = await News.create(data);
@@ -107,12 +108,46 @@ export const updateNewsStatus = async (id, status) => {
     { new: true }
   );
   
+  if (!news) {
+    throw new Error('News post not found');
+  }
+  
   // Award bonus points when news is approved
-  if (status === 'approved' && news) {
+  if (status === 'approved') {
     try {
       await trackActivity(news.createdBy, 'newsPosts', 0, 15); // Bonus 15 points for approval
+      
+      // Send approval notification
+      const approvalTemplate = notificationTemplates.news_approved(news.title);
+      await createNotification({
+        userId: news.createdBy,
+        type: 'news_approved',
+        title: approvalTemplate.title,
+        message: approvalTemplate.message,
+        relatedModel: 'News',
+        relatedId: id
+      });
+      console.log('✅ News approval notification sent to user:', news.createdBy);
     } catch (error) {
-      console.error('Error tracking news approval:', error);
+      console.error('❌ Error tracking news approval:', error);
+    }
+  }
+  
+  // Send rejection notification
+  if (status === 'rejected') {
+    try {
+      const rejectionTemplate = notificationTemplates.news_rejected(news.title);
+      await createNotification({
+        userId: news.createdBy,
+        type: 'news_rejected',
+        title: rejectionTemplate.title,
+        message: rejectionTemplate.message,
+        relatedModel: 'News',
+        relatedId: id
+      });
+      console.log('✅ News rejection notification sent to user:', news.createdBy);
+    } catch (error) {
+      console.error('❌ Error sending rejection notification:', error);
     }
   }
   

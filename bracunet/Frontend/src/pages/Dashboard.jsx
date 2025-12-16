@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
 
 export const Dashboard = () => {
   const { user, logout, getCurrentUser } = useAuth();
@@ -87,6 +88,7 @@ export const Dashboard = () => {
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">BracuNet</h1>
           <div className="flex items-center gap-4">
+            <NotificationBell />
             <span className="text-gray-700">{user.name}</span>
             {getVerificationBadge()}
             <span
@@ -289,6 +291,13 @@ export const Dashboard = () => {
           >
             <h3 className="font-bold text-white text-lg">Resource Library</h3>
             <p className="text-white/80 text-sm mt-2">Browse study materials and guides</p>
+          </div>
+          <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-pink-400"
+            onClick={() => navigate('/events')}
+          >
+            <h3 className="font-bold text-white text-lg">📅 Events</h3>
+            <p className="text-white/80 text-sm mt-2">Faculty-Alumni meetups, webinars, and reunions</p>
           </div>
         </div>
 

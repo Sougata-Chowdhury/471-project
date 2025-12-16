@@ -28,6 +28,10 @@ import ResourceList from './pages/ResourceList';
 import ResourceUpload from './pages/ResourceUpload';
 import Messages from './pages/Messages';
 import AdminNewsModeration from './pages/AdminNewsModeration';
+import EventList from './pages/EventList';
+import EventDetail from './pages/EventDetail';
+import CreateEvent from './pages/CreateEvent';
+import MyRsvps from './pages/MyRsvps';
 
 
 function App() {
@@ -58,6 +62,12 @@ function App() {
           <Route path="/resources/list" element={<ResourceList />} />
           <Route path="/resources/upload" element={<ResourceUpload />} />
           <Route path="/messages" element={<Messages />} />
+
+          <Route path="/events" element={<EventList />} />
+          <Route path="/events/create" element={<CreateEvent />} />
+          <Route path="/events/edit/:id" element={<CreateEvent />} />
+          <Route path="/events/my-rsvps" element={<MyRsvps />} />
+          <Route path="/events/:id" element={<EventDetail />} />
 
           <Route path="/news" element={<NewsList />} />
           <Route
