@@ -35,6 +35,12 @@ import CreateEvent from './pages/CreateEvent';
 import MyRsvps from './pages/MyRsvps';
 import Mentorship from './pages/Mentorship';
 import MyMentorshipRequests from './pages/MyMentorshipRequests';
+import { DonationsPage } from './pages/DonationsPage';
+import { CreateCampaignPage } from './pages/CreateCampaignPage';
+import { CampaignDetailPage } from './pages/CampaignDetailPage';
+import { DonationSuccessPage } from './pages/DonationSuccessPage';
+import { MyDonationsPage } from './pages/MyDonationsPage';
+import { MyCampaignsPage } from './pages/MyCampaignsPage';
 
 function App() {
 
@@ -94,6 +100,14 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
           <Route path="/mentorship" element={<Mentorship />} />
           <Route path="/mentorship/requests" element={<MyMentorshipRequests />} />
+          
+          {/* Donation Routes */}
+          <Route path="/donations" element={<DonationsPage />} />
+          <Route path="/donations/create" element={<CreateCampaignPage />} />
+          <Route path="/donations/campaign/:id" element={<CampaignDetailPage />} />
+          <Route path="/donations/success" element={<DonationSuccessPage />} />
+          <Route path="/donations/my-donations" element={<MyDonationsPage />} />
+          <Route path="/donations/my-campaigns" element={<MyCampaignsPage />} />
         </Routes>
       </AuthProvider>
     </Router>

@@ -24,6 +24,7 @@ import groupMessageRoutes from './forums/groupMessage.routes.js';
 import { seedBadges } from './gamification/gamification.service.js';
 import { Server as IOServer } from 'socket.io';
 import mentorshipRoutes from "./mentorship/mentorship.routes.js";
+import donationRoutes from './donations/donation.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +64,7 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/forums', forumRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/group-messages', groupMessageRoutes);
+app.use('/api/donations', donationRoutes);
 
 // Ensure join endpoint is also available directly on the app in case router mounting fails
 app.post('/api/groups/:id/join', protect, joinGroup);

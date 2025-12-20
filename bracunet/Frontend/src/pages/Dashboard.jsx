@@ -306,6 +306,13 @@ export const Dashboard = () => {
             <h3 className="font-bold text-white text-lg">📅 Events</h3>
             <p className="text-white/80 text-sm mt-2">Faculty-Alumni meetups, webinars, and reunions</p>
           </div>
+          <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-rose-400"
+            onClick={() => navigate('/donations')}
+          >
+            <h3 className="font-bold text-white text-lg">💝 Donation & Fundraising</h3>
+            <p className="text-white/80 text-sm mt-2">Support causes and create campaigns</p>
+          </div>
         </div>
 
         {/* User Information */}
