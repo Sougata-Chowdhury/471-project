@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE } from "../config";
 
 const MyMentorshipRequests = () => {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchRequests = async () => {
-      const res = await axios.get(
-        "http://localhost:5000/api/mentorship/my-requests",
-        { withCredentials: true }
-      );
-      setRequests(res.data);
+      try {
+        const res = await axios.get(
+          `${API_BASE}/api/mentorship/my-requests`,
+          { withCredentials: true }
+        );
+        setRequests(res.data || []);
+      } catch (err) {
+        setError(err.response?.data?.message || "Could not load requests");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchRequests();
   }, []);
@@ -22,34 +31,41 @@ const MyMentorshipRequests = () => {
           📩 My Mentorship Requests
         </h2>
 
-        {requests.length === 0 ? (
-          <p>No requests yet</p>
-        ) : (
-          requests.map((req) => (
-            <div
-              key={req._id}
-              className="border p-4 rounded mb-3 flex justify-between items-center"
-            >
-              <div>
-                <p className="font-semibold">{req.mentor.name}</p>
-                <p className="text-sm text-gray-500">
-                  Status: {req.status}
-                </p>
-              </div>
+        {loading && <p className="text-gray-500">Loading...</p>}
+        {!loading && error && (
+          <p className="text-red-600 font-semibold">{error}</p>
+        )}
 
-              <span
-                className={`px-3 py-1 rounded text-white text-sm ${
-                  req.status === "accepted"
-                    ? "bg-green-500"
-                    : req.status === "rejected"
-                    ? "bg-red-500"
-                    : "bg-yellow-500"
-                }`}
+        {!loading && !error && (
+          requests.length === 0 ? (
+            <p className="text-gray-600">No requests yet</p>
+          ) : (
+            requests.map((req) => (
+              <div
+                key={req._id}
+                className="border p-4 rounded mb-3 flex justify-between items-center"
               >
-                {req.status}
-              </span>
-            </div>
-          ))
+                <div>
+                  <p className="font-semibold">{req.mentor?.name || "Mentor"}</p>
+                  <p className="text-sm text-gray-500">
+                    Status: {req.status}
+                  </p>
+                </div>
+
+                <span
+                  className={`px-3 py-1 rounded text-white text-sm ${
+                    req.status === "accepted"
+                      ? "bg-green-500"
+                      : req.status === "rejected"
+                      ? "bg-red-500"
+                      : "bg-yellow-500"
+                  }`}
+                >
+                  {req.status}
+                </span>
+              </div>
+            ))
+          )
         )}
       </div>
     </div>

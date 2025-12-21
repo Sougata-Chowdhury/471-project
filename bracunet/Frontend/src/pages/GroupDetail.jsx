@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { fetchGroupMessages, postGroupMessage, fetchGroups, createGroupMeeting, createMeetingToken as apiCreateMeetingToken, requestJoinGroup, getGroupPosts, createGroupPost, reactToPost, addPostComment, getGroupDetails, getGroupRequests, approveJoinRequest, rejectJoinRequest } from '../api';
+import { fetchGroupMessages, postGroupMessage, fetchGroups, createGroupMeeting, createMeetingToken as apiCreateMeetingToken, requestJoinGroup, getGroupPosts, createGroupPost, reactToPost, addPostComment, getGroupDetails } from '../api';
 import { io } from 'socket.io-client';
 
 export default function GroupDetail() {
@@ -100,9 +100,8 @@ export default function GroupDetail() {
       setPosts(prev => [created, ...prev]);
       setNewPostTitle(''); setNewPostBody(''); setNewPostImage(null);
     } catch (err) {
-      console.error('create post error', err);
-      const message = err?.data?.message || err?.data || err?.message || 'Failed to create post';
-      alert(message);
+      console.error(err);
+      alert('Failed to create post');
     }
   };
 
@@ -149,9 +148,8 @@ export default function GroupDetail() {
 
       setMeetingModal({ open: true, url: meeting.url, roomName, token });
     } catch (err) {
-      console.error('create meeting error', err);
-      const message = err?.data?.message || err?.data || err?.message || 'Failed to create meeting';
-      alert(message);
+      console.error(err);
+      alert('Failed to create meeting');
     }
   };
 
@@ -254,6 +252,7 @@ export default function GroupDetail() {
             <div className="flex gap-2">
               <button onClick={handleCreatePost} className="bg-indigo-600 text-white px-4 py-2 rounded">Post</button>
               <button onClick={() => { navigator.clipboard && navigator.clipboard.writeText(window.location.href); alert('Link copied'); }} className="bg-white border px-4 py-2 rounded">Copy Link</button>
+              <button onClick={() => navigate('/groups')} className="ml-auto bg-white border px-4 py-2 rounded">Back to Groups</button>
             </div>
           </div>
 

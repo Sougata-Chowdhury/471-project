@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
 import Pusher from 'pusher-js';
@@ -6,6 +7,7 @@ import config from '../config';
 
 export default function NotificationBell() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -27,15 +29,8 @@ export default function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       const response = await api.get('/notifications');
-      console.log('API Response:', response);
-      console.log('Response data:', response.data);
-      console.log('Notifications array:', response.data.notifications);
-      
       if (response.data && response.data.notifications) {
-        setNotifications(response.data.notifications);
-        console.log('Set notifications:', response.data.notifications.length);
-      } else {
-        console.error('Invalid response structure:', response.data);
+        setNotifications(response.data.notifications.map((n) => ({ ...n, _id: n._id || n.id })));
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -80,7 +75,8 @@ export default function NotificationBell() {
     // Listen for new notifications
     channel.bind('notification', (data) => {
       console.log('📬 New notification received:', data);
-      setNotifications((prev) => [data, ...prev]);
+      const normalized = { ...data, _id: data._id || data.id };
+      setNotifications((prev) => [normalized, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });
 
@@ -217,45 +213,67 @@ export default function NotificationBell() {
                 <p className="text-xs mt-2">Count: {notifications?.length || 0}</p>
               </div>
             ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification._id}
-                  className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                    !notification.read ? 'bg-blue-50' : ''
-                  }`}
-                  onClick={() => !notification.read && markAsRead(notification._id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-800">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {getTimeAgo(notification.createdAt)}
-                      </p>
+              notifications.map((notification) => {
+                const isMentorship = notification.type === 'mentorship_request';
+                const isMessageRequest = notification.type === 'message_request';
+                return (
+                  <div
+                    key={notification._id}
+                    className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 ${
+                      !notification.read ? 'bg-blue-50' : ''
+                    }`}
+                    onClick={() => {
+                      if (!notification.read) markAsRead(notification._id);
+                    }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800">{notification.title}</p>
+                        <p className="text-sm text-gray-700 mt-1">{notification.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {getTimeAgo(notification.createdAt)}
+                        </p>
+                      </div>
+                      <div className="ml-2 flex gap-1">
+                        {(isMentorship || isMessageRequest) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate('/mentorship/chat');
+                              setIsOpen(false);
+                              markAsRead(notification._id);
+                            }}
+                            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                          >
+                            Open Chat
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(notification._id);
+                          }}
+                          className="ml-1 text-gray-400 hover:text-red-600"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNotification(notification._id);
-                      }}
-                      className="ml-2 text-gray-400 hover:text-red-600"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

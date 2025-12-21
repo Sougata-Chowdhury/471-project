@@ -27,6 +27,31 @@ router.get('/', verifyToken, authorize('admin'), async (req, res) => {
   }
 });
 
+// Search users by name, skills, or interests (authenticated users only)
+router.get('/search/query', verifyToken, async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim().length === 0) {
+      return res.json([]);
+    }
+    
+    const searchTerm = q.trim().toLowerCase();
+    const users = await User.find({
+      $or: [
+        { name: { $regex: searchTerm, $options: 'i' } },
+        { skills: { $regex: searchTerm, $options: 'i' } },
+        { interests: { $regex: searchTerm, $options: 'i' } },
+      ]
+    })
+    .select('_id name role skills interests email')
+    .limit(20);
+    
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Search error', error: error.message });
+  }
+});
+
 // Get user by ID (admin or self)
 router.get('/:id', verifyToken, async (req, res) => {
   try {

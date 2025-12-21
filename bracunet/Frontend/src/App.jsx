@@ -35,6 +35,10 @@ import CreateEvent from './pages/CreateEvent';
 import MyRsvps from './pages/MyRsvps';
 import Mentorship from './pages/Mentorship';
 import MyMentorshipRequests from './pages/MyMentorshipRequests';
+import MentorshipChat from './pages/MentorshipChat';
+import IncomingMentorshipRequests from './pages/IncomingMentorshipRequests';
+import RequestMentorStatus from './pages/RequestMentorStatus';
+import AdminMentorRequests from './pages/AdminMentorRequests';
 import { DonationsPage } from './pages/DonationsPage';
 import { CreateCampaignPage } from './pages/CreateCampaignPage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
@@ -100,6 +104,10 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
           <Route path="/mentorship" element={<Mentorship />} />
           <Route path="/mentorship/requests" element={<MyMentorshipRequests />} />
+          <Route path="/mentorship/incoming-requests" element={<IncomingMentorshipRequests />} />
+          <Route path="/mentorship/chat" element={<MentorshipChat />} />
+          <Route path="/mentorship/request-to-mentor" element={<RequestMentorStatus />} />
+          <Route path="/admin/mentor-requests" element={<AdminMentorRequests />} />
           
           {/* Donation Routes */}
           <Route path="/donations" element={<DonationsPage />} />

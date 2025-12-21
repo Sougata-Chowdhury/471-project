@@ -18,6 +18,8 @@ const notificationSchema = new mongoose.Schema(
         "event_updated",
         "news_approved",
         "news_rejected",
+        "mentorship_request",
+        "message_request",
       ],
       required: true,
     },
@@ -35,7 +37,7 @@ const notificationSchema = new mongoose.Schema(
     },
     relatedModel: {
       type: String,
-      enum: ["Verification", "Event", "News", null],
+      enum: ["Verification", "Event", "News", "Mentorship", null],
       default: null,
     },
     link: {

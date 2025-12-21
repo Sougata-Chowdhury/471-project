@@ -36,7 +36,7 @@ export const Dashboard = () => {
     student: {
       title: 'Student Dashboard',
       color: 'blue',
-      features: ['View Announcements', 'Connect with Alumni', 'Join Events', 'Find Mentors'],
+      features: ['View Announcements', 'Connect with Alumni', 'Join Events'],
     },
     alumni: {
       title: 'Alumni Dashboard',
@@ -269,12 +269,23 @@ export const Dashboard = () => {
               <p className="text-white/80 text-sm mt-2">Explore {feature.toLowerCase()}</p>
             </div>
           ))}
+          
+          {/* Mentorship Card */}
           <div
             className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-blue-400"
             onClick={() => navigate('/mentorship')}
           >
             <h3 className="font-bold text-white text-lg">Mentorship</h3>
             <p className="text-white/80 text-sm mt-2">Find mentors and send requests</p>
+          </div>
+
+          {/* Mentorship Chat Card */}
+          <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-cyan-400"
+            onClick={() => navigate('/mentorship/chat')}
+          >
+            <h3 className="font-bold text-white text-lg">💬 Mentorship Chat</h3>
+            <p className="text-white/80 text-sm mt-2">Message mentors and view conversations</p>
           </div>
 
           {/* ⭐ NEW: Discussion Forum Card */}

@@ -23,6 +23,18 @@ const userSchema = new mongoose.Schema(
       enum: ['student', 'alumni', 'faculty', 'admin'],
       default: 'student',
     },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    interests: {
+      type: [String],
+      default: [],
+    },
+    mentorshipGoals: {
+      type: [String],
+      default: [],
+    },
     profilePicture: {
       type: String,
       default: null,
@@ -50,18 +62,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
-    },
-    skills: {
-      type: [String],
-      default: [],
-    },
-    goals: {
-      type: [String],
-      default: [],
-    },
-    interests: {
-      type: [String],
-      default: [],
     },
   },
   { timestamps: true }
