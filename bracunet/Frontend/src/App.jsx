@@ -45,6 +45,7 @@ import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { DonationSuccessPage } from './pages/DonationSuccessPage';
 import { MyDonationsPage } from './pages/MyDonationsPage';
 import { MyCampaignsPage } from './pages/MyCampaignsPage';
+import CareerHub from './pages/CareerHub';
 
 function App() {
 
@@ -116,6 +117,9 @@ function App() {
           <Route path="/donations/success" element={<DonationSuccessPage />} />
           <Route path="/donations/my-donations" element={<MyDonationsPage />} />
           <Route path="/donations/my-campaigns" element={<MyCampaignsPage />} />
+
+          {/* Career Hub */}
+          <Route path="/career" element={<CareerHub />} />
         </Routes>
       </AuthProvider>
     </Router>

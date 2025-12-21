@@ -324,6 +324,13 @@ export const Dashboard = () => {
             <h3 className="font-bold text-white text-lg">💝 Donation & Fundraising</h3>
             <p className="text-white/80 text-sm mt-2">Support causes and create campaigns</p>
           </div>
+          <div
+            className="bg-white/20 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer border-t-4 border-cyan-400"
+            onClick={() => navigate('/career')}
+          >
+            <h3 className="font-bold text-white text-lg">💼 Career Opportunity & Recommendation Hub</h3>
+            <p className="text-white/80 text-sm mt-2">Jobs, internships & recommendation letters</p>
+          </div>
         </div>
 
         {/* User Information */}

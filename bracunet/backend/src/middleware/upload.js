@@ -278,5 +278,14 @@ export const cloudinaryResourceUpload = multer({
   fileFilter: resourceFileFilter,
 });
 
+// Create multer upload instance for CV files
+export const cvUpload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB for CVs
+  },
+  fileFilter: resourceFileFilter,
+});
+
 // verification.routes.js এর জন্য default export
 export default upload;

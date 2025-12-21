@@ -25,6 +25,8 @@ import { seedBadges } from './gamification/gamification.service.js';
 import { Server as IOServer } from 'socket.io';
 import mentorshipRoutes from "./mentorship/mentorship.routes.js";
 import donationRoutes from './donations/donation.routes.js';
+import careerRoutes from './career/career.routes.js';
+import recommendationRoutes from './career/recommendation.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,6 +67,8 @@ app.use('/api/forums', forumRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/group-messages', groupMessageRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/api/career', careerRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 // Ensure join endpoint is also available directly on the app in case router mounting fails
 app.post('/api/groups/:id/join', protect, joinGroup);
