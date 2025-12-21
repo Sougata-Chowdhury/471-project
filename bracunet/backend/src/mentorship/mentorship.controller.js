@@ -2,6 +2,9 @@ import Mentorship from "./mentorship.model.js";
 import { findMentorsForStudent } from "./mentorship.service.js";
 import { createNotification } from "../notifications/notification.service.js";
 
+// Store active call timeouts so we can cancel them when the caller ends the call
+const activeCallTimeouts = new Map();
+
 
 export const getMatchedMentors = async (req, res) => {
 	const matches = await findMentorsForStudent(req.user.id);
@@ -137,4 +140,80 @@ export const updateMentorshipStatus = async (req, res) => {
 	]);
 
 	res.json(populated);
+};
+
+// Notify a user about an incoming call (for missed/alert use cases)
+export const notifyCall = async (req, res) => {
+	const { receiverId, mentorshipId, callType, callUrl } = req.body;
+	if (!receiverId || !mentorshipId) {
+		return res.status(400).json({ message: "receiverId and mentorshipId are required" });
+	}
+
+	try {
+		const incomingNotif = await createNotification({
+			userId: receiverId,
+			type: "message_request",
+			title: callType === "audio" ? "Incoming Audio Call 📞" : "Incoming Video Call 📹",
+			message: `${req.user.name} is calling you.`,
+			relatedId: mentorshipId,
+			relatedModel: "Mentorship",
+			link: callUrl || "/mentorship/chat",
+		});
+
+	// Store the timeout so it can be cancelled if the caller ends the call
+		const callKey = `${mentorshipId}-${Date.now()}`;
+		const timeoutId = setTimeout(async () => {
+			try {
+				await createNotification({
+					userId: receiverId,
+					type: "message_request",
+					title: callType === "audio" ? "You missed an audio call 📞" : "You missed a video call 📹",
+					message: `${req.user.name} called you. The call ended.`,
+					relatedId: mentorshipId,
+					relatedModel: "Mentorship",
+					link: "/mentorship/chat",
+				});
+			} catch (err) {
+				console.warn("Error creating missed call notification:", err.message);
+			} finally {
+				activeCallTimeouts.delete(callKey);
+			}
+		}, 30000); // 30 seconds
+		activeCallTimeouts.set(callKey, timeoutId);
+
+		res.json({ success: true, notificationId: incomingNotif._id, callKey });
+	} catch (error) {
+		res.status(500).json({ message: "Error creating call notification", error: error.message });
+	}
+};
+
+// Called when the caller ends the call (instead of waiting for 30s)
+export const endCallNotify = async (req, res) => {
+	const { receiverId, mentorshipId, callKey, callType } = req.body;
+	if (!receiverId || !mentorshipId || !callKey) {
+		return res.status(400).json({ message: "receiverId, mentorshipId, and callKey are required" });
+	}
+
+	try {
+		// Cancel the 30-second timeout for missed call notification
+		if (activeCallTimeouts.has(callKey)) {
+			clearTimeout(activeCallTimeouts.get(callKey));
+			activeCallTimeouts.delete(callKey);
+		}
+
+		// Send a "call ended" notification instead
+		await createNotification({
+			userId: receiverId,
+			type: "message_request",
+			title: callType === "audio" ? "Audio call ended 📞" : "Video call ended 📹",
+			message: `${req.user.name} ended the call.`,
+			relatedId: mentorshipId,
+			relatedModel: "Mentorship",
+			link: "/mentorship/chat",
+		});
+
+		res.json({ success: true });
+	} catch (error) {
+		res.status(500).json({ message: "Error ending call notification", error: error.message });
+	}
 };

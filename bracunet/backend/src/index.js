@@ -27,6 +27,7 @@ import mentorshipRoutes from "./mentorship/mentorship.routes.js";
 import donationRoutes from './donations/donation.routes.js';
 import careerRoutes from './career/career.routes.js';
 import recommendationRoutes from './career/recommendation.routes.js';
+import analyticsRoutes from './analytics/analytics.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,6 +70,7 @@ app.use('/api/group-messages', groupMessageRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/career', careerRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Ensure join endpoint is also available directly on the app in case router mounting fails
 app.post('/api/groups/:id/join', protect, joinGroup);

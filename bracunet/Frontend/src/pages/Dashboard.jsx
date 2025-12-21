@@ -260,6 +260,9 @@ export const Dashboard = () => {
                 if (feature === 'Manage Users') {
                   navigate('/admin/users');
                 }
+                if (feature === 'Reports') {
+                  navigate('/admin/dashboard');
+                }
                 if (feature === 'Update Profile') {
                   navigate('/settings');
                 }

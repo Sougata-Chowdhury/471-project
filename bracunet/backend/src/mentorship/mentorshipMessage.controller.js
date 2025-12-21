@@ -94,7 +94,7 @@ export const getPendingRequests = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate([
         { path: "sender", select: "name email profilePicture role" },
-        { path: "receiver", select: "name email" },
+        { path: "receiver", select: "name email profilePicture role" },
         { path: "mentorship" },
       ]);
 

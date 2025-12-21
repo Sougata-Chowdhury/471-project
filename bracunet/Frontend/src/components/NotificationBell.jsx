@@ -29,6 +29,10 @@ export default function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       const response = await api.get('/notifications');
+      console.log('API Response:', response);
+      console.log('Response data:', response.data);
+      console.log('Notifications array:', response.data.notifications);
+      
       if (response.data && response.data.notifications) {
         setNotifications(response.data.notifications.map((n) => ({ ...n, _id: n._id || n.id })));
       }
@@ -80,9 +84,16 @@ export default function NotificationBell() {
       setUnreadCount((prev) => prev + 1);
     });
 
+    // Fallback: Poll for new notifications every 1 second in case Pusher fails
+    const pollInterval = setInterval(() => {
+      fetchNotifications();
+      fetchUnreadCount();
+    }, 1000);
+
     return () => {
       channel.unbind_all();
       channel.unsubscribe();
+      clearInterval(pollInterval);
     };
   }, [user]);
 
@@ -214,20 +225,24 @@ export default function NotificationBell() {
               </div>
             ) : (
               notifications.map((notification) => {
-                const isMentorship = notification.type === 'mentorship_request';
-                const isMessageRequest = notification.type === 'message_request';
+                const titleLower = (notification.title || '').toLowerCase();
+                const isIncomingCall = titleLower.includes('incoming') && titleLower.includes('call');
+                const isMissedCall = titleLower.includes('missed') && titleLower.includes('call');
+                const joinUrl = notification.link && notification.link.startsWith('https://meet.jit.si')
+                  ? notification.link
+                  : notification.relatedId
+                    ? `https://meet.jit.si/mentorship-${notification.relatedId}`
+                    : null;
+
                 return (
                   <div
                     key={notification._id}
                     className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 ${
                       !notification.read ? 'bg-blue-50' : ''
                     }`}
-                    onClick={() => {
-                      if (!notification.read) markAsRead(notification._id);
-                    }}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                      <div className="flex-1" onClick={() => !notification.read && markAsRead(notification._id)}>
                         <p className="text-sm font-medium text-gray-800">{notification.title}</p>
                         <p className="text-sm text-gray-700 mt-1">{notification.message}</p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -235,42 +250,66 @@ export default function NotificationBell() {
                         </p>
                       </div>
                       <div className="ml-2 flex gap-1">
-                        {(isMentorship || isMessageRequest) && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate('/mentorship/chat');
-                              setIsOpen(false);
-                              markAsRead(notification._id);
-                            }}
-                            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
-                          >
-                            Open Chat
-                          </button>
-                        )}
+                      {(notification.type === 'mentorship_request' || notification.type === 'message_request') && !isMissedCall && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteNotification(notification._id);
+                            markAsRead(notification._id);
+                            // Navigate to chat with mentorshipId query param if available
+                            const mentorshipId = notification.relatedId || notification.relatedModel === 'Mentorship' ? notification.relatedId : null;
+                            if (mentorshipId) {
+                              navigate(`/mentorship/chat?mid=${mentorshipId}`);
+                            } else {
+                              navigate('/mentorship/chat');
+                            }
+                            setIsOpen(false);
                           }}
-                          className="ml-1 text-gray-400 hover:text-red-600"
+                          className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
+                          Message
                         </button>
-                      </div>
+                      )}
+                      {isIncomingCall && joinUrl && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notification._id);
+                            window.open(joinUrl, '_blank', 'noopener,noreferrer');
+                            setIsOpen(false);
+                          }}
+                          className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"
+                        >
+                          Join call
+                        </button>
+                      )}
+                      {isMissedCall && (
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-semibold">
+                          Missed
+                        </span>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification._id);
+                        }}
+                        className="ml-1 text-gray-400 hover:text-red-600"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
                     </div>
+                  </div>
                   </div>
                 );
               })

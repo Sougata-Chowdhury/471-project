@@ -46,6 +46,7 @@ import { DonationSuccessPage } from './pages/DonationSuccessPage';
 import { MyDonationsPage } from './pages/MyDonationsPage';
 import { MyCampaignsPage } from './pages/MyCampaignsPage';
 import CareerHub from './pages/CareerHub';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
 
@@ -62,6 +63,7 @@ function App() {
           <Route path="/admin/verification" element={<AdminVerification />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/news" element={<AdminNewsModeration />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/leaderboard" element={<Leaderboard />} />

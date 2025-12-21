@@ -26,6 +26,7 @@ import {
 	deleteAnnouncement,
 } from "./announcement.controller.js";
 import { generateAgoraToken, createDailyRoom } from "./agora.controller.js";
+import { notifyCall, endCallNotify } from "./mentorship.controller.js";
 import { protect as auth, authorize } from "../middleware/auth.js";
 
 
@@ -52,6 +53,10 @@ router.get("/mentor-request/status", auth, getMentorRequestStatus);
 router.post("/mentor-request/:requestId/approve", auth, authorize("admin"), approveMentorRequest);
 router.post("/mentor-request/:requestId/reject", auth, authorize("admin"), rejectMentorRequest);
 router.get("/mentor-request/admin/pending", auth, authorize("admin"), getPendingMentorRequests);
+
+// Call notification route
+router.post("/call/notify", auth, notifyCall);
+router.post("/call/end", auth, endCallNotify);
 
 // Announcement routes
 router.post("/announcement/create", auth, createAnnouncement);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { API_BASE } from "../config";
 import CallPanel from "../components/CallPanel";
@@ -8,6 +8,7 @@ import CallPanel from "../components/CallPanel";
 const MentorshipChat = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const currentUserId = user?._id || user?.id;
   const getMentorshipId = (conv) => String(conv?.mentorship?._id || conv?.mentorship || "");
   const [conversations, setConversations] = useState([]);
@@ -25,6 +26,26 @@ const MentorshipChat = () => {
   useEffect(() => {
     fetchConversations();
   }, []);
+
+  useEffect(() => {
+    // If URL has mentorshipId query param, auto-select it
+    const mid = searchParams.get('mid');
+    if (mid) {
+      setSelectedMentorship(mid);
+      fetchMessages(mid);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Refresh conversations every 1 second to catch new messages/calls
+    const interval = setInterval(() => {
+      fetchConversations();
+      if (selectedMentorship) {
+        fetchMessages(selectedMentorship);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [selectedMentorship]);
 
   const fetchConversations = async () => {
     try {
@@ -141,7 +162,9 @@ const MentorshipChat = () => {
       }
       
       const receiverId =
-        currentUserId === mentorship.sender._id ? mentorship.receiver._id : mentorship.sender._id;
+        String(currentUserId) === String(mentorship.sender._id || mentorship.sender) 
+          ? String(mentorship.receiver._id || mentorship.receiver) 
+          : String(mentorship.sender._id || mentorship.sender);
 
       console.log('Sending message:', { mentorshipId: selectedMentorship, receiverId, message: newMessage });
 
@@ -153,7 +176,9 @@ const MentorshipChat = () => {
 
       console.log('Message sent successfully:', response.data);
       setNewMessage("");
-      fetchMessages(selectedMentorship);
+      // Append the new message to local state immediately
+      const newMsg = response.data;
+      setMessages((prev) => [...prev, newMsg]);
       fetchConversations();
     } catch (err) {
       console.error("Error sending message:", err);
@@ -266,17 +291,26 @@ const MentorshipChat = () => {
                   mentorshipId={selectedMentorship}
                   otherPersonName={(() => {
                     const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
-                    const otherPerson = conv.sender._id === currentUserId ? conv.receiver : conv.sender;
+                    const otherPerson = String(conv.sender._id || conv.sender) === String(currentUserId) ? conv.receiver : conv.sender;
                     return otherPerson.name;
+                  })()}
+                  otherPersonId={(() => {
+                    const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
+                    const otherPerson = String(conv.sender._id || conv.sender) === String(currentUserId) ? conv.receiver : conv.sender;
+                    return otherPerson._id || otherPerson.id;
                   })()}
                 />
               )}
 
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-                {messages.map((msg, index) => {
-                  const isMe = msg.sender._id === currentUserId;
-                  const showAvatar = index === 0 || messages[index - 1]?.sender._id !== msg.sender._id;
+                {messages.length > 0 && console.log('Messages loaded:', messages.length, 'CurrentUserId:', currentUserId, 'First msg sender:', messages[0]?.sender)}
+                {messages.filter(msg => msg.message && !msg.message.includes('missed') && !msg.message.includes('ended')).map((msg, index) => {
+                  const senderId = String(msg.sender?._id || msg.sender || "");
+                  const userId = String(currentUserId || "");
+                  const isMe = senderId === userId;
+                  if (index === 0) console.log('Message comparison - senderId:', senderId, 'userId:', userId, 'isMe:', isMe);
+                  const showAvatar = index === 0 || String(messages[index - 1]?.sender?._id || messages[index - 1]?.sender || "") !== senderId;
                   
                   return (
                     <div
