@@ -153,13 +153,22 @@ export const Dashboard = () => {
               Newsfeed
             </button>
             {user.role !== 'admin' && (
-              <button
-                type="button"
-                onClick={() => navigate('/settings')}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
-                title="Settings">
-                ⚙️
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => navigate('/settings')}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
+                  title="Settings">
+                  ⚙️
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/settings/notifications')}
+                  className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition"
+                  title="Notification Settings">
+                  🔔
+                </button>
+              </>
             )}
             <button
               type="button"

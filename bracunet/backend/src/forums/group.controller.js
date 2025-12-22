@@ -98,7 +98,8 @@ export const joinGroup = async (req, res) => {
         });
       }
       
-      // return the updated requests (lightweight)
+      // Notify all admins about join request
+      const { createNotification } = await import('../notifications/notification.service.js');\n      const admins = await User.find({ role: 'admin' });\n      for (const admin of admins) {\n        await createNotification({\n          userId: admin._id,\n          type: 'group_join_request',\n          title: 'New Group Join Request',\n          message: `${req.user.name} wants to join ${group.name}`,\n          link: `/admin/group-requests`,\n          relatedId: groupId,\n          relatedModel: 'Group',\n          priority: 'normal',\n        });\n      }\n      \n      // return the updated requests (lightweight)
       const requests = await Group.findById(groupId).populate('requests', 'name email');
       return res.status(200).json({ success: true, message: 'Join request sent', requests: requests.requests });
     }
@@ -144,6 +145,19 @@ export const approveJoinRequest = async (req, res) => {
         groupName: group.name
       });
     }
+    
+    // Notify the user about approval
+    const { createNotification } = await import('../notifications/notification.service.js');
+    await createNotification({
+      userId: userId,
+      type: 'group_request_approved',
+      title: 'Group Request Approved',
+      message: `Your request to join ${group.name} has been approved!`,
+      link: `/groups/${groupId}`,
+      relatedId: groupId,
+      relatedModel: 'Group',
+      priority: 'normal',
+    });
     
     res.status(200).json({ success: true, message: "User approved" });
   } catch (err) {

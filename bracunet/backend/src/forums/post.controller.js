@@ -78,6 +78,22 @@ export const addComment = async (req, res) => {
       global.io.to(`forum_${post.group}`).emit('newComment', { postId: id, comment: post.comments[post.comments.length - 1], forumId: post.group });
     }
 
+    // Notify post author if not the commenter
+    const populatedPost = await Post.findById(id).populate('author');
+    if (populatedPost.author && populatedPost.author._id.toString() !== req.user._id.toString()) {
+      const { createNotification } = await import('../notifications/notification.service.js');
+      await createNotification({
+        userId: populatedPost.author._id,
+        type: 'comment_on_post',
+        title: 'New Comment on Your Post',
+        message: `${req.user.name} commented on your post`,
+        link: `/forums/${post.group}`,
+        relatedId: id,
+        relatedModel: 'Post',
+        priority: 'normal',
+      });
+    }
+
     res.status(201).json({ message: "Comment added", post });
   } catch (err) {
     console.log(err);

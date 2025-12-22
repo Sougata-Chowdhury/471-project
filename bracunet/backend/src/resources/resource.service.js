@@ -125,6 +125,19 @@ export const approveResource = async (resourceId, userId) => {
       status: 'approved'
     });
   }
+
+  // Create notification for uploader
+  const { createNotification } = await import('../notifications/notification.service.js');
+  await createNotification({
+    userId: resource.uploadedBy,
+    type: 'resource_approved',
+    title: 'Resource Approved',
+    message: `Your resource "${approvedResource.title}" has been approved!`,
+    link: `/resources`,
+    relatedId: approvedResource._id,
+    relatedModel: 'Resource',
+    priority: 'normal',
+  });
   
   return approvedResource;
 };

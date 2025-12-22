@@ -1,5 +1,71 @@
 import Notification from "./notification.model.js";
 import pusher from "../config/pusher.js";
+import { User } from "../users/user.model.js";
+
+// Notification category mapping
+const NOTIFICATION_CATEGORIES = {
+  verification_submitted: "account",
+  verification_approved: "account",
+  verification_rejected: "account",
+  password_changed: "account",
+  suspicious_login: "account",
+  direct_message: "messages",
+  message_request: "messages",
+  mentioned_in_post: "mentions",
+  mentioned_in_comment: "mentions",
+  tagged_in_group: "mentions",
+  comment_on_post: "comments",
+  reply_to_comment: "comments",
+  post_reaction: "comments",
+  group_join_request: "groups",
+  group_request_approved: "groups",
+  group_request_rejected: "groups",
+  group_invitation: "groups",
+  new_group_post: "groups",
+  post_reported: "admin",
+  post_approved: "groups",
+  event_registered: "events",
+  event_rsvp_cancelled: "events",
+  event_reminder: "events",
+  event_updated: "events",
+  event_cancelled: "events",
+  resource_uploaded: "resources",
+  resource_approved: "resources",
+  resource_rejected: "resources",
+  resource_comment: "resources",
+  campaign_created: "donations",
+  donation_received: "donations",
+  campaign_milestone: "donations",
+  campaign_goal_reached: "donations",
+  job_posted: "career",
+  application_status: "career",
+  recruiter_message: "career",
+  badge_earned: "gamification",
+  points_awarded: "gamification",
+  leaderboard_update: "gamification",
+  news_approved: "news",
+  news_rejected: "news",
+  moderation_request: "admin",
+  content_flagged: "admin",
+  moderation_action: "admin",
+  mentorship_request: "mentorship",
+  mentorship_accepted: "mentorship",
+  mentorship_rejected: "mentorship",
+  system_maintenance: "system",
+  policy_update: "system",
+  feature_launch: "system",
+};
+
+/**
+ * Check if user has notification preference enabled
+ */
+async function checkUserPreference(userId, notificationType) {
+  const user = await User.findById(userId);
+  if (!user || !user.notificationPreferences) return true; // Default to enabled
+  
+  const category = NOTIFICATION_CATEGORIES[notificationType] || "system";
+  return user.notificationPreferences[category] !== false;
+}
 
 /**
  * Create and send notification
@@ -12,9 +78,18 @@ export async function createNotification({
   relatedId = null,
   relatedModel = null,
   link = null,
+  priority = "normal",
+  channel = "in-app",
 }) {
   try {
     console.log('📬 Creating notification:', { userId, type, title });
+    
+    // Check user preferences
+    const hasPreference = await checkUserPreference(userId, type);
+    if (!hasPreference) {
+      console.log('⏭️ User has disabled notifications for type:', type);
+      return null;
+    }
     
     // Save to database
     const notification = await Notification.create({
@@ -25,6 +100,8 @@ export async function createNotification({
       relatedId,
       relatedModel,
       link,
+      priority,
+      channel,
     });
     
     console.log('✅ Notification saved to DB:', notification._id);
@@ -36,10 +113,24 @@ export async function createNotification({
       title: notification.title,
       message: notification.message,
       link: notification.link,
+      priority: notification.priority,
       createdAt: notification.createdAt,
     });
     
     console.log('✅ Pusher event sent to channel: user-' + userId);
+
+    // Send via Socket.io as well for redundancy
+    if (global.io) {
+      global.io.to(`user-${userId}`).emit('notification', {
+        id: notification._id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        link: notification.link,
+        priority: notification.priority,
+        createdAt: notification.createdAt,
+      });
+    }
 
     return notification;
   } catch (error) {
