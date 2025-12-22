@@ -17,6 +17,7 @@ export const Settings = () => {
     batch: '',
     graduationYear: '',
     studentId: '',
+    position: '',
   });
   
   // Password form
@@ -49,6 +50,7 @@ export const Settings = () => {
         batch: user.batch || '',
         graduationYear: user.graduationYear || '',
         studentId: user.studentId || '',
+        position: user.position || '',
       });
       setProfilePicturePreview(user.profilePicture);
       setSelectedSkills(user.skills || []);
@@ -222,290 +224,411 @@ export const Settings = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
-      <nav className="bg-white shadow">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600 cursor-pointer" onClick={() => navigate('/dashboard')}>
-            BracuNet
-          </h1>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
-          >
-            Back to Dashboard
-          </button>
+      {/* Modern Navbar */}
+      <nav className="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
+              <span className="text-2xl">🎓</span>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                BracuNet
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => navigate('/settings/notifications')}
+                className="px-3 sm:px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                🔔 Notifications
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-3 sm:px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                ← Back
+              </button>
+            </div>
+          </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h2 className="text-4xl font-bold text-white mb-8">Account Settings</h2>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">Account Settings</h2>
+          <p className="text-white/80 text-sm sm:text-base">Manage your profile, security, and preferences</p>
+        </div>
 
+        {/* Status Messages */}
         {message.text && (
-          <div className={`p-4 rounded-lg mb-6 ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            {message.text}
+          <div className={`p-4 rounded-xl mb-6 shadow-lg backdrop-blur-sm ${
+            message.type === 'success' 
+              ? 'bg-green-50 border-l-4 border-green-500 text-green-800' 
+              : 'bg-red-50 border-l-4 border-red-500 text-red-800'
+          }`}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{message.type === 'success' ? '✅' : '❌'}</span>
+              <p className="font-medium">{message.text}</p>
+            </div>
           </div>
         )}
 
-        {/* Profile Picture Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">Profile Picture</h3>
-          <div className="flex items-center gap-6">
-            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-              {profilePicturePreview ? (
-                <img src={profilePicturePreview} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-5xl text-gray-400">👤</span>
-              )}
+        {/* Grid Layout for Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Profile Picture Card - Spans 1 column */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-2xl">📸</span>
+              <h3 className="text-xl font-bold text-gray-800">Profile Picture</h3>
             </div>
-            <div className="flex-1">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePictureChange}
-                className="mb-3 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-              <div className="flex gap-3">
-                <button
-                  onClick={handleProfilePictureUpload}
-                  disabled={loading || !profilePicture}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Uploading...' : 'Upload Picture'}
-                </button>
+            
+            <div className="flex flex-col items-center gap-4">
+              {/* Profile Image */}
+              <div className="relative">
+                <div className="w-40 h-40 rounded-full overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center shadow-lg ring-4 ring-white">
+                  {profilePicturePreview ? (
+                    <img src={profilePicturePreview} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-6xl text-gray-400">👤</span>
+                  )}
+                </div>
                 {profilePicturePreview && (
-                  <button
-                    onClick={handleProfilePictureRemove}
-                    disabled={loading}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition disabled:opacity-50"
-                  >
-                    Remove Picture
-                  </button>
+                  <div className="absolute -bottom-2 -right-2 bg-green-500 text-white rounded-full p-2 shadow-lg">
+                    <span className="text-sm">✓</span>
+                  </div>
                 )}
               </div>
+
+              {/* Upload Controls */}
+              <div className="w-full space-y-3">
+                <label className="block">
+                  <span className="sr-only">Choose profile photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                    className="block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2.5 file:px-4
+                      file:rounded-lg file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-gradient-to-r file:from-blue-500 file:to-purple-500
+                      file:text-white hover:file:from-blue-600 hover:file:to-purple-600
+                      file:cursor-pointer file:transition-all file:duration-200 file:shadow-md"
+                  />
+                </label>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleProfilePictureUpload}
+                    disabled={loading || !profilePicture}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-4 py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md hover:shadow-lg"
+                  >
+                    {loading ? '⏳ Uploading...' : '📤 Upload'}
+                  </button>
+                  {profilePicturePreview && (
+                    <button
+                      onClick={handleProfilePictureRemove}
+                      disabled={loading}
+                      className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 disabled:opacity-50 font-medium shadow-md hover:shadow-lg"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Profile Information Card - Spans 2 columns */}
+          <div className="lg:col-span-2 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-2xl">👤</span>
+              <h3 className="text-xl font-bold text-gray-800">Profile Information</h3>
+            </div>
+            
+            <form onSubmit={handleProfileSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              {/* Faculty-specific fields */}
+              {user?.role === 'faculty' ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Department</label>
+                      <input
+                        type="text"
+                        value={profileForm.department}
+                        onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                        placeholder="e.g., CSE"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Position</label>
+                      <input
+                        type="text"
+                        value={profileForm.position}
+                        onChange={(e) => setProfileForm({ ...profileForm, position: e.target.value })}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                        placeholder="e.g., Professor, Lecturer"
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Student/Alumni-specific fields */
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student ID</label>
+                      <input
+                        type="text"
+                        value={profileForm.studentId}
+                        onChange={(e) => setProfileForm({ ...profileForm, studentId: e.target.value })}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                        placeholder="e.g., 12345678"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Department</label>
+                      <input
+                        type="text"
+                        value={profileForm.department}
+                        onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                        placeholder="e.g., CSE"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Batch</label>
+                      <input
+                        type="text"
+                        value={profileForm.batch}
+                        onChange={(e) => setProfileForm({ ...profileForm, batch: e.target.value })}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                        placeholder="e.g., Spring 2020"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Graduation Year</label>
+                      <input
+                        type="number"
+                        value={profileForm.graduationYear}
+                        onChange={(e) => setProfileForm({ ...profileForm, graduationYear: e.target.value })}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                        placeholder="e.g., 2024"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 rounded-lg transition-all duration-200 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl"
+              >
+                {loading ? '⏳ Saving...' : '💾 Save Profile'}
+              </button>
+            </form>
           </div>
         </div>
 
-        {/* Profile Information Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">Profile Information</h3>
-          <form onSubmit={handleProfileSubmit} className="space-y-4">
+        {/* Skills, Goals, Interests Card - Full Width */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 hover:shadow-2xl transition-all duration-300">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-2xl">🎯</span>
+            <h3 className="text-xl font-bold text-gray-800">Skills, Goals & Interests</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Skills */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">💡</span>
+                <label className="text-sm font-semibold text-gray-700">Skills</label>
+              </div>
               <input
                 type="text"
-                value={profileForm.name}
-                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="🔍 Search skills..."
+                value={skillSearch}
+                onChange={(e) => setSkillSearch(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 mb-3 text-sm"
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
-                <input
-                  type="text"
-                  value={profileForm.studentId}
-                  onChange={(e) => setProfileForm({ ...profileForm, studentId: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto bg-gray-50 border-2 border-gray-200 rounded-lg p-3">
+                {options.skills.filter(skill => 
+                  skill.toLowerCase().includes(skillSearch.toLowerCase())
+                ).map(skill => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => {
+                      if (selectedSkills.includes(skill)) {
+                        setSelectedSkills(selectedSkills.filter(s => s !== skill));
+                      } else {
+                        setSelectedSkills([...selectedSkills, skill]);
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      selectedSkills.includes(skill)
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md scale-105'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                    }`}
+                  >
+                    {skill} {selectedSkills.includes(skill) && '✓'}
+                  </button>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <input
-                  type="text"
-                  value={profileForm.department}
-                  onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              <p className="text-xs text-gray-500 mt-2">✓ Selected: {selectedSkills.length}</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Batch</label>
-                <input
-                  type="text"
-                  value={profileForm.batch}
-                  onChange={(e) => setProfileForm({ ...profileForm, batch: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year</label>
-                <input
-                  type="number"
-                  value={profileForm.graduationYear}
-                  onChange={(e) => setProfileForm({ ...profileForm, graduationYear: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save Profile'}
-            </button>
-          </form>
-        </div>
 
-        {/* Skills, Goals, Interests Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">Skills, Goals & Interests</h3>
-          
-          {/* Skills */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
-            <input
-              type="text"
-              placeholder="Search skills..."
-              value={skillSearch}
-              onChange={(e) => setSkillSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-            />
-            <div className="flex flex-wrap gap-2 mb-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
-              {options.skills.filter(skill => 
-                skill.toLowerCase().includes(skillSearch.toLowerCase())
-              ).map(skill => (
-                <button
-                  key={skill}
-                  type="button"
-                  onClick={() => {
-                    if (selectedSkills.includes(skill)) {
-                      setSelectedSkills(selectedSkills.filter(s => s !== skill));
-                    } else {
-                      setSelectedSkills([...selectedSkills, skill]);
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-full text-sm transition ${
-                    selectedSkills.includes(skill)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {skill} {selectedSkills.includes(skill) && '✓'}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500">Selected: {selectedSkills.length}</p>
-          </div>
-
-          {/* Goals */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Career Goals</label>
-            <input
-              type="text"
-              placeholder="Search goals..."
-              value={goalSearch}
-              onChange={(e) => setGoalSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-            />
-            <div className="flex flex-wrap gap-2 mb-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
-              {options.goals.filter(goal => 
-                goal.toLowerCase().includes(goalSearch.toLowerCase())
-              ).map(goal => (
-                <button
-                  key={goal}
-                  type="button"
-                  onClick={() => {
-                    if (selectedGoals.includes(goal)) {
-                      setSelectedGoals(selectedGoals.filter(g => g !== goal));
-                    } else {
-                      setSelectedGoals([...selectedGoals, goal]);
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-full text-sm transition ${
-                    selectedGoals.includes(goal)
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {goal} {selectedGoals.includes(goal) && '✓'}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500">Selected: {selectedGoals.length}</p>
-          </div>
-
-          {/* Interests */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Interests</label>
-            <input
-              type="text"
-              placeholder="Search interests..."
-              value={interestSearch}
-              onChange={(e) => setInterestSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-            />
-            <div className="flex flex-wrap gap-2 mb-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
-              {options.interests.filter(interest => 
-                interest.toLowerCase().includes(interestSearch.toLowerCase())
-              ).map(interest => (
-                <button
-                  key={interest}
-                  type="button"
-                  onClick={() => {
-                    if (selectedInterests.includes(interest)) {
-                      setSelectedInterests(selectedInterests.filter(i => i !== interest));
-                    } else {
-                      setSelectedInterests([...selectedInterests, interest]);
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-full text-sm transition ${
-                    selectedInterests.includes(interest)
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {interest} {selectedInterests.includes(interest) && '✓'}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500">Selected: {selectedInterests.length}</p>
-          </div>
-        </div>
-
-        {/* Password Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">Change Password</h3>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            {/* Goals */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🎯</span>
+                <label className="text-sm font-semibold text-gray-700">Career Goals</label>
+              </div>
+              <input
+                type="text"
+                placeholder="🔍 Search goals..."
+                value={goalSearch}
+                onChange={(e) => setGoalSearch(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 mb-3 text-sm"
+              />
+              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto bg-gray-50 border-2 border-gray-200 rounded-lg p-3">
+                {options.goals.filter(goal => 
+                  goal.toLowerCase().includes(goalSearch.toLowerCase())
+                ).map(goal => (
+                  <button
+                    key={goal}
+                    type="button"
+                    onClick={() => {
+                      if (selectedGoals.includes(goal)) {
+                        setSelectedGoals(selectedGoals.filter(g => g !== goal));
+                      } else {
+                        setSelectedGoals([...selectedGoals, goal]);
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      selectedGoals.includes(goal)
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md scale-105'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                    }`}
+                  >
+                    {goal} {selectedGoals.includes(goal) && '✓'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">✓ Selected: {selectedGoals.length}</p>
+            </div>
+
+            {/* Interests */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">❤️</span>
+                <label className="text-sm font-semibold text-gray-700">Interests</label>
+              </div>
+              <input
+                type="text"
+                placeholder="🔍 Search interests..."
+                value={interestSearch}
+                onChange={(e) => setInterestSearch(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 mb-3 text-sm"
+              />
+              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto bg-gray-50 border-2 border-gray-200 rounded-lg p-3">
+                {options.interests.filter(interest => 
+                  interest.toLowerCase().includes(interestSearch.toLowerCase())
+                ).map(interest => (
+                  <button
+                    key={interest}
+                    type="button"
+                    onClick={() => {
+                      if (selectedInterests.includes(interest)) {
+                        setSelectedInterests(selectedInterests.filter(i => i !== interest));
+                      } else {
+                        setSelectedInterests([...selectedInterests, interest]);
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      selectedInterests.includes(interest)
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md scale-105'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                    }`}
+                  >
+                    {interest} {selectedInterests.includes(interest) && '✓'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">✓ Selected: {selectedInterests.length}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Password Card */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-2xl">🔒</span>
+            <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
+          </div>
+          
+          <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-2xl">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Current Password</label>
               <input
                 type="password"
                 value={passwordForm.currentPassword}
                 onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"
+                placeholder="Enter current password"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-              <input
-                type="password"
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                minLength={6}
-              />
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">New Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"
+                  placeholder="Min. 6 characters"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200"
+                  placeholder="Confirm password"
+                  required
+                  minLength={6}
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-              <input
-                type="password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                minLength={6}
-              />
-            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg transition disabled:opacity-50"
+              className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-lg transition-all duration-200 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl"
             >
-              {loading ? 'Updating...' : 'Update Password'}
+              {loading ? '⏳ Updating...' : '🔐 Update Password'}
             </button>
           </form>
         </div>

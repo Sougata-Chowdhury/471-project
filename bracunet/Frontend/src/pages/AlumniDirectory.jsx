@@ -179,72 +179,64 @@ export const AlumniDirectory = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
-      {/* Header */}
-      <nav className="bg-white shadow sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600 cursor-pointer" onClick={() => navigate('/dashboard')}>
-            Bracu<span className="text-purple-600">Net</span>
-          </h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-700 hover:text-blue-600 font-semibold transition"
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => navigate('/news')}
-              className="text-gray-700 hover:text-blue-600 font-semibold transition"
-            >
-              Newsfeed
-            </button>
-            <button
-              onClick={() => navigate('/badges')}
-              className="text-gray-700 hover:text-blue-600 font-semibold transition"
-            >
-              🏆 Badges
-            </button>
-            <button
-              onClick={() => navigate('/leaderboard')}
-              className="text-gray-700 hover:text-blue-600 font-semibold transition"
-            >
-              🏅 Leaderboard
-            </button>
-            <span className="text-gray-700 font-medium">{user.name}</span>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
-            >
-              Logout
-            </button>
+      {/* Modern Sticky Navigation */}
+      <nav className="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
+              <span className="text-2xl">🎓</span>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                BracuNet
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">{user.name}</span>
+              </div>
+              <button
+                onClick={() => navigate('/news')}
+                className="px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                📰 News
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-3 sm:px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                ← Back
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8">
-          {/* Header Section */}
-          <div className="mb-8">
-            <h2 className="text-4xl font-bold text-gray-800 mb-2">Directory</h2>
-            <p className="text-gray-600">Search and connect with BRAC University community</p>
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-block mb-4">
+            <span className="text-6xl sm:text-7xl">👥</span>
           </div>
+          <h2 className="text-3xl sm:text-5xl font-bold text-white mb-3 sm:mb-4">Alumni Directory</h2>
+          <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto">
+            Connect with BRAC University's vibrant community of students, alumni, and faculty
+          </p>
+        </div>
 
+        {/* Main Content Card */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-8">
           {/* Search and Filter Section */}
           <div className="mb-8">
-            <div className="flex gap-4 items-center">
-              {/* Filter By Button */}
-              <div className="relative">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Filter Button */}
+              <div className="lg:col-span-3 relative">
                 <button
                   onClick={() => setShowFilterMenu(!showFilterMenu)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2"
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
+                  <span className="text-xl">🎯</span>
                   Filter By
                   {getActiveFilterCount() > 0 && (
-                    <span className="bg-white text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                    <span className="bg-white text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                       {getActiveFilterCount()}
                     </span>
                   )}
@@ -252,15 +244,18 @@ export const AlumniDirectory = () => {
 
                 {/* Filter Dropdown */}
                 {showFilterMenu && (
-                  <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-72 z-10">
+                  <div className="absolute top-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl p-4 sm:p-6 w-full lg:w-80 z-20">
                     <div className="space-y-4">
                       {/* Department Filter */}
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+                          <span className="text-lg">🏛️</span>
+                          Department
+                        </label>
                         <select
                           value={filters.department}
                           onChange={(e) => handleFilterChange('department', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                         >
                           <option value="all">All Departments</option>
                           {filterOptions.departments.map((dept) => (
@@ -271,11 +266,14 @@ export const AlumniDirectory = () => {
 
                       {/* Graduation Year Filter */}
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Graduation Year</label>
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+                          <span className="text-lg">🎓</span>
+                          Graduation Year
+                        </label>
                         <select
                           value={filters.graduationYear}
                           onChange={(e) => handleFilterChange('graduationYear', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                         >
                           <option value="all">All Years</option>
                           {filterOptions.years.map((year) => (
@@ -286,11 +284,14 @@ export const AlumniDirectory = () => {
 
                       {/* Alphabetical Sort */}
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Sort by Name</label>
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+                          <span className="text-lg">🔤</span>
+                          Sort by Name
+                        </label>
                         <select
                           value={filters.sortAlpha}
                           onChange={(e) => handleFilterChange('sortAlpha', e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                         >
                           <option value="asc">A → Z</option>
                           <option value="desc">Z → A</option>
@@ -299,9 +300,9 @@ export const AlumniDirectory = () => {
 
                       <button
                         onClick={clearFilters}
-                        className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold transition"
+                        className="w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 shadow-md"
                       >
-                        Clear Filters
+                        ✖️ Clear Filters
                       </button>
                     </div>
                   </div>
@@ -309,18 +310,18 @@ export const AlumniDirectory = () => {
               </div>
 
               {/* Search Box */}
-              <form onSubmit={handleSearch} className="flex-1">
+              <form onSubmit={handleSearch} className="lg:col-span-9">
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Name/Dept/Year/ID"
+                    placeholder="🔍 Search by name, department, year, or ID..."
                     value={filters.search}
                     onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 sm:px-6 py-3 pr-24 sm:pr-32 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-sm sm:text-base"
                   />
                   <button
                     type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition-all duration-200 shadow-md text-sm sm:text-base"
                   >
                     Search
                   </button>
@@ -332,38 +333,56 @@ export const AlumniDirectory = () => {
             {getActiveFilterCount() > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {filters.department !== 'all' && (
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                    Dept: {filters.department}
-                    <button onClick={() => handleFilterChange('department', 'all')} className="hover:text-blue-900">×</button>
+                  <span className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-sm">
+                    🏛️ {filters.department}
+                    <button onClick={() => handleFilterChange('department', 'all')} className="hover:text-blue-900 font-bold text-lg">×</button>
                   </span>
                 )}
                 {filters.graduationYear !== 'all' && (
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                    Year: {filters.graduationYear}
-                    <button onClick={() => handleFilterChange('graduationYear', 'all')} className="hover:text-blue-900">×</button>
+                  <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-sm">
+                    🎓 Class of {filters.graduationYear}
+                    <button onClick={() => handleFilterChange('graduationYear', 'all')} className="hover:text-purple-900 font-bold text-lg">×</button>
                   </span>
                 )}
               </div>
             )}
           </div>
 
+          {/* Results Count */}
+          {!loading && users.length > 0 && (
+            <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg px-4 py-3">
+              <p className="text-gray-700 font-semibold text-center">
+                <span className="text-2xl">👥</span> Found <span className="text-blue-600 font-bold">{pagination.total}</span> members
+              </p>
+            </div>
+          )}
+
           {/* Results */}
           {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="flex flex-col justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+              <p className="mt-6 text-gray-600 text-lg font-medium">Loading directory...</p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">No users found matching your criteria</p>
+              <span className="text-6xl mb-6 block">🔍</span>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">No Members Found</h3>
+              <p className="text-gray-600 mb-6">Try adjusting your search or filters</p>
+              <button
+                onClick={clearFilters}
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Clear All Filters
+              </button>
             </div>
           ) : (
             <>
               {/* User Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                 {users.map((verifiedUser) => (
                   <div
                     key={verifiedUser._id}
-                    className="bg-gray-100 border border-gray-200 rounded-lg p-6 text-center hover:shadow-lg transition"
+                    className="group bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-6 text-center hover:shadow-2xl hover:scale-105 transition-all duration-300"
                   >
                     {/* Profile Picture */}
                     <div className="mb-4 flex justify-center">
@@ -371,67 +390,58 @@ export const AlumniDirectory = () => {
                         <img
                           src={verifiedUser.user.profilePicture}
                           alt={verifiedUser.name}
-                          className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+                          className="w-24 h-24 rounded-full object-cover border-4 border-blue-500 shadow-lg group-hover:border-purple-500 transition-all duration-300"
                         />
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center border-4 border-blue-600">
-                          <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                          </svg>
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center border-4 border-blue-600 shadow-lg group-hover:border-purple-600 transition-all duration-300">
+                          <span className="text-4xl text-white">👤</span>
                         </div>
                       )}
                     </div>
 
                     {/* User Info */}
-                    <h3 className="font-bold text-gray-800 mb-1">{verifiedUser.name}</h3>
+                    <h3 className="font-bold text-gray-800 mb-1 text-lg group-hover:text-blue-600 transition-colors">{verifiedUser.name}</h3>
                     {verifiedUser.studentId && (
-                      <p className="text-sm text-gray-600 mb-2">{verifiedUser.studentId}</p>
+                      <p className="text-sm text-gray-500 mb-2 font-mono">{verifiedUser.studentId}</p>
                     )}
                     {verifiedUser.department && (
-                      <p className="text-sm text-gray-600">{verifiedUser.department}</p>
+                      <p className="text-sm text-gray-600 font-medium">🏛️ {verifiedUser.department}</p>
                     )}
                     {verifiedUser.graduationYear && (
-                      <p className="text-sm text-gray-600">Class of {verifiedUser.graduationYear}</p>
+                      <p className="text-sm text-gray-600 font-medium">🎓 Class of {verifiedUser.graduationYear}</p>
                     )}
                     {verifiedUser.company && (
-                      <p className="text-sm text-blue-600 font-medium mt-2">{verifiedUser.company}</p>
+                      <p className="text-sm text-blue-600 font-semibold mt-2 bg-blue-50 px-3 py-1 rounded-lg inline-block">
+                        💼 {verifiedUser.company}
+                      </p>
                     )}
-                    <span className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-semibold ${
-                      verifiedUser.role === 'alumni' ? 'bg-purple-100 text-purple-700' :
-                      verifiedUser.role === 'student' ? 'bg-blue-100 text-blue-700' :
-                      verifiedUser.role === 'faculty' ? 'bg-green-100 text-green-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
-                      {verifiedUser.role.charAt(0).toUpperCase() + verifiedUser.role.slice(1)}
-                    </span>
+                    
+                    {/* Role Badge */}
+                    <div className="mt-4">
+                      <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold shadow-md ${
+                        verifiedUser.role === 'alumni' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
+                        verifiedUser.role === 'student' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' :
+                        verifiedUser.role === 'faculty' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                        'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                      }`}>
+                        {verifiedUser.role === 'alumni' ? '🎓 Alumni' :
+                         verifiedUser.role === 'student' ? '📚 Student' :
+                         verifiedUser.role === 'faculty' ? '👨‍🏫 Faculty' : verifiedUser.role}
+                      </span>
+                    </div>
 
                     {/* Admin Show/Hide Toggle */}
                     {user.role === 'admin' && (
                       <div className="mt-4">
                         <button
                           onClick={() => handleToggleVisibility(verifiedUser._id, verifiedUser.isVisible !== false)}
-                          className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 ${
+                          className={`w-full px-4 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
                             verifiedUser.isVisible !== false
-                              ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                              : 'bg-green-500 hover:bg-green-600 text-white'
+                              ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white'
+                              : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white'
                           }`}
                         >
-                          {verifiedUser.isVisible !== false ? (
-                            <>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                              </svg>
-                              Hide
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                              Show
-                            </>
-                          )}
+                          {verifiedUser.isVisible !== false ? '👁️‍🗨️ Hide' : '👁️ Show'}
                         </button>
                       </div>
                     )}
@@ -441,43 +451,58 @@ export const AlumniDirectory = () => {
 
               {/* Pagination */}
               {pagination.pages > 1 && (
-                <div className="flex justify-center items-center gap-2">
+                <div className="flex justify-center items-center gap-2 flex-wrap">
                   <button
                     onClick={() => setPagination({ ...pagination, page: Math.max(1, pagination.page - 1) })}
                     disabled={pagination.page === 1}
-                    className={`px-4 py-2 rounded-lg ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
                       pagination.page === 1
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-gray-300 hover:bg-gray-400 text-gray-700'
-                    } transition`}
+                        : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-md hover:shadow-lg'
+                    }`}
                   >
-                    &lt;
+                    ← Prev
                   </button>
 
-                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => setPagination({ ...pagination, page: pageNum })}
-                      className={`px-4 py-2 rounded-lg transition ${
-                        pagination.page === pageNum
-                          ? 'bg-blue-600 text-white font-bold'
-                          : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                    .filter(pageNum => {
+                      // Show first page, last page, current page, and pages around current
+                      return pageNum === 1 || 
+                             pageNum === pagination.pages || 
+                             Math.abs(pageNum - pagination.page) <= 1;
+                    })
+                    .map((pageNum, index, array) => {
+                      // Add ellipsis if there's a gap
+                      const prevNum = array[index - 1];
+                      const showEllipsis = prevNum && pageNum - prevNum > 1;
+                      
+                      return (
+                        <React.Fragment key={pageNum}>
+                          {showEllipsis && <span className="px-2 text-gray-500">...</span>}
+                          <button
+                            onClick={() => setPagination({ ...pagination, page: pageNum })}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                              pagination.page === pageNum
+                                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-110'
+                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
 
                   <button
                     onClick={() => setPagination({ ...pagination, page: Math.min(pagination.pages, pagination.page + 1) })}
                     disabled={pagination.page === pagination.pages}
-                    className={`px-4 py-2 rounded-lg ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
                       pagination.page === pagination.pages
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-gray-300 hover:bg-gray-400 text-gray-700'
-                    } transition`}
+                        : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-md hover:shadow-lg'
+                    }`}
                   >
-                    &gt;
+                    Next →
                   </button>
                 </div>
               )}

@@ -57,7 +57,7 @@ export const getAllNews = async ({ page, limit, category, status }) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("createdBy", "name role"),
+      .populate("createdBy", "name role profilePicture"),
     News.countDocuments(filter),
   ]);
 
@@ -123,6 +123,16 @@ export const updateNewsStatus = async (id, status) => {
     throw new Error('News post not found');
   }
   
+  // Emit real-time event for status update
+  if (global.io) {
+    global.io.emit('news_status_updated', {
+      newsId: news._id,
+      title: news.title,
+      status: news.status,
+      createdBy: news.createdBy
+    });
+  }
+  
   // Award bonus points when news is approved
   if (status === 'approved') {
     try {
@@ -166,5 +176,15 @@ export const updateNewsStatus = async (id, status) => {
 };
 
 export const deleteNews = async (id) => {
-  return await News.findByIdAndDelete(id);
+  const news = await News.findByIdAndDelete(id);
+  
+  // Emit real-time event for deletion
+  if (global.io && news) {
+    global.io.emit('news_deleted', {
+      newsId: id,
+      createdBy: news.createdBy
+    });
+  }
+  
+  return news;
 };

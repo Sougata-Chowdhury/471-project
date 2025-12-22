@@ -181,17 +181,15 @@ const MentorshipChat = () => {
 
       console.log('Sending message:', { mentorshipId: selectedMentorship, receiverId, message: newMessage });
 
-      const response = await axios.post(
+      await axios.post(
         `${API_BASE}/api/mentorship/message/send`,
         { mentorshipId: selectedMentorship, message: newMessage, receiverId },
         { withCredentials: true }
       );
 
-      console.log('Message sent successfully:', response.data);
+      console.log('Message sent successfully');
       setNewMessage("");
-      // Append the new message to local state immediately
-      const newMsg = response.data;
-      setMessages((prev) => [...prev, newMsg]);
+      // Note: Message will be added via Socket.IO listener to prevent duplicates
       fetchConversations();
     } catch (err) {
       console.error("Error sending message:", err);
