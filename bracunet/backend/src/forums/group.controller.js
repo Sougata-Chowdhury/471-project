@@ -99,7 +99,22 @@ export const joinGroup = async (req, res) => {
       }
       
       // Notify all admins about join request
-      const { createNotification } = await import('../notifications/notification.service.js');\n      const admins = await User.find({ role: 'admin' });\n      for (const admin of admins) {\n        await createNotification({\n          userId: admin._id,\n          type: 'group_join_request',\n          title: 'New Group Join Request',\n          message: `${req.user.name} wants to join ${group.name}`,\n          link: `/admin/group-requests`,\n          relatedId: groupId,\n          relatedModel: 'Group',\n          priority: 'normal',\n        });\n      }\n      \n      // return the updated requests (lightweight)
+      const { createNotification } = await import('../notifications/notification.service.js');
+      const admins = await User.find({ role: 'admin' });
+      for (const admin of admins) {
+        await createNotification({
+          userId: admin._id,
+          type: 'group_join_request',
+          title: 'New Group Join Request',
+          message: `${req.user.name} wants to join ${group.name}`,
+          link: `/admin/group-requests`,
+          relatedId: groupId,
+          relatedModel: 'Group',
+          priority: 'normal',
+        });
+      }
+      
+      // return the updated requests (lightweight)
       const requests = await Group.findById(groupId).populate('requests', 'name email');
       return res.status(200).json({ success: true, message: 'Join request sent', requests: requests.requests });
     }
