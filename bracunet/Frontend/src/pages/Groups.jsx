@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { fetchGroups, requestJoinGroup } from '../api';
 import GroupCard from '../components/GroupCard';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export default function Groups() {
   const navigate = useNavigate();
@@ -18,6 +20,24 @@ export default function Groups() {
       })
       .catch(err => setError(err.message || 'Failed to load'))
       .finally(() => setLoading(false));
+
+    // Socket.io for real-time group updates
+    const socket = io(config.socketUrl);
+
+    socket.on('group_join_request', (data) => {
+      console.log('Real-time: Group join request:', data);
+      // Refresh groups to show updated request counts
+      fetchGroups().then(res => setGroups(res.data.groups || res.data));
+    });
+
+    socket.on('group_request_approved', (data) => {
+      console.log('Real-time: Group request approved:', data);
+      fetchGroups().then(res => setGroups(res.data.groups || res.data));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleJoin = async (id) => {

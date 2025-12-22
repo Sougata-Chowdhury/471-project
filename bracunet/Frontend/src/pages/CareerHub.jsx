@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import careerApi from '../api/careerApi';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 const CareerHub = () => {
   const navigate = useNavigate();
@@ -87,6 +89,18 @@ const CareerHub = () => {
     fetchOpportunities();
     fetchFaculty();
     fetchRecommendationRequests();
+
+    // Socket.io for real-time job posting updates
+    const socket = io(config.socketUrl);
+
+    socket.on('career_opportunity_posted', (data) => {
+      console.log('Real-time: New job posted:', data);
+      fetchOpportunities();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [user, getCurrentUser, navigate]);
 
   const handleLogout = async () => {

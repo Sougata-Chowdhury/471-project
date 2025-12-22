@@ -86,6 +86,18 @@ export const joinGroup = async (req, res) => {
       group.requests.push(req.user._id);
       await group.save();
       console.log(`[joinGroup] request saved for user=${userIdStr} group=${groupId}`);
+      
+      // Emit real-time event for new join request
+      if (global.io) {
+        global.io.emit('group_join_request', {
+          groupId,
+          userId: userIdStr,
+          userName: req.user.name,
+          userEmail: req.user.email,
+          requestCount: group.requests.length
+        });
+      }
+      
       // return the updated requests (lightweight)
       const requests = await Group.findById(groupId).populate('requests', 'name email');
       return res.status(200).json({ success: true, message: 'Join request sent', requests: requests.requests });
@@ -118,6 +130,21 @@ export const approveJoinRequest = async (req, res) => {
     }
 
     await group.save();
+    
+    // Emit real-time event for approved request
+    if (global.io) {
+      global.io.emit('group_request_approved', {
+        groupId,
+        userId,
+        requestCount: group.requests.length
+      });
+      // Notify the approved user
+      global.io.to(`user-${userId}`).emit('group_approved', {
+        groupId,
+        groupName: group.name
+      });
+    }
+    
     res.status(200).json({ success: true, message: "User approved" });
   } catch (err) {
     console.error(err);

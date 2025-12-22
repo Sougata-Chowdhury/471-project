@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export const Leaderboard = () => {
   const { user, getCurrentUser } = useAuth();
@@ -17,6 +19,19 @@ export const Leaderboard = () => {
     } else {
       fetchLeaderboard();
     }
+
+    // Socket.io for real-time leaderboard updates
+    const socket = io(config.socketUrl);
+
+    socket.on('leaderboard_update', (data) => {
+      console.log('Real-time leaderboard update:', data);
+      // Refresh leaderboard when points are earned
+      fetchLeaderboard();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [user, timeframe]);
 
   const fetchLeaderboard = async () => {

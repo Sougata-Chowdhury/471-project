@@ -41,6 +41,12 @@ export const sendMessage = async (req, res) => {
     } catch (notifyErr) {
       console.error('⚠️ Notification error:', notifyErr?.message || notifyErr);
     }
+
+    // Emit real-time event
+    if (global.io) {
+      global.io.to(`mentorship_${mentorshipId}`).emit('mentorshipMessage', { ...populated.toObject(), mentorshipId });
+    }
+
     res.status(201).json(populated);
   } catch (error) {
     console.error('❌ Error sending message:', error);

@@ -15,6 +15,17 @@ export const createNews = async (data) => {
     console.error('Error tracking news post activity:', error);
   }
   
+  // Emit real-time event for new news post
+  if (global.io) {
+    global.io.emit('news_created', {
+      newsId: news._id,
+      title: news.title,
+      category: news.category,
+      status: news.status,
+      createdBy: data.createdBy
+    });
+  }
+  
   return news;
 };
 

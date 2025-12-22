@@ -7,6 +7,8 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export const Dashboard = () => {
   const { user, logout, getCurrentUser } = useAuth();
@@ -17,6 +19,33 @@ export const Dashboard = () => {
       getCurrentUser().catch(() => navigate('/login'));
     }
   }, [user, getCurrentUser, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Connect to Socket.io for real-time verification status updates
+    const socket = io(config.socketUrl);
+
+    // Join user's personal room for verification updates
+    socket.emit('joinUserRoom', { userId: user._id || user.id });
+
+    socket.on('verification_status', (data) => {
+      console.log('🔔 Real-time: Verification status update:', data);
+      if (data.verified) {
+        // Refresh user data to show new verification status
+        getCurrentUser();
+        // Show success notification
+        alert(`🎉 Congratulations! Your account has been verified as ${data.role}.`);
+      } else if (data.status === 'rejected') {
+        getCurrentUser();
+        alert(`❌ ${data.reason}`);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user, getCurrentUser]);
 
   const handleLogout = async () => {
     await logout();

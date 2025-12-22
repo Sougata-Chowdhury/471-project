@@ -84,16 +84,9 @@ export default function NotificationBell() {
       setUnreadCount((prev) => prev + 1);
     });
 
-    // Fallback: Poll for new notifications every 1 second in case Pusher fails
-    const pollInterval = setInterval(() => {
-      fetchNotifications();
-      fetchUnreadCount();
-    }, 1000);
-
     return () => {
       channel.unbind_all();
       channel.unsubscribe();
-      clearInterval(pollInterval);
     };
   }, [user]);
 

@@ -36,6 +36,25 @@ export const register = async (req, res) => {
 
     await user.save();
 
+    // Emit real-time event for new user registration
+    if (global.io) {
+      global.io.emit('new_user_registered', { 
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt
+      });
+      // Emit specifically for alumni directory if alumni
+      if (user.role === 'alumni') {
+        global.io.emit('new_alumni_registered', {
+          userId: user._id,
+          name: user.name,
+          role: user.role
+        });
+      }
+    }
+
     // Generate JWT
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },

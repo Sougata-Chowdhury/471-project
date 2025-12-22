@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { io } from 'socket.io-client';
+import config from '../config';
 
 const API_BASE = "http://localhost:3000";
 
@@ -91,10 +93,36 @@ function NewsList() {
 
   useEffect(() => {
     fetchNews();
+
+    // Socket.io for real-time news updates
+    const socket = io(config.socketUrl);
+
+    socket.on('news_created', (data) => {
+      console.log('Real-time: New news post:', data);
+      // Refresh news list when new post is created
+      fetchNews();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [isAdmin]);
 
   useEffect(() => {
     fetchMyNews();
+
+    // Socket.io for user's own news updates
+    const socket = io(config.socketUrl);
+
+    socket.on('news_created', (data) => {
+      if (user && data.createdBy === user._id) {
+        fetchMyNews();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [user]);
 
   const handleTopButton = (value) => {

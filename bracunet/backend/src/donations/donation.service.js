@@ -22,6 +22,18 @@ export const donationService = {
 
       await campaign.save();
       await campaign.populate('creator', 'name email role');
+      
+      // Emit real-time event for new campaign
+      if (global.io) {
+        global.io.emit('campaign_created', {
+          campaignId: campaign._id,
+          title: campaign.title,
+          category: campaign.category,
+          goalAmount: campaign.goalAmount,
+          creator: userId
+        });
+      }
+      
       return campaign;
     } catch (error) {
       throw error;
@@ -246,6 +258,18 @@ export const donationService = {
       }
 
       await campaign.save();
+
+      // Emit real-time event for donation
+      if (global.io) {
+        global.io.to(`campaign_${campaignId}`).emit('donation_received', {
+          campaignId,
+          amount: donation.amount,
+          currentAmount: campaign.currentAmount,
+          goalAmount: campaign.goalAmount,
+          donorsCount: campaign.donorsCount,
+          isAnonymous: donation.isAnonymous
+        });
+      }
 
       return {
         message: 'Donation confirmed successfully',

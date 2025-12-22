@@ -90,6 +90,16 @@ export const trackActivity = async (userId, activityType, amount = 1, points = 0
     // Check for badge eligibility
     await checkAndAwardBadges(userId);
     
+    // Emit real-time event for leaderboard update
+    if (global.io && points > 0) {
+      global.io.emit('leaderboard_update', {
+        userId,
+        activityType,
+        points,
+        totalPoints: activity.totalPoints
+      });
+    }
+    
     return activity;
   } catch (error) {
     console.error('Error tracking activity:', error);

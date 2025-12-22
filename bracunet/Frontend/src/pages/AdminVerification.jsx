@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export const AdminVerification = () => {
   const { user, logout } = useAuth();
@@ -20,6 +22,29 @@ export const AdminVerification = () => {
     }
     fetchRequests();
     fetchStats();
+
+    // Socket.io for real-time verification requests
+    const socket = io(config.socketUrl);
+
+    socket.on('verification_request_submitted', (data) => {
+      console.log('Real-time: New verification request:', data);
+      fetchRequests();
+      fetchStats();
+    });
+
+    socket.on('user_verified', () => {
+      fetchRequests();
+      fetchStats();
+    });
+
+    socket.on('verification_rejected', () => {
+      fetchRequests();
+      fetchStats();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [user, navigate, filter]);
 
   const fetchRequests = async () => {

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { donationApi } from '../api/donationApi';
 import { useAuth } from '../hooks/useAuth';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export const DonationsPage = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -56,6 +58,23 @@ export const DonationsPage = () => {
 
   useEffect(() => {
     loadCampaigns();
+
+    // Socket.io for real-time campaign updates
+    const socket = io(config.socketUrl);
+
+    socket.on('campaign_created', (data) => {
+      console.log('Real-time: New campaign created:', data);
+      loadCampaigns();
+    });
+
+    socket.on('donation_received', (data) => {
+      console.log('Real-time: Donation received:', data);
+      loadCampaigns();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [selectedCategory, searchTerm]);
 
   const loadCampaigns = async () => {

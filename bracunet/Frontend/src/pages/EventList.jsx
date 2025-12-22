@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getAllEvents, deleteEvent } from "../api/eventApi";
+import { io } from 'socket.io-client';
+import config from '../config';
 
 const eventTypes = [
   { value: "all", label: "All Events" },
@@ -44,6 +46,19 @@ function EventList() {
   
   useEffect(() => {
     fetchEvents();
+
+    // Socket.io for real-time RSVP updates across event list
+    const socket = io(config.socketUrl);
+
+    socket.on('event_rsvp_update', (data) => {
+      console.log('Real-time RSVP update in list:', data);
+      // Refresh events to show updated RSVP counts
+      fetchEvents();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [selectedType, showUpcoming]);
   
   const handleDelete = async (eventId) => {

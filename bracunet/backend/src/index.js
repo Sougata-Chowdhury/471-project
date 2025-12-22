@@ -126,9 +126,45 @@ const connectDB = async () => {
       },
     });
 
+    // Export io for use in controllers
+    global.io = io;
+
     io.on('connection', (socket) => {
       console.log('Socket connected:', socket.id);
 
+      // User room for personal notifications (verification status, etc.)
+      socket.on('joinUserRoom', ({ userId }) => {
+        if (userId) {
+          socket.join(`user-${userId}`);
+          console.log(`User ${userId} joined personal room`);
+        }
+      });
+
+      // Event rooms for real-time RSVP updates
+      socket.on('joinEventRoom', ({ eventId }) => {
+        if (eventId) {
+          socket.join(`event_${eventId}`);
+          console.log(`User joined event room: ${eventId}`);
+        }
+      });
+
+      socket.on('leaveEventRoom', ({ eventId }) => {
+        if (eventId) socket.leave(`event_${eventId}`);
+      });
+
+      // Campaign rooms for real-time donation updates
+      socket.on('joinCampaignRoom', ({ campaignId }) => {
+        if (campaignId) {
+          socket.join(`campaign_${campaignId}`);
+          console.log(`User joined campaign room: ${campaignId}`);
+        }
+      });
+
+      socket.on('leaveCampaignRoom', ({ campaignId }) => {
+        if (campaignId) socket.leave(`campaign_${campaignId}`);
+      });
+
+      // Group messaging
       socket.on('joinGroupRoom', ({ groupId }) => {
         if (groupId) socket.join(`group_${groupId}`);
       });
@@ -140,6 +176,48 @@ const connectDB = async () => {
       socket.on('groupMessage', (msg) => {
         if (msg && msg.groupId) {
           io.to(`group_${msg.groupId}`).emit('groupMessage', msg);
+        }
+      });
+
+      // Mentorship chat
+      socket.on('joinMentorshipRoom', ({ mentorshipId }) => {
+        if (mentorshipId) socket.join(`mentorship_${mentorshipId}`);
+      });
+
+      socket.on('leaveMentorshipRoom', ({ mentorshipId }) => {
+        if (mentorshipId) socket.leave(`mentorship_${mentorshipId}`);
+      });
+
+      socket.on('mentorshipMessage', (msg) => {
+        if (msg && msg.mentorshipId) {
+          io.to(`mentorship_${msg.mentorshipId}`).emit('mentorshipMessage', msg);
+        }
+      });
+
+      // Forum posts real-time
+      socket.on('joinForumRoom', ({ forumId }) => {
+        if (forumId) socket.join(`forum_${forumId}`);
+      });
+
+      socket.on('leaveForumRoom', ({ forumId }) => {
+        if (forumId) socket.leave(`forum_${forumId}`);
+      });
+
+      socket.on('newPost', (post) => {
+        if (post && post.forumId) {
+          io.to(`forum_${post.forumId}`).emit('newPost', post);
+        }
+      });
+
+      socket.on('newComment', (comment) => {
+        if (comment && comment.forumId) {
+          io.to(`forum_${comment.forumId}`).emit('newComment', comment);
+        }
+      });
+
+      socket.on('postReaction', (reaction) => {
+        if (reaction && reaction.forumId) {
+          io.to(`forum_${reaction.forumId}`).emit('postReaction', reaction);
         }
       });
     });

@@ -1,6 +1,8 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export default function ResourceList({ currentUser }) {
   const [resources, setResources] = useState([]);
@@ -23,6 +25,23 @@ export default function ResourceList({ currentUser }) {
 
   useEffect(() => {
     fetchResources();
+
+    // Socket.io for real-time resource updates
+    const socket = io(config.socketUrl);
+
+    socket.on('resource_uploaded', (data) => {
+      console.log('Real-time: New resource uploaded:', data);
+      fetchResources();
+    });
+
+    socket.on('resource_approved', (data) => {
+      console.log('Real-time: Resource approved:', data);
+      fetchResources();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   // Delete resource
