@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import {
@@ -8,6 +8,8 @@ import {
   checkInToEvent,
   getEventAnalytics,
 } from "../api/eventApi";
+import { io } from 'socket.io-client';
+import config from '../config';
 
 function EventDetail() {
   const { id } = useParams();
@@ -19,6 +21,7 @@ function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const socketRef = useRef(null);
   
   const fetchEvent = async () => {
     try {
@@ -47,6 +50,25 @@ function EventDetail() {
   
   useEffect(() => {
     fetchEvent();
+
+    // Socket.io for real-time RSVP updates
+    if (id) {
+      const socket = io(config.socketUrl, { transports: ['websocket'] });
+      socketRef.current = socket;
+      socket.emit('joinEventRoom', { eventId: id });
+
+      socket.on('event_rsvp_update', (data) => {
+        if (data.eventId === id) {
+          console.log('Real-time RSVP update:', data);
+          fetchEvent(); // Refresh event data
+        }
+      });
+
+      return () => {
+        socket.emit('leaveEventRoom', { eventId: id });
+        socket.disconnect();
+      };
+    }
   }, [id]);
   
   const handleRsvp = async (status) => {

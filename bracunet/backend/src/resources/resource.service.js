@@ -6,7 +6,19 @@ export const uploadResource = async (resourceData, userId) => {
     uploadedBy: userId,
     isApproved: false,
   });
-  return await resource.save();
+  const savedResource = await resource.save();
+  
+  // Emit real-time event for new resource upload
+  if (global.io) {
+    global.io.emit('resource_uploaded', {
+      resourceId: savedResource._id,
+      title: savedResource.title,
+      category: savedResource.category,
+      uploadedBy: userId
+    });
+  }
+  
+  return savedResource;
 };
 
 export const getAllResources = async (filters = {}, page = 1, limit = 12) => {
@@ -98,5 +110,34 @@ export const approveResource = async (resourceId, userId) => {
   resource.isApproved = true;
   resource.approvedBy = userId;
   resource.approvedAt = new Date();
-  return await resource.save();
+  const approvedResource = await resource.save();
+  
+  // Emit real-time event for approved resource
+  if (global.io) {
+    global.io.emit('resource_approved', {
+      resourceId: approvedResource._id,
+      title: approvedResource.title,
+      category: approvedResource.category
+    });
+    // Notify the uploader
+    global.io.to(`user-${resource.uploadedBy}`).emit('resource_status', {
+      resourceId: approvedResource._id,
+      status: 'approved'
+    });
+  }
+
+  // Create notification for uploader
+  const { createNotification } = await import('../notifications/notification.service.js');
+  await createNotification({
+    userId: resource.uploadedBy,
+    type: 'resource_approved',
+    title: 'Resource Approved',
+    message: `Your resource "${approvedResource.title}" has been approved!`,
+    link: `/resources`,
+    relatedId: approvedResource._id,
+    relatedModel: 'Resource',
+    priority: 'normal',
+  });
+  
+  return approvedResource;
 };

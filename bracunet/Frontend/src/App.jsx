@@ -47,6 +47,7 @@ import { MyDonationsPage } from './pages/MyDonationsPage';
 import { MyCampaignsPage } from './pages/MyCampaignsPage';
 import CareerHub from './pages/CareerHub';
 import AdminDashboard from './pages/AdminDashboard';
+import NotificationSettings from './pages/NotificationSettings';
 
 function App() {
 
@@ -65,6 +66,7 @@ function App() {
           <Route path="/admin/news" element={<AdminNewsModeration />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/notifications" element={<NotificationSettings />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/directory" element={<AlumniDirectory />} />

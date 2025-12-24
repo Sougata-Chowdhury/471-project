@@ -45,6 +45,11 @@ export const createPost = async (req, res) => {
 
     const post = await Post.create(postData);
 
+    // Emit real-time event
+    if (global.io) {
+      global.io.to(`forum_${id}`).emit('newPost', { ...post.toObject(), forumId: id });
+    }
+
     res.status(201).json(post);
   } catch (err) {
     console.log(err);
@@ -67,6 +72,28 @@ export const addComment = async (req, res) => {
     });
 
     await post.save();
+
+    // Emit real-time event
+    if (global.io) {
+      global.io.to(`forum_${post.group}`).emit('newComment', { postId: id, comment: post.comments[post.comments.length - 1], forumId: post.group });
+    }
+
+    // Notify post author if not the commenter
+    const populatedPost = await Post.findById(id).populate('author');
+    if (populatedPost.author && populatedPost.author._id.toString() !== req.user._id.toString()) {
+      const { createNotification } = await import('../notifications/notification.service.js');
+      await createNotification({
+        userId: populatedPost.author._id,
+        type: 'comment_on_post',
+        title: 'New Comment on Your Post',
+        message: `${req.user.name} commented on your post`,
+        link: `/forums/${post.group}`,
+        relatedId: id,
+        relatedModel: 'Post',
+        priority: 'normal',
+      });
+    }
+
     res.status(201).json({ message: "Comment added", post });
   } catch (err) {
     console.log(err);
@@ -88,6 +115,12 @@ export const reactPost = async (req, res) => {
     else post.reactions.splice(index, 1);
 
     await post.save();
+
+    // Emit real-time event
+    if (global.io) {
+      global.io.to(`forum_${post.group}`).emit('postReaction', { postId: id, reactions: post.reactions.length, forumId: post.group });
+    }
+
     res.status(200).json({ reactions: post.reactions.length });
   } catch (err) {
     console.log(err);

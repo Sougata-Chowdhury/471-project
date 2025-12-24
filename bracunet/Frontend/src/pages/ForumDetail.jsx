@@ -161,10 +161,12 @@
 
 
 // src/pages/ForumDetail.jsx
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getGroupPosts, createPost, addComment, reactPost } from "../api/forum.js";
+import { io } from 'socket.io-client';
+import config from '../config.js';
 
 const ForumDetail = () => {
   const { forumId } = useParams();
@@ -173,9 +175,40 @@ const ForumDetail = () => {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
   const [commentInput, setCommentInput] = useState({}); // { postId: text }
+  const socketRef = useRef(null);
 
   useEffect(() => {
     fetchPosts();
+
+    // Socket.IO real-time setup
+    const socket = io(config.socketUrl, { transports: ['websocket'] });
+    socketRef.current = socket;
+    socket.emit('joinForumRoom', { forumId });
+
+    socket.on('newPost', (post) => {
+      if (post.forumId === forumId) {
+        fetchPosts(); // Refresh to get populated data
+      }
+    });
+
+    socket.on('newComment', (data) => {
+      if (data.forumId === forumId) {
+        fetchPosts(); // Refresh to get populated data
+      }
+    });
+
+    socket.on('postReaction', (data) => {
+      if (data.forumId === forumId) {
+        setPosts((prev) => 
+          prev.map(p => p._id === data.postId ? { ...p, reactions: Array(data.reactions).fill(null) } : p)
+        );
+      }
+    });
+
+    return () => {
+      try { socket.emit('leaveForumRoom', { forumId }); } catch(e) {}
+      socket.disconnect();
+    };
   }, [forumId]);
 
   const fetchPosts = async () => {

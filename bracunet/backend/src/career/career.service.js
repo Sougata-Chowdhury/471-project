@@ -20,6 +20,18 @@ export const careerService = {
     // Populate the postedBy field for the response
     await opportunity.populate("postedBy", "name email role");
 
+    // Emit real-time event for new job posting
+    if (global.io) {
+      global.io.emit('career_opportunity_posted', {
+        opportunityId: opportunity._id,
+        title: opportunity.title,
+        company: opportunity.company,
+        jobType: opportunity.jobType,
+        location: opportunity.location,
+        postedBy: userId
+      });
+    }
+
     return opportunity;
   },
 

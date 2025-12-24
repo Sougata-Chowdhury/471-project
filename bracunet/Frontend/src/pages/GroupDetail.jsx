@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { fetchGroupMessages, postGroupMessage, fetchGroups, createGroupMeeting, createMeetingToken as apiCreateMeetingToken, requestJoinGroup, getGroupPosts, createGroupPost, reactToPost, addPostComment, getGroupDetails } from '../api';
 import { io } from 'socket.io-client';
+import config from '../config.js';
 
 export default function GroupDetail() {
   const { id } = useParams();
@@ -33,7 +34,7 @@ export default function GroupDetail() {
     getGroupPosts(id).then(res => setPosts(res.data.posts || res.data)).catch(console.error);
 
     // Socket.IO real-time setup
-    const socket = io('http://localhost:3000', { transports: ['websocket'] });
+    const socket = io(config.socketUrl, { transports: ['websocket'] });
     socketRef.current = socket;
     socket.emit('joinGroupRoom', { groupId: id });
     socket.on('groupMessage', (m) => {

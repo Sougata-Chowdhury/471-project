@@ -86,6 +86,34 @@ export const joinGroup = async (req, res) => {
       group.requests.push(req.user._id);
       await group.save();
       console.log(`[joinGroup] request saved for user=${userIdStr} group=${groupId}`);
+      
+      // Emit real-time event for new join request
+      if (global.io) {
+        global.io.emit('group_join_request', {
+          groupId,
+          userId: userIdStr,
+          userName: req.user.name,
+          userEmail: req.user.email,
+          requestCount: group.requests.length
+        });
+      }
+      
+      // Notify all admins about join request
+      const { createNotification } = await import('../notifications/notification.service.js');
+      const admins = await User.find({ role: 'admin' });
+      for (const admin of admins) {
+        await createNotification({
+          userId: admin._id,
+          type: 'group_join_request',
+          title: 'New Group Join Request',
+          message: `${req.user.name} wants to join ${group.name}`,
+          link: `/admin/group-requests`,
+          relatedId: groupId,
+          relatedModel: 'Group',
+          priority: 'normal',
+        });
+      }
+      
       // return the updated requests (lightweight)
       const requests = await Group.findById(groupId).populate('requests', 'name email');
       return res.status(200).json({ success: true, message: 'Join request sent', requests: requests.requests });
@@ -118,6 +146,34 @@ export const approveJoinRequest = async (req, res) => {
     }
 
     await group.save();
+    
+    // Emit real-time event for approved request
+    if (global.io) {
+      global.io.emit('group_request_approved', {
+        groupId,
+        userId,
+        requestCount: group.requests.length
+      });
+      // Notify the approved user
+      global.io.to(`user-${userId}`).emit('group_approved', {
+        groupId,
+        groupName: group.name
+      });
+    }
+    
+    // Notify the user about approval
+    const { createNotification } = await import('../notifications/notification.service.js');
+    await createNotification({
+      userId: userId,
+      type: 'group_request_approved',
+      title: 'Group Request Approved',
+      message: `Your request to join ${group.name} has been approved!`,
+      link: `/groups/${groupId}`,
+      relatedId: groupId,
+      relatedModel: 'Group',
+      priority: 'normal',
+    });
+    
     res.status(200).json({ success: true, message: "User approved" });
   } catch (err) {
     console.error(err);

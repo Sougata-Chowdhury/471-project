@@ -306,12 +306,11 @@ function AdminNewsModeration() {
   const handleStatusChange = async (id, status) => {
     if (!window.confirm(`Set this post as ${status}?`)) return;
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE}/api/news/${id}/status`, {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ status }),
       });
@@ -331,12 +330,9 @@ function AdminNewsModeration() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this post permanently?")) return;
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE}/api/news/${id}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok || !data.success) {

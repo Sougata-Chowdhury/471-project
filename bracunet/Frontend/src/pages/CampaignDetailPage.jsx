@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { donationApi } from '../api/donationApi';
 import { useAuth } from '../hooks/useAuth';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export const CampaignDetailPage = () => {
   const { id } = useParams();

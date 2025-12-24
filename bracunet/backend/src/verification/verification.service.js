@@ -34,6 +34,17 @@ export const verificationService = {
 
     await request.populate('user', 'name email role');
     
+    // Emit real-time event for new verification request
+    if (global.io) {
+      global.io.emit('verification_request_submitted', {
+        requestId: request._id,
+        userId: userId,
+        userName: request.user.name,
+        requestType: requestData.requestType,
+        status: 'pending'
+      });
+    }
+    
     // Send notification
     await createNotification({
       userId,
@@ -116,6 +127,28 @@ export const verificationService = {
     
     await user.save();
     
+    // Emit real-time events
+    if (global.io) {
+      // Notify the verified user
+      global.io.to(`user-${request.user}`).emit('verification_status', { 
+        verified: true, 
+        role: user.role,
+        status: 'approved'
+      });
+      // Broadcast to all admins/dashboards
+      global.io.emit('user_verified', { 
+        userId: request.user, 
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isVerified: true,
+          verifiedAt: user.verifiedAt
+        }
+      });
+    }
+    
     // Send notification
     await createNotification({
       userId: request.user,
@@ -172,6 +205,20 @@ export const verificationService = {
     const user = await User.findById(request.user);
     user.verificationStatus = 'rejected';
     await user.save();
+
+    // Emit real-time events
+    if (global.io) {
+      // Notify the user
+      global.io.to(`user-${request.user}`).emit('verification_status', { 
+        verified: false, 
+        status: 'rejected',
+        reason: reason || 'Your verification request was rejected'
+      });
+      // Broadcast to all admins/dashboards
+      global.io.emit('verification_rejected', { 
+        userId: request.user
+      });
+    }
     
     // Send notification
     await createNotification({

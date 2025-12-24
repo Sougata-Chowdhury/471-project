@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 
@@ -14,6 +16,29 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAnalytics();
+
+    // Connect to Socket.io for real-time updates
+    const socket = io(config.socketUrl);
+
+    socket.on('user_verified', ({ userId, user }) => {
+      console.log('Real-time: User verified:', userId);
+      // Refresh analytics to update verification counts
+      fetchAnalytics();
+    });
+
+    socket.on('verification_rejected', ({ userId }) => {
+      console.log('Real-time: Verification rejected:', userId);
+      fetchAnalytics();
+    });
+
+    socket.on('new_user_registered', () => {
+      console.log('Real-time: New user registered');
+      fetchAnalytics();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const fetchAnalytics = async () => {

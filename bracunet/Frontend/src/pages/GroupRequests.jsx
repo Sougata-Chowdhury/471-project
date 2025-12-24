@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getGroupRequests, approveJoinRequest, rejectJoinRequest } from '../api';
+import { io } from 'socket.io-client';
+import config from '../config';
 
 export default function GroupRequests() {
   const { id } = useParams();
@@ -27,6 +29,27 @@ export default function GroupRequests() {
       .then(res => setRequests(res.data.requests || res.data))
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
+
+    // Socket.io for real-time join request updates
+    const socket = io(config.socketUrl);
+
+    socket.on('group_join_request', (data) => {
+      if (data.groupId === id) {
+        console.log('Real-time: New group join request:', data);
+        getGroupRequests(id).then(res => setRequests(res.data.requests || res.data));
+      }
+    });
+
+    socket.on('group_request_approved', (data) => {
+      if (data.groupId === id) {
+        console.log('Real-time: Group request approved:', data);
+        getGroupRequests(id).then(res => setRequests(res.data.requests || res.data));
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [id, user, navigate]);
 
   const handleApprove = async (userId) => {

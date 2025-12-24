@@ -1,10 +1,19 @@
 import express from 'express';
 import { User } from '../users/user.model.js';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyToken, protect } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
 import bcryptjs from 'bcryptjs';
+import { 
+  getNotificationPreferences, 
+  updateNotificationPreferences, 
+  getUserSettings 
+} from './settings.controller.js';
 
 const router = express.Router();
+
+// Notification preferences
+router.get('/notification-preferences', protect, getNotificationPreferences);
+router.put('/notification-preferences', protect, updateNotificationPreferences);
 
 // Get current user settings
 router.get('/me/settings', verifyToken, async (req, res) => {

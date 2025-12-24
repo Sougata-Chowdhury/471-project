@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { API_BASE } from "../config";
 import CallPanel from "../components/CallPanel";
+import { io } from 'socket.io-client';
+import config from '../config.js';
 
 const MentorshipChat = () => {
   const { user } = useAuth();
@@ -22,6 +24,7 @@ const MentorshipChat = () => {
   const [mentorSearch, setMentorSearch] = useState("");
   const [mentorResults, setMentorResults] = useState([]);
   const [draftMessage, setDraftMessage] = useState("");
+  const socketRef = useRef(null);
 
   useEffect(() => {
     fetchConversations();
@@ -37,14 +40,24 @@ const MentorshipChat = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    // Refresh conversations every 1 second to catch new messages/calls
-    const interval = setInterval(() => {
-      fetchConversations();
-      if (selectedMentorship) {
-        fetchMessages(selectedMentorship);
+    if (!selectedMentorship) return;
+
+    // Socket.IO real-time setup
+    const socket = io(config.socketUrl, { transports: ['websocket'] });
+    socketRef.current = socket;
+    socket.emit('joinMentorshipRoom', { mentorshipId: selectedMentorship });
+
+    socket.on('mentorshipMessage', (msg) => {
+      if (msg.mentorshipId === selectedMentorship) {
+        setMessages((prev) => [...prev, msg]);
+        fetchConversations(); // Update conversation list
       }
-    }, 1000);
-    return () => clearInterval(interval);
+    });
+
+    return () => {
+      try { socket.emit('leaveMentorshipRoom', { mentorshipId: selectedMentorship }); } catch(e) {}
+      socket.disconnect();
+    };
   }, [selectedMentorship]);
 
   const fetchConversations = async () => {
@@ -168,17 +181,15 @@ const MentorshipChat = () => {
 
       console.log('Sending message:', { mentorshipId: selectedMentorship, receiverId, message: newMessage });
 
-      const response = await axios.post(
+      await axios.post(
         `${API_BASE}/api/mentorship/message/send`,
         { mentorshipId: selectedMentorship, message: newMessage, receiverId },
         { withCredentials: true }
       );
 
-      console.log('Message sent successfully:', response.data);
+      console.log('Message sent successfully');
       setNewMessage("");
-      // Append the new message to local state immediately
-      const newMsg = response.data;
-      setMessages((prev) => [...prev, newMsg]);
+      // Note: Message will be added via Socket.IO listener to prevent duplicates
       fetchConversations();
     } catch (err) {
       console.error("Error sending message:", err);

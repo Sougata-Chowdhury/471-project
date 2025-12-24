@@ -10,80 +10,79 @@ export default function GroupCard({ group }) {
     <article
       role="button"
       onClick={() => navigate(`/groups/${group._id}`)}
-      className="group overflow-hidden rounded-2xl bg-white/95 shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition duration-200 border border-gray-100 cursor-pointer"
+      className="group overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 border border-gray-100 cursor-pointer"
     >
-      <div className="relative h-40 w-full">
+      {/* Image/Banner Section */}
+      <div className="relative h-48 w-full overflow-hidden">
         {group.image ? (
-          <img
-            src={group.image}
-            alt={group.name}
-            className="object-cover w-full h-full"
-          />
+          <>
+            <img
+              src={group.image}
+              alt={group.name}
+              className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          </>
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white text-3xl font-extrabold">
+          <div className="h-full w-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-5xl font-extrabold">
             {group.name ? group.name.charAt(0).toUpperCase() : 'G'}
           </div>
         )}
-        <div className="absolute left-4 bottom-3 bg-white/95 px-3 py-1 rounded-full text-sm font-semibold text-indigo-600 shadow-sm">{group.topic}</div>
-        <div className="absolute right-4 top-3 bg-white/95 px-3 py-1 rounded-full text-xs font-medium text-gray-800 shadow-sm flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M12 12a4 4 0 100-8 4 4 0 000 8z" />
-          </svg>
+        
+        {/* Topic Badge */}
+        <div className="absolute left-4 bottom-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+          🏷️ {group.topic}
+        </div>
+        
+        {/* Members Count */}
+        <div className="absolute right-4 top-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 shadow-lg flex items-center gap-1.5">
+          <span>👥</span>
           <span>{group.members?.length || 0}</span>
         </div>
-        {/* Join overlay button (top-right) */}
-        <div className="absolute left-3 top-3">
-          {joinStatus !== 'approved' && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // optimistic UI
-                setJoinStatus('pending');
-                requestJoinGroup(group._id).then(() => {
-                  setJoinStatus('pending');
-                }).catch(err => {
-                  console.error('Join failed', err);
-                  alert('Failed to request join: ' + (err?.data?.message || err?.message || 'Unknown'));
-                  setJoinStatus(group.joinStatus || 'none');
-                });
-              }}
-              className="bg-white text-indigo-600 px-3 py-1 rounded border text-xs"
-            >
-              {joinStatus === 'pending' ? 'Requested' : 'Join'}
-            </button>
-          )}
-        </div>
+        
+        {/* Status Badge */}
+        {joinStatus === 'approved' && (
+          <div className="absolute left-4 top-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+            ✅ Joined
+          </div>
+        )}
+        {joinStatus === 'pending' && (
+          <div className="absolute left-4 top-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+            ⏳ Pending
+          </div>
+        )}
       </div>
 
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 truncate">{group.name}</h3>
-        <p className="text-sm text-gray-600 mt-2 line-clamp-3">{group.description || 'No description yet'}</p>
+      {/* Content Section */}
+      <div className="p-5">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200 line-clamp-1">
+          {group.name}
+        </h3>
+        
+        <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-4">
+          {group.description || 'No description available. Join to learn more!'}
+        </p>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-xs text-gray-500">Members</div>
-            <div className="text-sm font-semibold text-gray-800">{group.members?.length || 0}</div>
-          </div>
-
+        {/* Stats Row */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 text-xs rounded-full ${group.joinStatus === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{group.joinStatus || 'none'}</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-sm">👥</span>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Members</p>
+              <p className="text-sm font-bold text-gray-800">{group.members?.length || 0}</p>
+            </div>
           </div>
-        </div>
-
-        <div className="mt-4 flex gap-2 items-center">
+          
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/groups/${group._id}`); }}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm"
-            title="Open chat"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.location.assign(`/groups/${group._id}`);
+            }}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1"
           >
-            Message
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); window.location.assign(`/groups/${group._id}`); }}
-            className="bg-white border px-3 py-2 rounded text-sm"
-            title="Open group"
-          >
-            Open
+            Open →
           </button>
         </div>
       </div>

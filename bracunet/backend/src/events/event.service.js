@@ -169,6 +169,17 @@ export async function rsvpToEvent(eventId, userId, status = "going") {
   
   await event.save();
   
+  // Emit real-time event for RSVP update
+  if (global.io) {
+    global.io.to(`event_${eventId}`).emit('event_rsvp_update', {
+      eventId,
+      userId,
+      status,
+      rsvpCount: event.rsvps.filter(r => r.status === 'going').length,
+      totalRsvps: event.rsvps.length
+    });
+  }
+  
   // Record gamification activity
   if (status === "going") {
     await trackActivity(userId, "event_rsvp", 1, 5);
@@ -200,6 +211,17 @@ export async function cancelRsvp(eventId, userId) {
   
   event.rsvps = event.rsvps.filter((r) => r.user.toString() !== userId.toString());
   await event.save();
+  
+  // Emit real-time event for RSVP cancellation
+  if (global.io) {
+    global.io.to(`event_${eventId}`).emit('event_rsvp_update', {
+      eventId,
+      userId,
+      status: 'cancelled',
+      rsvpCount: event.rsvps.filter(r => r.status === 'going').length,
+      totalRsvps: event.rsvps.length
+    });
+  }
   
   return event;
 }
