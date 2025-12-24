@@ -31,6 +31,17 @@ const recommendationRequestSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
+    letterUrl: {
+      type: String,
+      trim: true,
+    },
+    letterFileName: {
+      type: String,
+      trim: true,
+    },
+    letterUploadedAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

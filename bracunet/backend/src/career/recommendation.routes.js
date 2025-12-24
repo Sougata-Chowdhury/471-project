@@ -1,6 +1,9 @@
 import express from "express";
 import { recommendationService } from "./recommendation.service.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { supabaseLetterUpload } from "../middleware/supabaseUpload.js";
+import supabase from "../config/supabase.js";
+import { config } from "../config/index.js";
 
 const router = express.Router();
 
@@ -90,6 +93,113 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
     );
     res.json(request);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Upload recommendation letter (faculty only)
+router.post("/:id/upload-letter", authMiddleware, (req, res, next) => {
+  if (req.user.role !== "faculty") {
+    return res.status(403).json({ message: "Only faculty can upload letters" });
+  }
+  
+  supabaseLetterUpload.single("letter")(req, res, (err) => {
+    if (err) {
+      console.error("Upload error:", err);
+      return res.status(400).json({
+        success: false,
+        message: err.message || "File upload failed",
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Letter file is required",
+      });
+    }
+
+    console.log('Uploading file to Supabase:', {
+      fileName: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      bucketName: config.supabase.bucketName
+    });
+
+    // Upload to Supabase Storage - use the path directly without folder
+    const fileName = `${req.params.id}-${Date.now()}-${req.file.originalname}`;
+    
+    console.log('Attempting upload to bucket:', config.supabase.bucketName);
+    console.log('File path:', fileName);
+    
+    const { data, error } = await supabase.storage
+      .from(config.supabase.bucketName)
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('Supabase upload error details:', {
+        message: error.message,
+        statusCode: error.statusCode,
+        error: error
+      });
+      return res.status(500).json({
+        success: false,
+        message: `Failed to upload file to storage: ${error.message}`,
+        details: error
+      });
+    }
+
+    console.log('File uploaded successfully:', data);
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from(config.supabase.bucketName)
+      .getPublicUrl(fileName);
+
+    const letterUrl = publicUrlData.publicUrl;
+    const letterFileName = req.file.originalname;
+
+    console.log('Public URL generated:', letterUrl);
+
+    const request = await recommendationService.uploadLetter(
+      req.params.id,
+      letterUrl,
+      letterFileName,
+      req.user._id
+    );
+
+    res.json({
+      success: true,
+      message: "Letter uploaded successfully",
+      data: request,
+    });
+  } catch (error) {
+    console.error("Letter upload error:", error);
+    res.status(500).json({ 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Delete recommendation request (students/alumni can delete their requests, faculty can delete requests made to them)
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    await recommendationService.deleteRequest(
+      req.params.id,
+      req.user._id,
+      req.user.role
+    );
+    res.json({ success: true, message: "Request deleted successfully" });
+  } catch (error) {
+    console.error("Delete request error:", error);
     res.status(500).json({ message: error.message });
   }
 });
