@@ -25,7 +25,6 @@ import {
 	getAnnouncements,
 	deleteAnnouncement,
 } from "./announcement.controller.js";
-import { generateAgoraToken, createDailyRoom } from "./agora.controller.js";
 import { notifyCall, endCallNotify } from "./mentorship.controller.js";
 import { protect as auth, authorize } from "../middleware/auth.js";
 
@@ -63,8 +62,7 @@ router.post("/announcement/create", auth, createAnnouncement);
 router.get("/announcement/:mentorshipId", auth, getAnnouncements);
 router.delete("/announcement/:announcementId", auth, deleteAnnouncement);
 
-// Video call routes
-router.post("/daily/create-room", auth, createDailyRoom); // Daily.co
-router.post("/agora/token", auth, generateAgoraToken); // Legacy (deprecated)
+// Video call routes (Jitsi - free, no backend token needed)
+// Legacy Agora routes removed - using Jitsi instead
 
 export default router;

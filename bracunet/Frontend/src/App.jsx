@@ -48,6 +48,11 @@ import { MyCampaignsPage } from './pages/MyCampaignsPage';
 import CareerHub from './pages/CareerHub';
 import AdminDashboard from './pages/AdminDashboard';
 import NotificationSettings from './pages/NotificationSettings';
+import InterestGroups from './pages/InterestGroups';
+import CreateInterestGroup from './pages/CreateInterestGroup';
+import InterestGroupDetail from './pages/InterestGroupDetail';
+import InterestGroupChat from './pages/InterestGroupChat';
+import MyInterestGroups from './pages/MyInterestGroups';
 
 function App() {
 
@@ -124,6 +129,13 @@ function App() {
 
           {/* Career Hub */}
           <Route path="/career" element={<CareerHub />} />
+
+          {/* Interest Groups */}
+          <Route path="/interest-groups" element={<InterestGroups />} />
+          <Route path="/interest-groups/create" element={<CreateInterestGroup />} />
+          <Route path="/interest-groups/my-groups" element={<MyInterestGroups />} />
+          <Route path="/interest-groups/:groupId" element={<InterestGroupDetail />} />
+          <Route path="/interest-groups/:groupId/chat" element={<InterestGroupChat />} />
         </Routes>
       </AuthProvider>
     </Router>

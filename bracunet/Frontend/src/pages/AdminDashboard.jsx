@@ -3,12 +3,14 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import config from '../config';
+import { useNavigate } from 'react-router-dom';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState(null);
   const [eventStats, setEventStats] = useState(null);
@@ -108,14 +110,27 @@ const AdminDashboard = () => {
     amount: item.totalRaised
   })) || [];
 
+  const cardClass = "bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/40 p-6";
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics Dashboard</h1>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="text-white bg-black/20 hover:bg-black/30 px-4 py-2 rounded-lg flex items-center gap-2"
+          >
+            ← Back to Dashboard
+          </button>
+          <div className="text-right">
+            <h1 className="text-3xl font-bold text-white">Analytics Dashboard</h1>
+            <p className="text-white/80 text-sm">Live insights across users, events, and donations</p>
+          </div>
+        </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Users</p>
@@ -130,7 +145,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Events</p>
@@ -145,7 +160,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Donations</p>
@@ -165,7 +180,7 @@ const AdminDashboard = () => {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Users by Role */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <h2 className="text-xl font-semibold mb-4">Users by Role</h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -189,7 +204,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Event Participation Trend */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <h2 className="text-xl font-semibold mb-4">Event Participation (6 Months)</h2>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={eventMonthData}>
@@ -208,7 +223,7 @@ const AdminDashboard = () => {
         {/* More Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Donation Trends */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <h2 className="text-xl font-semibold mb-4">Donation Trends (6 Months)</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={donationMonthData}>
@@ -225,8 +240,8 @@ const AdminDashboard = () => {
         </div>
 
         {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8\">
-          <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className={cardClass}>
             <h3 className="text-lg font-semibold mb-3">User Activity</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -244,7 +259,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <h3 className="text-lg font-semibold mb-3">Event Metrics</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -262,7 +277,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={cardClass}>
             <h3 className="text-lg font-semibold mb-3">Donation Impact</h3>
             <div className="space-y-2">
               <div className="flex justify-between">

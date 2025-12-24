@@ -56,7 +56,6 @@ const MentorshipChat = () => {
   }, [myId]);
   const myStableId = myIdRef.current || myId;
   const myNormId = normalizeId(myStableId);
-  const [debugSample, setDebugSample] = useState(null);
 
   useEffect(() => {
     fetchConversations();
@@ -71,32 +70,99 @@ const MentorshipChat = () => {
     }
   }, [searchParams]);
 
+  // Join personal user room once identity is known; listen for inbox events
+  useEffect(() => {
+    if (!myNormId) return;
+
+    let socket = socketRef.current;
+    if (!socket) {
+      console.log('🔌 Connecting to Socket.IO (user room):', config.socketUrl);
+      socket = io(config.socketUrl, {
+        autoConnect: true,
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 500,
+        transports: ['websocket', 'polling'],
+      });
+      socketRef.current = socket;
+
+      socket.on('connect', () => {
+        console.log('✅ Socket.IO connected:', socket.id);
+        try {
+          socket.emit('joinUserRoom', { userId: myNormId });
+          console.log('👤 Joined user room:', myNormId);
+        } catch (e) {}
+      });
+
+      socket.on('connect_error', (err) => {
+        console.error('❌ Socket.IO connection error:', err.message);
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.warn('🔌 Socket.IO disconnected:', reason);
+      });
+
+      socket.on('mentorshipMessageInbox', (evt) => {
+        console.log('📨 Inbox event for mentorship:', evt?.mentorshipId);
+        fetchConversations();
+        if (selectedMentorship && evt?.mentorshipId === selectedMentorship) {
+          // If the currently open thread received a message, refresh it
+          fetchMessages(selectedMentorship);
+        }
+      });
+    } else {
+      try {
+        socket.emit('joinUserRoom', { userId: myNormId });
+        console.log('👤 Joined user room:', myNormId);
+      } catch (e) {}
+    }
+  }, [myNormId, selectedMentorship]);
+
+  // Handle joining/leaving mentorship rooms when selection changes
   useEffect(() => {
     if (!selectedMentorship) return;
 
-    // Socket.IO real-time setup
-    const socket = io(config.socketUrl, { transports: ['websocket'] });
-    socketRef.current = socket;
-    socket.emit('joinMentorshipRoom', { mentorshipId: selectedMentorship });
-
-    socket.on('mentorshipMessage', (msg) => {
-      if (msg.mentorshipId === selectedMentorship) {
-        setMessages((prev) => [...prev, msg]);
-        // Only bump unread header count for unseen, non-call messages addressed to me
-        const senderId = normalizeId(msg.sender);
-        const receiverId = normalizeId(msg.receiver);
-        const addressedToMe = receiverId && myNormId && receiverId === myNormId;
-        const sentByMe = senderId && myNormId && senderId === myNormId;
-        if (addressedToMe && !sentByMe && msg.read === false && !msg.isCallEvent) {
-          setUnreadCountForThread((c) => c + 1);
-        }
-        fetchConversations(); // Refresh sidebar unread counts
-      }
+    const socket = socketRef.current || io(config.socketUrl, {
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 500,
+      transports: ['websocket', 'polling'],
     });
+    socketRef.current = socket;
+
+    const joinRoom = () => {
+      try {
+        socket.emit('joinMentorshipRoom', { mentorshipId: selectedMentorship });
+        console.log('📩 Joined mentorship room:', selectedMentorship);
+      } catch (e) {}
+    };
+
+    if (socket.connected) joinRoom();
+    socket.on('connect', joinRoom);
+
+    // Add message listener once
+    if (!socket.__mentorshipListenerAdded) {
+      socket.on('mentorshipMessage', (msg) => {
+        console.log('📨 Received real-time message:', msg._id, msg.message);
+        if (msg.mentorshipId === selectedMentorship) {
+          setMessages((prev) => [...prev, msg]);
+          const senderId = normalizeId(msg.sender);
+          const receiverId = normalizeId(msg.receiver);
+          const addressedToMe = receiverId && myNormId && receiverId === myNormId;
+          const sentByMe = senderId && myNormId && senderId === myNormId;
+          if (addressedToMe && !sentByMe && msg.read === false && !msg.isCallEvent) {
+            setUnreadCountForThread((c) => c + 1);
+          }
+          fetchConversations();
+        }
+      });
+      socket.__mentorshipListenerAdded = true;
+    }
 
     return () => {
       try { socket.emit('leaveMentorshipRoom', { mentorshipId: selectedMentorship }); } catch(e) {}
-      socket.disconnect();
+      // Keep socket alive for user room/inbox events
     };
   }, [selectedMentorship]);
 
@@ -191,18 +257,6 @@ const MentorshipChat = () => {
         { withCredentials: true }
       );
       setMessages(res.data);
-      if ((res.data || []).length) {
-        const sample = res.data[0];
-        console.log("Message shape sample", {
-          sender: sample?.sender,
-          receiver: sample?.receiver,
-          read: sample?.read,
-        });
-        setDebugSample({
-          sender: sample?.sender,
-          receiver: sample?.receiver,
-        });
-      }
 
       // Count unread messages for the current user BEFORE marking as read
       const preUnread = (res.data || []).filter(
@@ -332,6 +386,10 @@ const MentorshipChat = () => {
                       onClick={() => {
                         const mentorshipId = getMentorshipId(conv);
                         setSelectedMentorship(mentorshipId);
+                        // Push the thread id into URL so refresh preserves the open chat
+                        try {
+                          navigate(`/mentorship/chat?mid=${mentorshipId}`);
+                        } catch (e) {}
                         fetchMessages(mentorshipId);
                       }}
                       className={`w-full text-left p-4 border-b hover:bg-gray-50 transition ${
