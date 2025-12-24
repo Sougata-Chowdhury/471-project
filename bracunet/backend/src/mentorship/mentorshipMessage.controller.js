@@ -1,4 +1,5 @@
 import MentorshipMessage from "./mentorshipMessage.model.js";
+import mongoose from "mongoose";
 import { createNotification } from "../notifications/notification.service.js";
 
 export const sendMessage = async (req, res) => {
@@ -101,8 +102,23 @@ export const getPendingRequests = async (req, res) => {
       .populate([
         { path: "sender", select: "name email profilePicture role" },
         { path: "receiver", select: "name email profilePicture role" },
-        { path: "mentorship" },
+        {
+          path: "mentorship",
+          populate: [
+            { path: "student", select: "name role email" },
+            { path: "mentor", select: "name role email" },
+          ],
+        },
       ]);
+
+    // Build unread counts per mentorship (cast receiver to ObjectId for reliability)
+    const receiverObjectId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+    const unreadDocs = await MentorshipMessage.find({ receiver: receiverObjectId, read: false }).select('mentorship').lean();
+    const unreadMap = new Map();
+    for (const doc of unreadDocs) {
+      const mid = String(doc.mentorship);
+      unreadMap.set(mid, (unreadMap.get(mid) || 0) + 1);
+    }
 
     const seen = new Set();
     const conversations = [];
@@ -111,7 +127,9 @@ export const getPendingRequests = async (req, res) => {
       const mentorshipId = String(msg.mentorship?._id || msg.mentorship);
       if (seen.has(mentorshipId)) continue;
       seen.add(mentorshipId);
-      conversations.push(msg);
+      const doc = msg.toObject ? msg.toObject() : msg;
+      doc.unreadCount = unreadMap.get(mentorshipId) || 0;
+      conversations.push(doc);
     }
 
     res.json(conversations);

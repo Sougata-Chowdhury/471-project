@@ -1,9 +1,43 @@
 import Mentorship from "./mentorship.model.js";
 import { findMentorsForStudent } from "./mentorship.service.js";
 import { createNotification } from "../notifications/notification.service.js";
+import MentorshipMessage from "./mentorshipMessage.model.js";
 
 // Store active call timeouts so we can cancel them when the caller ends the call
 const activeCallTimeouts = new Map();
+
+// Helper to log a call event into the chat thread and emit it in real time
+const logCallEvent = async ({
+	mentorshipId,
+	senderId,
+	receiverId,
+	message,
+	callType,
+	callStatus,
+	callDurationSeconds,
+}) => {
+	const doc = await MentorshipMessage.create({
+		mentorship: mentorshipId,
+		sender: senderId,
+		receiver: receiverId,
+		message,
+		isCallEvent: true,
+		callType,
+		callStatus,
+		callDurationSeconds,
+	});
+
+	const populated = await doc.populate([
+		{ path: "sender", select: "name email" },
+		{ path: "receiver", select: "name email" },
+	]);
+
+	if (global.io) {
+		global.io
+			.to(`mentorship_${mentorshipId}`)
+			.emit("mentorshipMessage", { ...populated.toObject(), mentorshipId });
+	}
+};
 
 
 export const getMatchedMentors = async (req, res) => {
@@ -70,10 +104,23 @@ export const startConversation = async (req, res) => {
 	}
 
 	try {
-		let mentorship = await Mentorship.findOne({ student: req.user.id, mentor: mentorId });
+		const meId = req.user.id;
+		const otherId = mentorId;
+		// Find existing mentorship regardless of orientation (student/mentor) to prevent duplicates
+		let mentorship = await Mentorship.findOne({
+			$or: [
+				{ student: meId, mentor: otherId },
+				{ student: otherId, mentor: meId },
+			],
+		});
 
 		if (!mentorship) {
-			mentorship = await Mentorship.create({ student: req.user.id, mentor: mentorId, status: "pending" });
+			// Create with correct orientation based on requester role when available
+			const isRequesterMentor = String(req.user.role || "").toLowerCase() === "mentor";
+			const payload = isRequesterMentor
+				? { student: otherId, mentor: meId, status: "pending" }
+				: { student: meId, mentor: otherId, status: "pending" };
+			mentorship = await Mentorship.create(payload);
 
 			const populated = await mentorship.populate([
 				{ path: "student", select: "name" },
@@ -81,8 +128,9 @@ export const startConversation = async (req, res) => {
 			]);
 
 			// Notify mentor of a new message request
+			const mentorUserId = populated.mentor?._id || otherId;
 			await createNotification({
-				userId: mentorId,
+				userId: mentorUserId,
 				type: "message_request",
 				title: "New Message Request",
 				message: `${populated.student.name} sent you a message request.`,
@@ -160,26 +208,49 @@ export const notifyCall = async (req, res) => {
 			link: callUrl || "/mentorship/chat",
 		});
 
-	// Store the timeout so it can be cancelled if the caller ends the call
-		const callKey = `${mentorshipId}-${Date.now()}`;
-		const timeoutId = setTimeout(async () => {
-			try {
-				await createNotification({
-					userId: receiverId,
-					type: "message_request",
-					title: callType === "audio" ? "You missed an audio call 📞" : "You missed a video call 📹",
-					message: `${req.user.name} called you. The call ended.`,
-					relatedId: mentorshipId,
-					relatedModel: "Mentorship",
-					link: "/mentorship/chat",
-				});
-			} catch (err) {
-				console.warn("Error creating missed call notification:", err.message);
-			} finally {
-				activeCallTimeouts.delete(callKey);
-			}
-		}, 30000); // 30 seconds
-		activeCallTimeouts.set(callKey, timeoutId);
+		// Log call start in chat
+		await logCallEvent({
+			mentorshipId,
+			senderId: req.user.id,
+			receiverId,
+			message: callType === "audio" ? "Outgoing audio call" : "Outgoing video call",
+			callType,
+			callStatus: "started",
+			callDurationSeconds: 0,
+		});
+
+			// Store the timeout so it can be cancelled if the caller ends the call
+			const startedAt = Date.now();
+			const callKey = `${mentorshipId}-${startedAt}`;
+			const timeoutId = setTimeout(async () => {
+				try {
+					await createNotification({
+						userId: receiverId,
+						type: "message_request",
+						title: callType === "audio" ? "You missed an audio call 📞" : "You missed a video call 📹",
+						message: `${req.user.name} called you. The call ended.`,
+						relatedId: mentorshipId,
+						relatedModel: "Mentorship",
+						link: "/mentorship/chat",
+					});
+
+					// Log missed call in chat timeline
+					await logCallEvent({
+						mentorshipId,
+						senderId: req.user.id,
+						receiverId,
+						message: callType === "audio" ? "Missed audio call" : "Missed video call",
+						callType,
+						callStatus: "missed",
+						callDurationSeconds: 0,
+					});
+				} catch (err) {
+					console.warn("Error creating missed call notification:", err.message);
+				} finally {
+					activeCallTimeouts.delete(callKey);
+				}
+			}, 30000); // 30 seconds
+			activeCallTimeouts.set(callKey, { timeoutId, startedAt, callType, callerId: req.user.id });
 
 		res.json({ success: true, notificationId: incomingNotif._id, callKey });
 	} catch (error) {
@@ -189,15 +260,15 @@ export const notifyCall = async (req, res) => {
 
 // Called when the caller ends the call (instead of waiting for 30s)
 export const endCallNotify = async (req, res) => {
-	const { receiverId, mentorshipId, callKey, callType } = req.body;
+	const { receiverId, mentorshipId, callKey, callType, callDurationSeconds } = req.body;
 	if (!receiverId || !mentorshipId || !callKey) {
 		return res.status(400).json({ message: "receiverId, mentorshipId, and callKey are required" });
 	}
 
 	try {
-		// Cancel the 30-second timeout for missed call notification
-		if (activeCallTimeouts.has(callKey)) {
-			clearTimeout(activeCallTimeouts.get(callKey));
+		const timeoutMeta = activeCallTimeouts.get(callKey);
+		if (timeoutMeta) {
+			clearTimeout(timeoutMeta.timeoutId);
 			activeCallTimeouts.delete(callKey);
 		}
 
@@ -210,6 +281,27 @@ export const endCallNotify = async (req, res) => {
 			relatedId: mentorshipId,
 			relatedModel: "Mentorship",
 			link: "/mentorship/chat",
+		});
+
+		// Compute duration (prefer client-provided; fall back to server start time)
+		let durationSeconds = Number(callDurationSeconds) || 0;
+		if (!durationSeconds && timeoutMeta?.startedAt) {
+			durationSeconds = Math.max(0, Math.floor((Date.now() - timeoutMeta.startedAt) / 1000));
+		}
+
+		await logCallEvent({
+			mentorshipId,
+			senderId: req.user.id,
+			receiverId,
+			message:
+				durationSeconds > 0
+					? `${callType === "audio" ? "Audio" : "Video"} call ended • ${Math.floor(durationSeconds / 60)}:${(durationSeconds % 60)
+							.toString()
+							.padStart(2, "0")}`
+					: `${callType === "audio" ? "Audio" : "Video"} call ended`,
+			callType,
+			callStatus: "ended",
+			callDurationSeconds: durationSeconds,
 		});
 
 		res.json({ success: true });

@@ -25,6 +25,22 @@ const mentorshipMessageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Optional call-event metadata for chat timeline
+    isCallEvent: {
+      type: Boolean,
+      default: false,
+    },
+    callType: {
+      type: String,
+      enum: ["audio", "video"],
+    },
+    callStatus: {
+      type: String,
+      enum: ["missed", "ended", "started"],
+    },
+    callDurationSeconds: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );

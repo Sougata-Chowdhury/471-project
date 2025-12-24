@@ -49,8 +49,9 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     console.log('📞 Ending call:', { callKey, otherPersonId, callStartTime });
     
     // Calculate call duration
+    let duration = 0;
     if (callStartTime) {
-      const duration = Math.floor((Date.now() - callStartTime) / 1000);
+      duration = Math.floor((Date.now() - callStartTime) / 1000);
       setCallDuration(duration);
       console.log('⏱️ Call duration:', duration, 'seconds');
     }
@@ -61,7 +62,7 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
         console.log('📢 Sending call end notification to:', otherPersonId);
         await axios.post(
           `${API_BASE}/api/mentorship/call/end`,
-          { receiverId: otherPersonId, mentorshipId, callKey, callType },
+          { receiverId: otherPersonId, mentorshipId, callKey, callType, callDurationSeconds: duration },
           { withCredentials: true }
         );
         console.log('✅ Call end notification sent');

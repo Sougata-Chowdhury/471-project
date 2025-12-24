@@ -9,13 +9,33 @@ import config from '../config.js';
 
 const MentorshipChat = () => {
   const { user } = useAuth();
+  // Safe local fallback for identity when auth context has not hydrated yet
+  const savedUser = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  }, []);
+  // Normalize id extraction to keep sender/receiver alignment consistent
+  const normalizeId = (objOrId) => {
+    if (!objOrId) return "";
+    if (typeof objOrId === "string") return objOrId;
+    if (typeof objOrId === "object") {
+      return objOrId._id || objOrId.id || "";
+    }
+    return String(objOrId);
+  };
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const currentUserId = user?._id || user?.id;
+  const currentUserId = user?._id || user?.id || savedUser?._id || savedUser?.id;
+  const myId = currentUserId ? normalizeId(currentUserId) : "";
   const getMentorshipId = (conv) => String(conv?.mentorship?._id || conv?.mentorship || "");
   const [conversations, setConversations] = useState([]);
   const [selectedMentorship, setSelectedMentorship] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [unreadCountForThread, setUnreadCountForThread] = useState(0);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,6 +45,18 @@ const MentorshipChat = () => {
   const [mentorResults, setMentorResults] = useState([]);
   const [draftMessage, setDraftMessage] = useState("");
   const socketRef = useRef(null);
+  // Stabilize myId to avoid flip-flopping during auth hydration
+  const myIdRef = useRef(myId);
+  useEffect(() => {
+    const id = myId;
+    // Lock myStableId once set; never update even if auth context changes later
+    if (id && !myIdRef.current) {
+      myIdRef.current = id;
+    }
+  }, [myId]);
+  const myStableId = myIdRef.current || myId;
+  const myNormId = normalizeId(myStableId);
+  const [debugSample, setDebugSample] = useState(null);
 
   useEffect(() => {
     fetchConversations();
@@ -50,7 +82,15 @@ const MentorshipChat = () => {
     socket.on('mentorshipMessage', (msg) => {
       if (msg.mentorshipId === selectedMentorship) {
         setMessages((prev) => [...prev, msg]);
-        fetchConversations(); // Update conversation list
+        // Only bump unread header count for unseen, non-call messages addressed to me
+        const senderId = normalizeId(msg.sender);
+        const receiverId = normalizeId(msg.receiver);
+        const addressedToMe = receiverId && myNormId && receiverId === myNormId;
+        const sentByMe = senderId && myNormId && senderId === myNormId;
+        if (addressedToMe && !sentByMe && msg.read === false && !msg.isCallEvent) {
+          setUnreadCountForThread((c) => c + 1);
+        }
+        fetchConversations(); // Refresh sidebar unread counts
       }
     });
 
@@ -151,6 +191,24 @@ const MentorshipChat = () => {
         { withCredentials: true }
       );
       setMessages(res.data);
+      if ((res.data || []).length) {
+        const sample = res.data[0];
+        console.log("Message shape sample", {
+          sender: sample?.sender,
+          receiver: sample?.receiver,
+          read: sample?.read,
+        });
+        setDebugSample({
+          sender: sample?.sender,
+          receiver: sample?.receiver,
+        });
+      }
+
+      // Count unread messages for the current user BEFORE marking as read
+      const preUnread = (res.data || []).filter(
+        (m) => !m.isCallEvent && m.read === false && normalizeId(m.receiver) === myNormId
+      ).length;
+      setUnreadCountForThread(preUnread);
 
       // Mark as read
       await axios.patch(
@@ -158,6 +216,9 @@ const MentorshipChat = () => {
         {},
         { withCredentials: true }
       );
+      // Refresh sidebar to clear badges after marking read
+      fetchConversations();
+      setUnreadCountForThread(0);
     } catch (err) {
       console.error("Error fetching messages:", err);
     }
@@ -166,6 +227,10 @@ const MentorshipChat = () => {
   const sendMessageHandler = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedMentorship) return;
+    if (!myStableId) {
+      alert("Your identity isn't ready yet. Please wait a moment or re-open the chat.");
+      return;
+    }
 
     try {
       const mentorship = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
@@ -174,10 +239,21 @@ const MentorshipChat = () => {
         return;
       }
       
-      const receiverId =
-        String(currentUserId) === String(mentorship.sender._id || mentorship.sender) 
-          ? String(mentorship.receiver._id || mentorship.receiver) 
-          : String(mentorship.sender._id || mentorship.sender);
+      // Determine the other participant from mentorship participants (student/mentor)
+      const studentId = normalizeId(mentorship.mentorship?.student);
+      const mentorId = normalizeId(mentorship.mentorship?.mentor);
+      let receiverId = "";
+      if (studentId && mentorId) {
+        receiverId = studentId === myNormId ? mentorId : studentId;
+      } else {
+        const senderIdInConv = normalizeId(mentorship.sender);
+        const receiverIdInConv = normalizeId(mentorship.receiver);
+        receiverId = senderIdInConv === myNormId ? receiverIdInConv : senderIdInConv;
+      }
+      if (!receiverId || receiverId === myNormId) {
+        alert("Could not determine the recipient. Please reopen the conversation.");
+        return;
+      }
 
       console.log('Sending message:', { mentorshipId: selectedMentorship, receiverId, message: newMessage });
 
@@ -234,35 +310,52 @@ const MentorshipChat = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {conversations.length === 0 ? (
+            {(!myStableId || conversations.length === 0) ? (
               <p className="text-gray-500 text-center p-4">No conversations yet</p>
             ) : (
-              conversations.map((conv) => {
-                const otherPerson = conv.sender._id === currentUserId ? conv.receiver : conv.sender;
-                return (
-                  <button
-                    key={getMentorshipId(conv)}
-                    onClick={() => {
-                      const mentorshipId = getMentorshipId(conv);
-                      setSelectedMentorship(mentorshipId);
-                      fetchMessages(mentorshipId);
-                    }}
-                    className={`w-full text-left p-4 border-b hover:bg-gray-50 transition ${
-                      selectedMentorship === getMentorshipId(conv) ? "bg-blue-50" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                        {otherPerson.name.charAt(0).toUpperCase()}
+              (() => {
+                // Show only conversations that involve the authenticated user
+                const mine = myNormId
+                  ? conversations.filter((conv) => {
+                      const sId = normalizeId(conv.mentorship?.student || conv.sender);
+                      const rId = normalizeId(conv.mentorship?.mentor || conv.receiver);
+                      return sId === myNormId || rId === myNormId;
+                    })
+                  : conversations;
+                return mine.map((conv) => {
+                  const otherPerson = myStableId && normalizeId(conv.mentorship?.student || conv.sender) === myStableId
+                    ? (conv.mentorship?.mentor || conv.receiver)
+                    : (conv.mentorship?.student || conv.sender);
+                  return (
+                    <button
+                      key={getMentorshipId(conv)}
+                      onClick={() => {
+                        const mentorshipId = getMentorshipId(conv);
+                        setSelectedMentorship(mentorshipId);
+                        fetchMessages(mentorshipId);
+                      }}
+                      className={`w-full text-left p-4 border-b hover:bg-gray-50 transition ${
+                        selectedMentorship === getMentorshipId(conv) ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                          {otherPerson.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold">{otherPerson.name}</p>
+                          <p className="text-sm text-gray-500">{otherPerson.role}</p>
+                        </div>
+                        {conv.unreadCount > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {conv.unreadCount}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold">{otherPerson.name}</p>
-                        <p className="text-sm text-gray-500">{otherPerson.role}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })
+                    </button>
+                  );
+                });
+              })()
             )}
           </div>
         </div>
@@ -278,20 +371,29 @@ const MentorshipChat = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
                       {(() => {
                         const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
-                        const otherPerson = conv.sender._id === currentUserId ? conv.receiver : conv.sender;
-                        return otherPerson.name.charAt(0).toUpperCase();
+                        const otherPerson = myStableId && normalizeId(conv.mentorship?.student || conv.sender) === myStableId
+                          ? (conv.mentorship?.mentor || conv.receiver)
+                          : (conv.mentorship?.student || conv.sender);
+                        return (otherPerson?.name || "?").charAt(0).toUpperCase();
                       })()}
                     </div>
                     <div>
                       <p className="font-semibold">
                         {(() => {
                           const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
-                          const otherPerson = conv.sender._id === currentUserId ? conv.receiver : conv.sender;
-                          return otherPerson.name;
+                          const otherPerson = myStableId && normalizeId(conv.mentorship?.student || conv.sender) === myStableId
+                            ? (conv.mentorship?.mentor || conv.receiver)
+                            : (conv.mentorship?.student || conv.sender);
+                          return otherPerson?.name || "";
                         })()}
                       </p>
                       <p className="text-xs text-gray-500">Active now</p>
                     </div>
+                    {unreadCountForThread > 0 && (
+                      <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">
+                        {unreadCountForThread} new
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -302,27 +404,61 @@ const MentorshipChat = () => {
                   mentorshipId={selectedMentorship}
                   otherPersonName={(() => {
                     const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
-                    const otherPerson = String(conv.sender._id || conv.sender) === String(currentUserId) ? conv.receiver : conv.sender;
-                    return otherPerson.name;
+                    const otherPerson = myStableId && normalizeId(conv.mentorship?.student || conv.sender) === myStableId
+                      ? (conv.mentorship?.mentor || conv.receiver)
+                      : (conv.mentorship?.student || conv.sender);
+                    return otherPerson?.name || "";
                   })()}
                   otherPersonId={(() => {
                     const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
-                    const otherPerson = String(conv.sender._id || conv.sender) === String(currentUserId) ? conv.receiver : conv.sender;
-                    return otherPerson._id || otherPerson.id;
+                    const otherPerson = myStableId && normalizeId(conv.mentorship?.student || conv.sender) === myStableId
+                      ? (conv.mentorship?.mentor || conv.receiver)
+                      : (conv.mentorship?.student || conv.sender);
+                    return otherPerson?._id || otherPerson?.id || "";
                   })()}
                 />
               )}
 
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-                {messages.length > 0 && console.log('Messages loaded:', messages.length, 'CurrentUserId:', currentUserId, 'First msg sender:', messages[0]?.sender)}
-                {messages.filter(msg => msg.message && !msg.message.includes('missed') && !msg.message.includes('ended')).map((msg, index) => {
-                  const senderId = String(msg.sender?._id || msg.sender || "");
-                  const userId = String(currentUserId || "");
-                  const isMe = senderId === userId;
-                  if (index === 0) console.log('Message comparison - senderId:', senderId, 'userId:', userId, 'isMe:', isMe);
-                  const showAvatar = index === 0 || String(messages[index - 1]?.sender?._id || messages[index - 1]?.sender || "") !== senderId;
-                  
+                {messages.map((msg, index) => {
+                  const senderId = normalizeId(msg.sender);
+                  const userId = myNormId;
+                  const isMe = Boolean(userId) && senderId === userId;
+                  const prevSenderId = normalizeId(messages[index - 1]?.sender);
+                  const showAvatar = index === 0 || prevSenderId !== senderId;
+                  const isCall = msg.isCallEvent;
+
+                  // Render call events as centered system chips
+                  if (msg.isCallEvent) {
+                    const isMissed = msg.callStatus === "missed";
+                    const isEnded = msg.callStatus === "ended";
+                    const duration = msg.callDurationSeconds || 0;
+                    const mins = Math.floor(duration / 60);
+                    const secs = duration % 60;
+                    const durationLabel = duration > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : null;
+
+                    return (
+                      <div key={msg._id} className="flex justify-center mb-3">
+                        <div
+                          className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
+                            isMissed
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-200 text-gray-800"
+                          }`}
+                        >
+                          <span>{msg.callType === "audio" ? "📞" : "🎥"}</span>
+                          <span>
+                            {isMissed && `Missed ${msg.callType} call`}
+                            {isEnded && `Call ended`}
+                            {!isMissed && !isEnded && msg.message}
+                            {durationLabel ? ` • ${durationLabel}` : ""}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
                       key={msg._id}
@@ -330,27 +466,31 @@ const MentorshipChat = () => {
                     >
                       {!isMe && showAvatar && (
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                          {msg.sender.name.charAt(0).toUpperCase()}
+                          {(msg.sender?.name || "?").charAt(0).toUpperCase()}
                         </div>
                       )}
                       {!isMe && !showAvatar && <div className="w-8" />}
                       
                       <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                        <div
-                          className={`max-w-md px-4 py-2 rounded-2xl ${
-                            isMe
-                              ? "bg-blue-500 text-white rounded-br-sm"
-                              : "bg-gray-200 text-gray-900 rounded-bl-sm"
-                          }`}
-                        >
-                          <p className="break-words">{msg.message}</p>
+                        <div>
+                          <div
+                            className={`max-w-md px-4 py-2 rounded-2xl ${
+                              isMe
+                                ? "bg-blue-500 text-white rounded-br-sm"
+                                : "bg-gray-200 text-gray-900 rounded-bl-sm"
+                            }`}
+                          >
+                            <p className="break-words">{msg.message}</p>
+                          </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1 px-2">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1 px-2">
+                          <span>
+                            {new Date(msg.createdAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
