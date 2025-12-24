@@ -37,4 +37,9 @@ export const config = {
     secret: process.env.PUSHER_SECRET || '',
     cluster: process.env.PUSHER_CLUSTER || 'ap2',
   },
+  supabase: {
+    url: process.env.SUPABASE_URL || 'https://zkxkzwqqqjywuuxgbxzz.supabase.co',
+    key: process.env.SUPABASE_KEY || '',
+    bucketName: process.env.SUPABASE_BUCKET_NAME || '471 Project',
+  },
 };

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import careerApi from '../api/careerApi';
 import { io } from 'socket.io-client';
+import Pusher from 'pusher-js';
 import config from '../config';
 
 const CareerHub = () => {
@@ -35,6 +36,10 @@ const CareerHub = () => {
     email: ''
   });
   const [submittingRecommendation, setSubmittingRecommendation] = useState(false);
+
+  // State for letter upload
+  const [uploadingLetter, setUploadingLetter] = useState({});
+  const fileInputRefs = useRef({});
 
   // Fetch opportunities on mount
   useEffect(() => {
@@ -98,8 +103,39 @@ const CareerHub = () => {
       fetchOpportunities();
     });
 
+    // Pusher for real-time letter upload notifications (students/alumni)
+    let pusher;
+    if (user.role === 'student' || user.role === 'alumni') {
+      pusher = new Pusher(config.pusher.key, {
+        cluster: config.pusher.cluster,
+      });
+
+      const channel = pusher.subscribe(`user-${user._id}`);
+      
+      channel.bind('recommendation-letter-uploaded', (data) => {
+        console.log('Real-time: Letter uploaded:', data);
+        // Update the specific request in state
+        setMyRequests(prev =>
+          prev.map(req =>
+            req._id === data.requestId
+              ? {
+                  ...req,
+                  letterUrl: data.letterUrl,
+                  letterFileName: data.letterFileName,
+                  letterUploadedAt: data.uploadedAt,
+                }
+              : req
+          )
+        );
+      });
+    }
+
     return () => {
       socket.disconnect();
+      if (pusher) {
+        pusher.unsubscribe(`user-${user._id}`);
+        pusher.disconnect();
+      }
     };
   }, [user, getCurrentUser, navigate]);
 
@@ -178,6 +214,100 @@ const CareerHub = () => {
     } catch (err) {
       console.error('Error updating request status:', err);
       setError(err.response?.data?.message || 'Failed to update status');
+    }
+  };
+
+  // Letter upload handler
+  const handleLetterUpload = async (requestId, file) => {
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Invalid file type. Please upload PDF, DOC, DOCX, or image files.');
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File size too large. Maximum 10MB allowed.');
+      return;
+    }
+
+    setUploadingLetter(prev => ({ ...prev, [requestId]: true }));
+    setError('');
+
+    try {
+      const result = await careerApi.uploadRecommendationLetter(requestId, file);
+      // Update the request in local state
+      setReceivedRequests(prev =>
+        prev.map(req =>
+          req._id === requestId ? result.data : req
+        )
+      );
+    } catch (err) {
+      console.error('Error uploading letter:', err);
+      setError(err.response?.data?.message || 'Failed to upload letter');
+    } finally {
+      setUploadingLetter(prev => ({ ...prev, [requestId]: false }));
+      // Reset file input
+      if (fileInputRefs.current[requestId]) {
+        fileInputRefs.current[requestId].value = '';
+      }
+    }
+  };
+
+  const triggerFileInput = (requestId) => {
+    if (fileInputRefs.current[requestId]) {
+      fileInputRefs.current[requestId].click();
+    }
+  };
+
+  // Delete recommendation request handler
+  const handleDeleteRequest = async (requestId) => {
+    if (!window.confirm('Are you sure you want to delete this request?')) return;
+
+    try {
+      await careerApi.deleteRecommendationRequest(requestId);
+      // Remove from local state
+      if (user.role === 'student' || user.role === 'alumni') {
+        setMyRequests(prev => prev.filter(req => req._id !== requestId));
+      } else if (user.role === 'faculty') {
+        setReceivedRequests(prev => prev.filter(req => req._id !== requestId));
+      }
+    } catch (err) {
+      console.error('Error deleting request:', err);
+      setError(err.response?.data?.message || 'Failed to delete request');
+    }
+  };
+
+  // Download/View letter handler - PDFs open in new tab, others download
+  const handleDownloadLetter = async (letterUrl, fileName) => {
+    try {
+      // Check if the file is a PDF
+      const isPDF = letterUrl.toLowerCase().includes('.pdf') || 
+                    (fileName && fileName.toLowerCase().endsWith('.pdf'));
+      
+      if (isPDF) {
+        // For PDFs, open in a new tab for viewing
+        window.open(letterUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        // For other file types (DOC, DOCX, images), download directly
+        const response = await fetch(letterUrl, { mode: "cors" });
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const extension = letterUrl.split(".").pop().split("?")[0];
+        link.download = fileName || `recommendation-letter.${extension}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Download failed:', err);
+      setError('Failed to download letter. Please try again.');
     }
   };
 
@@ -674,8 +804,17 @@ const CareerHub = () => {
                         </div>
                       ) : (
                         myRequests.map((req) => (
-                          <div key={req._id} className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-all duration-200 border border-gray-100">
-                            <div className="flex items-start justify-between mb-2">
+                          <div key={req._id} className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-all duration-200 border border-gray-100 relative">
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => handleDeleteRequest(req._id)}
+                              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200"
+                              title="Delete request"
+                            >
+                              ✕
+                            </button>
+                            
+                            <div className="flex items-start justify-between mb-2 pr-6">
                               <span className="font-semibold text-gray-800 text-sm">{req.requestedTo?.name}</span>
                               <span className={`px-2 py-1 text-xs font-bold rounded-full ${
                                 req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -686,10 +825,27 @@ const CareerHub = () => {
                               </span>
                             </div>
                             <p className="text-gray-600 text-xs mb-1">{req.purpose}</p>
-                            <p className="text-gray-400 text-xs flex items-center gap-1">
+                            <p className="text-gray-400 text-xs flex items-center gap-1 mb-2">
                               <span>📅</span>
                               {new Date(req.createdAt).toLocaleDateString()}
                             </p>
+                            
+                            {/* Download Letter Button */}
+                            {req.status === 'accepted' && req.letterUrl && (
+                              <button
+                                onClick={() => handleDownloadLetter(req.letterUrl, req.letterFileName)}
+                                className="w-full mt-2 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg text-xs font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                              >
+                                <span>📥</span> {req.letterUrl?.toLowerCase().includes('.pdf') ? 'View Letter (PDF)' : 'Download Letter'}
+                              </button>
+                            )}
+                            
+                            {/* Waiting for letter */}
+                            {req.status === 'accepted' && !req.letterUrl && (
+                              <div className="w-full mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-600 flex items-center justify-center gap-2">
+                                <span className="animate-pulse">⏳</span> Waiting for letter upload...
+                              </div>
+                            )}
                           </div>
                         ))
                       )}
@@ -709,8 +865,17 @@ const CareerHub = () => {
                       </div>
                     ) : (
                       receivedRequests.map((req) => (
-                        <div key={req._id} className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-all duration-200 border border-gray-100">
-                          <div className="flex items-start justify-between mb-2">
+                        <div key={req._id} className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-all duration-200 border border-gray-100 relative">
+                          {/* Delete Button */}
+                          <button
+                            onClick={() => handleDeleteRequest(req._id)}
+                            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200"
+                            title="Delete request"
+                          >
+                            ✕
+                          </button>
+                          
+                          <div className="flex items-start justify-between mb-2 pr-6">
                             <span className="font-semibold text-gray-800 text-sm">{req.requestedBy?.name}</span>
                             <span className={`px-2 py-1 text-xs font-bold rounded-full ${
                               req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -740,6 +905,66 @@ const CareerHub = () => {
                               >
                                 ❌ Reject
                               </button>
+                            </div>
+                          )}
+                          
+                          {/* Upload Letter Section (for accepted requests) */}
+                          {req.status === 'accepted' && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              {req.letterUrl ? (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-green-600 text-xs font-medium">
+                                    <span>✅</span> Letter uploaded
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => handleDownloadLetter(req.letterUrl, req.letterFileName)}
+                                      className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1"
+                                    >
+                                      <span>👁️</span> View Letter
+                                    </button>
+                                    <button
+                                      onClick={() => triggerFileInput(req._id)}
+                                      disabled={uploadingLetter[req._id]}
+                                      className="flex-1 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1 disabled:opacity-50"
+                                    >
+                                      <span>🔄</span> Replace
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => triggerFileInput(req._id)}
+                                  disabled={uploadingLetter[req._id]}
+                                  className="w-full px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-xs font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {uploadingLetter[req._id] ? (
+                                    <>
+                                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                      </svg>
+                                      Uploading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>📤</span> Upload Letter
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                              
+                              {/* Hidden file input */}
+                              <input
+                                type="file"
+                                ref={el => fileInputRefs.current[req._id] = el}
+                                onChange={(e) => handleLetterUpload(req._id, e.target.files[0])}
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                className="hidden"
+                              />
+                              <p className="text-gray-400 text-xs mt-2 text-center">
+                                PDF, DOC, DOCX, or Image (max 10MB)
+                              </p>
                             </div>
                           )}
                         </div>

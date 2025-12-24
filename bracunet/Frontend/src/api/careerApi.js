@@ -48,6 +48,24 @@ export const careerApi = {
     const response = await API.patch(`/recommendations/${requestId}/status`, { status });
     return response.data;
   },
+
+  // Upload recommendation letter (faculty)
+  uploadRecommendationLetter: async (requestId, file) => {
+    const formData = new FormData();
+    formData.append("letter", file);
+    const response = await API.post(`/recommendations/${requestId}/upload-letter`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  // Delete recommendation request
+  deleteRecommendationRequest: async (requestId) => {
+    const response = await API.delete(`/recommendations/${requestId}`);
+    return response.data;
+  },
 };
 
 export default careerApi;
