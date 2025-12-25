@@ -82,16 +82,33 @@ const MentorshipChat = () => {
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 500,
-        transports: ['websocket', 'polling'],
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        transports: ['polling', 'websocket'],
+        upgrade: true,
       });
       socketRef.current = socket;
 
+      const joinUserRoom = () => {
+        if (socket.connected) {
+          try {
+            socket.emit('joinUserRoom', { userId: myNormId });
+            console.log('👤 Joined user room:', myNormId);
+          } catch (e) {
+            console.error('Error joining user room:', e);
+          }
+        }
+      };
+
       socket.on('connect', () => {
         console.log('✅ Socket.IO connected:', socket.id);
-        try {
-          socket.emit('joinUserRoom', { userId: myNormId });
-          console.log('👤 Joined user room:', myNormId);
-        } catch (e) {}
+        joinUserRoom();
+      });
+
+      socket.on('reconnect', (attemptNumber) => {
+        console.log('🔄 User room socket reconnected after', attemptNumber, 'attempts');
+        joinUserRoom();
+        fetchConversations(); // Refresh conversations after reconnection
       });
 
       socket.on('connect_error', (err) => {
@@ -100,6 +117,9 @@ const MentorshipChat = () => {
 
       socket.on('disconnect', (reason) => {
         console.warn('🔌 Socket.IO disconnected:', reason);
+        if (reason === 'io server disconnect') {
+          socket.connect();
+        }
       });
 
       socket.on('mentorshipMessageInbox', (evt) => {
@@ -127,27 +147,48 @@ const MentorshipChat = () => {
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 500,
-      transports: ['websocket', 'polling'],
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      transports: ['polling', 'websocket'],
+      upgrade: true,
     });
     socketRef.current = socket;
 
     const joinRoom = () => {
-      try {
-        socket.emit('joinMentorshipRoom', { mentorshipId: selectedMentorship });
-        console.log('📩 Joined mentorship room:', selectedMentorship);
-      } catch (e) {}
+      if (socket.connected) {
+        try {
+          socket.emit('joinMentorshipRoom', { mentorshipId: selectedMentorship });
+          console.log('📩 Joined mentorship room:', selectedMentorship);
+        } catch (e) {
+          console.error('Error joining room:', e);
+        }
+      }
     };
 
     if (socket.connected) joinRoom();
     socket.on('connect', joinRoom);
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Mentorship socket reconnected after', attemptNumber, 'attempts');
+      joinRoom();
+      // Refresh messages after reconnection
+      fetchMessages(selectedMentorship);
+    });
 
     // Always set up the message listener (remove old one first)
     socket.off('mentorshipMessage');
     socket.on('mentorshipMessage', (msg) => {
-      console.log('📨 Received real-time message:', msg._id, msg.message, 'for mentorship:', msg.mentorshipId);
+      console.log('📨 Received real-time message:', msg._id, msg.message?.substring(0, 30), 'for mentorship:', msg.mentorshipId);
       const msgMentorshipId = typeof msg.mentorshipId === 'object' ? String(msg.mentorshipId?._id || msg.mentorshipId) : String(msg.mentorshipId);
       if (msgMentorshipId === String(selectedMentorship)) {
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev) => {
+          // Prevent duplicates
+          if (prev.some(m => String(m._id) === String(msg._id))) {
+            console.log('⚠️ Duplicate message, skipping');
+            return prev;
+          }
+          console.log('✅ Adding message to state');
+          return [...prev, msg];
+        });
         const senderId = normalizeId(msg.sender);
         const receiverId = normalizeId(msg.receiver);
         const addressedToMe = receiverId && myNormId && receiverId === myNormId;
@@ -159,7 +200,13 @@ const MentorshipChat = () => {
       }
     });
 
+    // Polling fallback: check for new messages every 3 seconds as backup
+    const pollInterval = setInterval(() => {
+      fetchMessages(selectedMentorship);
+    }, 3000);
+
     return () => {
+      clearInterval(pollInterval);
       try { socket.emit('leaveMentorshipRoom', { mentorshipId: selectedMentorship }); } catch(e) {}
       // Keep socket alive for user room/inbox events
     };
