@@ -29,6 +29,7 @@ export default function NotificationSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [lastSaved, setLastSaved] = useState(null);
 
   useEffect(() => {
     fetchPreferences();
@@ -50,11 +51,31 @@ export default function NotificationSettings() {
     }
   };
 
-  const handleToggle = (key) => {
-    setPreferences((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+  const handleToggle = async (key) => {
+    const newPreferences = {
+      ...preferences,
+      [key]: !preferences[key],
+    };
+    
+    setPreferences(newPreferences);
+    
+    // Auto-save on toggle
+    try {
+      await axios.put(
+        `${API_BASE}/api/settings/notification-preferences`,
+        { preferences: newPreferences },
+        { withCredentials: true }
+      );
+      setLastSaved(new Date());
+      setMessage('✅ Saved');
+      setTimeout(() => setMessage(''), 2000);
+    } catch (error) {
+      console.error('Failed to auto-save preference:', error);
+      // Revert on error
+      setPreferences(preferences);
+      setMessage('❌ Failed to save preference');
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   const handleSave = async () => {
@@ -112,6 +133,11 @@ export default function NotificationSettings() {
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Notification Settings</h1>
               <p className="text-white/80">Manage your notification preferences</p>
+              {lastSaved && (
+                <p className="text-white/60 text-sm mt-1">
+                  Last saved: {lastSaved.toLocaleTimeString()}
+                </p>
+              )}
             </div>
             <button
               onClick={() => navigate('/dashboard')}
@@ -123,7 +149,7 @@ export default function NotificationSettings() {
         </div>
 
         {message && (
-          <div className={`mb-6 p-4 rounded-xl ${message.includes('✅') ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+          <div className={`mb-6 p-3 rounded-xl text-center ${message.includes('✅') ? 'bg-green-500/90' : 'bg-red-500/90'} text-white text-sm font-medium backdrop-blur-sm`}>
             {message}
           </div>
         )}

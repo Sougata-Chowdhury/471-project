@@ -31,12 +31,19 @@ SUPABASE_BUCKET_NAME=471 Project
 
 ### 4. Folder Structure in Supabase
 
-Recommendation letters will be stored in:
+Files will be stored in the following structure:
+
 ```
 471 Project/
-  └── recommendation-letters/
-      └── {requestId}-{timestamp}-{filename}
+  ├── recommendation-letters/
+  │   └── {requestId}-{timestamp}-{filename}
+  └── resources/
+      └── resource-{timestamp}-{random}-{filename}
 ```
+
+**Folders:**
+- `recommendation-letters/` - Career recommendation letters (PDFs, DOCs, images)
+- `resources/` - Resource Library files (photos, PDFs, documents, videos, etc.)
 
 ## Storage Policies (Optional)
 
@@ -52,16 +59,29 @@ Or if you want authenticated access only, set up appropriate RLS policies based 
 
 ## Testing
 
-Once configured, the recommendation letter upload feature will:
+Once configured, the storage features will work for:
+
+### Recommendation Letters
 1. Accept PDF, DOC, DOCX, and image files
-2. Upload them to Supabase Storage
+2. Upload them to Supabase Storage in `recommendation-letters/` folder
 3. Store the public URL in MongoDB
 4. Allow students to download/view the letters in real-time
 
+### Resource Library
+1. Accept photos (JPG, PNG), PDFs, documents (DOC, DOCX, PPT, PPTX, XLS, XLSX), videos (MP4), audio (MP3), archives (ZIP, RAR), and text files (TXT, CSV)
+2. Upload them to Supabase Storage in `resources/` folder
+3. Store the public URL in MongoDB
+4. Allow users to download/view resources after admin approval
+
 ## File Size Limits
 
+### Recommendation Letters
 - Maximum file size: 10MB
 - Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG
+
+### Resources
+- Maximum file size: 50MB
+- Supported formats: JPG, PNG, PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, MP3, ZIP, RAR, TXT, CSV
 
 ## CORS Configuration
 

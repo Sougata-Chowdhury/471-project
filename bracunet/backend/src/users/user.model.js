@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 6,
+      select: false, // Never return password in queries by default
     },
     role: {
       type: String,
@@ -82,8 +83,21 @@ const userSchema = new mongoose.Schema(
       pushNotifications: { type: Boolean, default: true },
     },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+// Virtual alias `goals` -> `mentorshipGoals` for frontend compatibility
+userSchema.virtual('goals')
+  .get(function () {
+    return this.mentorshipGoals;
+  })
+  .set(function (v) {
+    this.mentorshipGoals = v;
+  });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

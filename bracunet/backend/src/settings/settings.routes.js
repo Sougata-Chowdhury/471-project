@@ -73,7 +73,8 @@ router.patch('/me/password', verifyToken, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
     
-    const user = await User.findById(req.user.id);
+    // Select password explicitly for verification
+    const user = await User.findById(req.user.id).select('+password');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }

@@ -71,6 +71,8 @@
 // };
 
 import Resource from "../resources/resource.model.js";
+import { supabase, isSupabaseEnabled } from "../config/supabase.js";
+import { config } from "../config/index.js";
 
 // CREATE / UPLOAD RESOURCE
 export const createResource = async (req, res) => {
@@ -79,11 +81,51 @@ export const createResource = async (req, res) => {
     const file = req.file;
     if (!file) return res.status(400).json({ message: "No file uploaded" });
 
+    // Check if Supabase is enabled
+    if (!isSupabaseEnabled) {
+      return res.status(503).json({ 
+        message: "Storage service not configured. Please contact administrator.",
+        details: "Supabase credentials are missing."
+      });
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomStr = Math.round(Math.random() * 1e9);
+    const fileExtension = file.originalname.split('.').pop();
+    const fileName = `resource-${timestamp}-${randomStr}.${fileExtension}`;
+    const filePath = `resources/${fileName}`;
+
+    // Upload file to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(config.supabase.bucketName)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      return res.status(500).json({ 
+        message: "Failed to upload file to storage",
+        error: uploadError.message 
+      });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(config.supabase.bucketName)
+      .getPublicUrl(filePath);
+
+    const fileUrl = urlData.publicUrl;
+
+    // Create resource record in database
     const resource = new Resource({
       title,
       description,
       type,
-      fileUrl: file.path,
+      fileUrl,
       uploadedBy: req.user._id,
       status: "pending",
     });
@@ -91,6 +133,7 @@ export const createResource = async (req, res) => {
     await resource.save();
     res.status(201).json(resource);
   } catch (err) {
+    console.error('Error creating resource:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -118,7 +161,7 @@ export const deleteResource = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    await resource.remove();
+    await Resource.findByIdAndDelete(req.params.id);
     res.json({ message: "Resource deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -147,6 +190,26 @@ export const approveResource = async (req, res) => {
       { $set: update },
       { new: true, runValidators: false }
     ).populate("uploadedBy", "name email role");
+
+    // Send notification to uploader if approved
+    if (approve) {
+      try {
+        const { createNotification } = await import('../notifications/notification.service.js');
+        await createNotification({
+          userId: updated.uploadedBy._id,
+          type: 'resource_approved',
+          title: 'Resource Approved',
+          message: `Your resource "${updated.title}" has been approved!`,
+          link: `/resources`,
+          relatedId: updated._id,
+          relatedModel: 'Resource',
+          priority: 'normal',
+        });
+        console.log('✅ Resource approval notification sent');
+      } catch (notifError) {
+        console.error('❌ Failed to send resource approval notification:', notifError);
+      }
+    }
 
     res.json({ message: `Resource ${updated.status}`, resource: updated });
   } catch (err) {

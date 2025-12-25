@@ -17,15 +17,15 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// Create opportunity (faculty only)
+// Create opportunity (faculty and alumni only)
 router.post("/", protect, async (req, res) => {
   try {
     if (!req.user.isVerified) {
       return res.status(403).json({ message: "Only verified users can post opportunities" });
     }
     
-    if (req.user.role !== "faculty") {
-      return res.status(403).json({ message: "Only faculty members can post opportunities" });
+    if (req.user.role === "student") {
+      return res.status(403).json({ message: "Students cannot post opportunities" });
     }
 
     const { title, company, type, description, externalLink } = req.body;
@@ -45,10 +45,10 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// Delete opportunity (only by poster)
+// Delete opportunity (by poster or admin)
 router.delete("/:id", protect, async (req, res) => {
   try {
-    const result = await careerService.deleteOpportunity(req.params.id, req.user._id);
+    const result = await careerService.deleteOpportunity(req.params.id, req.user._id, req.user.role);
     res.json(result);
   } catch (error) {
     if (error.message === "Not authorized to delete this opportunity") {

@@ -249,7 +249,7 @@ export const notifyCall = async (req, res) => {
 				} finally {
 					activeCallTimeouts.delete(callKey);
 				}
-			}, 30000); // 30 seconds
+			}, 120000); // 120 seconds (2 minutes)
 			activeCallTimeouts.set(callKey, { timeoutId, startedAt, callType, callerId: req.user.id });
 
 		res.json({ success: true, notificationId: incomingNotif._id, callKey });

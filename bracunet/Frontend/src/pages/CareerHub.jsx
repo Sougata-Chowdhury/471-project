@@ -452,8 +452,8 @@ const CareerHub = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Opportunities (2/3 width) */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Faculty Post Button */}
-            {user.role === 'faculty' && !showPostForm && (
+            {/* Faculty/Alumni Post Button */}
+            {user.role !== 'student' && !showPostForm && (
               <button
                 onClick={() => setShowPostForm(true)}
                 className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-gray-50 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border-2 border-transparent hover:border-blue-200"
@@ -463,8 +463,8 @@ const CareerHub = () => {
               </button>
             )}
 
-            {/* Post Form (Faculty Only) */}
-            {user.role === 'faculty' && showPostForm && (
+            {/* Post Form (Faculty/Alumni Only) */}
+            {user.role !== 'student' && showPostForm && (
               <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl">
@@ -632,7 +632,7 @@ const CareerHub = () => {
                               </div>
                             </div>
                             
-                            {opp.postedBy?._id === user._id && (
+                            {(opp.postedBy?._id === user._id || user.role === 'admin') && (
                               <button
                                 onClick={() => handleDelete(opp._id)}
                                 className="px-4 py-2 text-sm font-medium text-red-600 hover:text-white hover:bg-red-500 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-500"

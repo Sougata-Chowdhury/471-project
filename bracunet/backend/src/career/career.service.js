@@ -35,15 +35,16 @@ export const careerService = {
     return opportunity;
   },
 
-  // Delete an opportunity (only by the poster)
-  async deleteOpportunity(opportunityId, userId) {
+  // Delete an opportunity (by poster or admin)
+  async deleteOpportunity(opportunityId, userId, userRole) {
     const opportunity = await CareerOpportunity.findById(opportunityId);
     
     if (!opportunity) {
       throw new Error("Opportunity not found");
     }
 
-    if (opportunity.postedBy.toString() !== userId.toString()) {
+    // Allow deletion if user is the poster OR if user is admin
+    if (opportunity.postedBy.toString() !== userId.toString() && userRole !== 'admin') {
       throw new Error("Not authorized to delete this opportunity");
     }
 

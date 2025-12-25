@@ -70,6 +70,9 @@ const notificationSchema = new mongoose.Schema(
         "mentorship_request",
         "mentorship_accepted",
         "mentorship_rejected",
+        "mentor_request",
+        "mentor_approved",
+        "mentor_rejected",
         // System
         "system_maintenance",
         "policy_update",
@@ -91,7 +94,7 @@ const notificationSchema = new mongoose.Schema(
     },
     relatedModel: {
       type: String,
-      enum: ["Verification", "Event", "News", "Mentorship", "Group", "Post", "Resource", "Campaign", "Job", "Badge", null],
+      enum: ["Verification", "Event", "News", "Mentorship", "MentorRequest", "Group", "Post", "Resource", "Campaign", "Job", "Badge", "RecommendationRequest", null],
       default: null,
     },
     priority: {

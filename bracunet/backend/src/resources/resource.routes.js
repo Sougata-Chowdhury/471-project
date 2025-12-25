@@ -29,7 +29,7 @@ import {
   deleteResource,
   approveResource,
 } from "./resource.controller.js";
-import { cloudinaryResourceUpload } from "../middleware/upload.js";
+import { supabaseResourceUpload } from "../middleware/supabaseUpload.js";
 import { protect, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -37,8 +37,8 @@ const router = express.Router();
 // GET ALL RESOURCES
 router.get("/", getResources);
 
-// UPLOAD RESOURCE
-router.post("/", protect, cloudinaryResourceUpload.single("file"), createResource);
+// UPLOAD RESOURCE (using Supabase storage)
+router.post("/", protect, supabaseResourceUpload.single("file"), createResource);
 
 // DELETE RESOURCE
 router.delete("/:id", protect, deleteResource);

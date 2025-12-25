@@ -63,16 +63,16 @@ export const recommendationService = {
 
     // Send notification to the student about status change
     try {
-      await createNotification(
-        request.requestedBy._id,
-        "recommendation",
-        `Recommendation Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-        `Your recommendation request to ${request.requestedTo.name} has been ${status}.`,
-        request._id,
-        "RecommendationRequest",
-        "/career",
-        status === "accepted" ? "high" : "normal"
-      );
+      await createNotification({
+        userId: request.requestedBy._id,
+        type: "application_status",
+        title: `Recommendation Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        message: `Your recommendation request to ${request.requestedTo.name} has been ${status}.`,
+        relatedId: request._id,
+        relatedModel: "RecommendationRequest",
+        link: "/career",
+        priority: status === "accepted" ? "high" : "normal"
+      });
     } catch (err) {
       console.error("Failed to send notification:", err);
     }
@@ -121,16 +121,16 @@ export const recommendationService = {
 
     // Also create a persistent notification
     try {
-      await createNotification(
-        request.requestedBy._id,
-        "recommendation",
-        "Recommendation Letter Uploaded",
-        `${request.requestedTo.name} has uploaded your recommendation letter. You can now download it.`,
-        request._id,
-        "RecommendationRequest",
-        "/career",
-        "high"
-      );
+      await createNotification({
+        userId: request.requestedBy._id,
+        type: "application_status",
+        title: "Recommendation Letter Uploaded",
+        message: `${request.requestedTo.name} has uploaded your recommendation letter. You can now download it.`,
+        relatedId: request._id,
+        relatedModel: "RecommendationRequest",
+        link: "/career",
+        priority: "high"
+      });
     } catch (err) {
       console.error("Failed to send notification:", err);
     }
