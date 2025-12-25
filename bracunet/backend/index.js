@@ -1,2 +1,4 @@
 // Vercel serverless entry point
-export { default } from './src/index.js';
+import handler from './src/index.js';
+export default handler;
+
