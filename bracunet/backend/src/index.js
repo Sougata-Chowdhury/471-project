@@ -101,17 +101,31 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-// Connect to MongoDB and start server
+// Connect to MongoDB
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected) {
+    console.log('✓ Using existing MongoDB connection');
+    return;
+  }
+  
   try {
     await mongoose.connect(config.mongodb.uri);
+    isConnected = true;
     console.log('✓ MongoDB connected');
     
-
     // Seed badges on startup (non-blocking with timeout)
     seedBadges().catch(err => console.error('Badge seeding error:', err));
+  } catch (error) {
+    console.error('✗ MongoDB connection failed:', error.message);
+    throw error;
+  }
+};
 
-
+// For local development
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  connectDB().then(() => {
     const server = app.listen(config.server.port, () => {
       console.log(`✓ Server running on port ${config.server.port}`);
       console.log(`✓ Environment: ${config.server.env}`);
@@ -138,12 +152,14 @@ const connectDB = async () => {
         });
       });
     });
-  } catch (error) {
-    console.error('✗ MongoDB connection failed:', error.message);
+  }).catch(error => {
+    console.error('Failed to start server:', error);
     process.exit(1);
-  }
+  });
+}
+
+// For Vercel serverless
+export default async (req, res) => {
+  await connectDB();
+  return app(req, res);
 };
-
-connectDB();
-
-export default app;
