@@ -116,14 +116,18 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Update login streak
-    try {
-      const activity = await getUserActivity(user._id);
-      activity.updateStreak();
-      await activity.save();
-    } catch (error) {
-      console.error('Error updating login streak:', error);
-    }
+    // Update login streak (non-blocking)
+    getUserActivity(user._id)
+      .then(activity => {
+        if (activity && activity.updateStreak) {
+          activity.updateStreak();
+          return activity.save();
+        }
+      })
+      .catch(error => {
+        console.error('Error updating login streak:', error);
+        // Don't fail login if streak update fails
+      });
 
     return res.status(200).json({
       message: 'Login successful',
@@ -131,7 +135,12 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
