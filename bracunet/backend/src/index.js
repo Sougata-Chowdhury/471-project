@@ -54,7 +54,20 @@ app.use("/api/mentorship", mentorshipRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
-  res.status(200).json({ message: 'Server is running' });
+  res.status(200).json({ 
+    message: 'Server is running',
+    env: process.env.NODE_ENV,
+    mongooseState: mongoose.connection.readyState,
+    isVercel: !!process.env.VERCEL
+  });
+});
+
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'BracuNet Backend API',
+    status: 'online',
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Routes
