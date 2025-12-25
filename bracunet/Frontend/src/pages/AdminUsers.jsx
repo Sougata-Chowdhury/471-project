@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-const API_BASE = "http://localhost:3000";
+import { API_BASE } from '../config.js';
 
 function AdminUsers() {
   const { user } = useAuth();

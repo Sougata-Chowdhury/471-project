@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3000';
+import { API_BASE } from '../config.js';
 
 export default function NotificationSettings() {
   const { user } = useAuth();

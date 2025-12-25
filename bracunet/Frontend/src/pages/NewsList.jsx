@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { io } from 'socket.io-client';
 import config from '../config';
 
-const API_BASE = "http://localhost:3000";
+import { API_BASE } from '../config.js';
 
 const categories = [
   { value: "all", label: "All" },
