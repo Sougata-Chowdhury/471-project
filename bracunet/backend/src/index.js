@@ -105,26 +105,35 @@ app.use((err, req, res, next) => {
 let isConnected = false;
 
 const connectDB = async () => {
-  if (isConnected) {
+  if (isConnected && mongoose.connection.readyState === 1) {
     console.log('✓ Using existing MongoDB connection');
     return;
   }
   
   try {
-    await mongoose.connect(config.mongodb.uri);
+    // Serverless-friendly MongoDB connection options
+    const options = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+    
+    await mongoose.connect(config.mongodb.uri, options);
     isConnected = true;
     console.log('✓ MongoDB connected');
     
-    // Seed badges on startup (non-blocking with timeout)
-    seedBadges().catch(err => console.error('Badge seeding error:', err));
+    // Seed badges on startup (non-blocking with timeout) - only in non-serverless
+    if (!process.env.VERCEL) {
+      seedBadges().catch(err => console.error('Badge seeding error:', err));
+    }
   } catch (error) {
     console.error('✗ MongoDB connection failed:', error.message);
+    isConnected = false;
     throw error;
   }
 };
 
 // For local development
-if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+if (!process.env.VERCEL) {
   connectDB().then(() => {
     const server = app.listen(config.server.port, () => {
       console.log(`✓ Server running on port ${config.server.port}`);
@@ -133,7 +142,7 @@ if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
       console.log(`✓ Server is listening and ready to accept connections`);
     });
 
-    // Initialize Socket.IO
+    // Initialize Socket.IO (only in local mode)
     initializeSocket(server, config);
 
     server.on('error', (error) => {
@@ -156,10 +165,10 @@ if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
     console.error('Failed to start server:', error);
     process.exit(1);
   });
+} else {
+  // For Vercel serverless - connect to MongoDB on first invocation
+  connectDB().catch(err => console.error('MongoDB connection error:', err));
 }
 
-// For Vercel serverless
-export default async (req, res) => {
-  await connectDB();
-  return app(req, res);
-};
+// Export the Express app for Vercel serverless
+export default app;
