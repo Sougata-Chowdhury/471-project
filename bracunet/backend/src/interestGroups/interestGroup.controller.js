@@ -412,7 +412,15 @@ export const sendGroupMessage = async (req, res) => {
 
     // Emit real-time event
     if (global.io) {
-      global.io.to(`interestGroup_${groupId}`).emit('groupMessage', { ...populated.toObject(), groupId });
+      const messageData = { ...populated.toObject(), groupId };
+      console.log(`📤 Emitting groupMessage to room: interestGroup_${groupId}`);
+      console.log(`📦 Message data:`, { 
+        _id: messageData._id, 
+        sender: messageData.sender?.name,
+        message: messageData.message?.substring(0, 50),
+        groupId: messageData.groupId 
+      });
+      global.io.to(`interestGroup_${groupId}`).emit('groupMessage', messageData);
       // Notify all group members
       try {
         global.io.to(`group-${groupId}`).emit('interestGroupMessageInbox', {
@@ -423,7 +431,11 @@ export const sendGroupMessage = async (req, res) => {
           imageUrl: populated.imageUrl,
           createdAt: populated.createdAt,
         });
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error emitting inbox notification:', e);
+      }
+    } else {
+      console.warn('⚠️ global.io is not available for real-time messaging');
     }
 
     console.log('✅ Group message sent:', msg._id);

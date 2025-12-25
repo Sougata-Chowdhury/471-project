@@ -34,19 +34,49 @@ export default function GroupDetail() {
     getGroupPosts(id).then(res => setPosts(res.data.posts || res.data)).catch(console.error);
 
     // Socket.IO real-time setup
-    const socket = io(config.socketUrl, { transports: ['websocket'] });
+    console.log('🔌 Connecting to Socket.IO for group:', id);
+    const socket = io(config.socketUrl, { 
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 500,
+    });
     socketRef.current = socket;
-    socket.emit('joinGroupRoom', { groupId: id });
+    
+    socket.on('connect', () => {
+      console.log('✅ Socket connected, ID:', socket.id);
+      socket.emit('joinGroupRoom', { groupId: id });
+      console.log('📍 Joined group room:', id);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('❌ Socket.IO connection error:', err.message);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.warn('🔌 Socket disconnected:', reason);
+    });
+
     socket.on('groupMessage', (m) => {
+      console.log('📨 Received group message:', m._id);
       setMessages(prev => {
         // avoid duplicate messages
-        if (prev.some(pm => pm._id === m._id)) return prev;
+        if (prev.some(pm => pm._id === m._id)) {
+          console.log('⚠️ Duplicate message detected, skipping');
+          return prev;
+        }
+        console.log('✅ Adding message to state');
         return [...prev, m];
       });
     });
 
     return () => {
-      try { socket.emit('leaveGroupRoom', { groupId: id }); } catch(e){}
+      try { 
+        socket.emit('leaveGroupRoom', { groupId: id }); 
+        console.log('👋 Left group room:', id);
+      } catch(e){
+        console.error('Error leaving room:', e);
+      }
       socket.disconnect();
     };
   }, [id]);

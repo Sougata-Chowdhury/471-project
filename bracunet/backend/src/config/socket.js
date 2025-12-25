@@ -81,16 +81,20 @@ export const initializeSocket = (server, config) => {
     socket.on('joinInterestGroupRoom', ({ groupId }) => {
       if (groupId) {
         socket.join(`interestGroup_${groupId}`);
-        console.log(`User joined interest group room: ${groupId}`);
+        console.log(`✅ Socket ${socket.id} joined interest group room: interestGroup_${groupId}`);
       }
     });
 
     socket.on('leaveInterestGroupRoom', ({ groupId }) => {
-      if (groupId) socket.leave(`interestGroup_${groupId}`);
+      if (groupId) {
+        socket.leave(`interestGroup_${groupId}`);
+        console.log(`👋 Socket ${socket.id} left interest group room: interestGroup_${groupId}`);
+      }
     });
 
     socket.on('interestGroupMessage', (msg) => {
       if (msg && msg.groupId) {
+        console.log(`📤 Broadcasting interest group message to room: interestGroup_${msg.groupId}`);
         io.to(`interestGroup_${msg.groupId}`).emit('groupMessage', msg);
       }
     });
@@ -122,8 +126,8 @@ export const initializeSocket = (server, config) => {
       }
     });
 
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected:', socket.id);
+    socket.on('disconnect', (reason) => {
+      console.log(`🔌 Socket ${socket.id} disconnected: ${reason}`);
     });
   });
 
