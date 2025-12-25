@@ -117,6 +117,11 @@ app.get('/api/dashboard/admin', (req, res) => {
   res.json({ message: 'Admin Dashboard', role: 'admin' });
 });
 
+// 404 Not Found handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: '❌ Route not found', path: req.path });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err.message);
