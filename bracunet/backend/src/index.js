@@ -35,6 +35,37 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Connect to MongoDB - Define early for use in middleware
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    console.log('✓ Using existing MongoDB connection');
+    return;
+  }
+  
+  try {
+    // Serverless-friendly MongoDB connection options
+    const options = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+    
+    await mongoose.connect(config.mongodb.uri, options);
+    isConnected = true;
+    console.log('✓ MongoDB connected');
+    
+    // Seed badges on startup (non-blocking with timeout) - only in non-serverless
+    if (!process.env.VERCEL) {
+      seedBadges().catch(err => console.error('Badge seeding error:', err));
+    }
+  } catch (error) {
+    console.error('✗ MongoDB connection failed:', error.message);
+    isConnected = false;
+    throw error;
+  }
+};
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -45,6 +76,20 @@ app.use(
     credentials: config.cors.credentials,
   })
 );
+
+// Ensure DB connection in serverless mode
+app.use(async (req, res, next) => {
+  if (process.env.VERCEL && mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (err) {
+      console.error('DB connection middleware error:', err);
+      return res.status(500).json({ error: 'Database connection failed' });
+    }
+  }
+  next();
+});
+
 app.use("/api/news", newsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/notifications", notificationRoutes);
@@ -114,37 +159,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-// Connect to MongoDB
-let isConnected = false;
-
-const connectDB = async () => {
-  if (isConnected && mongoose.connection.readyState === 1) {
-    console.log('✓ Using existing MongoDB connection');
-    return;
-  }
-  
-  try {
-    // Serverless-friendly MongoDB connection options
-    const options = {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    };
-    
-    await mongoose.connect(config.mongodb.uri, options);
-    isConnected = true;
-    console.log('✓ MongoDB connected');
-    
-    // Seed badges on startup (non-blocking with timeout) - only in non-serverless
-    if (!process.env.VERCEL) {
-      seedBadges().catch(err => console.error('Badge seeding error:', err));
-    }
-  } catch (error) {
-    console.error('✗ MongoDB connection failed:', error.message);
-    isConnected = false;
-    throw error;
-  }
-};
-
 // For local development only
 if (!process.env.VERCEL) {
   connectDB().then(() => {
@@ -179,22 +193,12 @@ if (!process.env.VERCEL) {
     process.exit(1);
   });
 } else {
-  // For Vercel serverless - auto-connect on first cold start
-  console.log('Running in Vercel serverless mode');
-  connectDB().catch(err => console.error('MongoDB connection error in serverless:', err));
+  // For Vercel serverless - connect on cold start
+  console.log('⚡ Running in Vercel serverless mode');
+  connectDB().catch(err => {
+    console.error('❌ Initial MongoDB connection failed:', err.message);
+  });
 }
 
-// Serverless handler - wrap Express with async DB connection
-const handler = async (req, res) => {
-  try {
-    await connectDB();
-    return app(req, res);
-  } catch (error) {
-    console.error('Handler error:', error);
-    return res.status(500).json({ error: 'Database connection failed', message: error.message });
-  }
-};
-
-// Export for serverless and testing
-export { connectDB };
-export default handler;
+// Export the Express app directly for Vercel
+export default app;
