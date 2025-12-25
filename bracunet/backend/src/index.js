@@ -178,8 +178,23 @@ if (!process.env.VERCEL) {
     console.error('Failed to start server:', error);
     process.exit(1);
   });
+} else {
+  // For Vercel serverless - auto-connect on first cold start
+  console.log('Running in Vercel serverless mode');
+  connectDB().catch(err => console.error('MongoDB connection error in serverless:', err));
 }
+
+// Serverless handler - wrap Express with async DB connection
+const handler = async (req, res) => {
+  try {
+    await connectDB();
+    return app(req, res);
+  } catch (error) {
+    console.error('Handler error:', error);
+    return res.status(500).json({ error: 'Database connection failed', message: error.message });
+  }
+};
 
 // Export for serverless and testing
 export { connectDB };
-export default app;
+export default handler;
