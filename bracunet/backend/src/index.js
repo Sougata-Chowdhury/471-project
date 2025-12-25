@@ -77,25 +77,18 @@ app.use(
   })
 );
 
-// Ensure DB connection in serverless mode
-app.use(async (req, res, next) => {
-  if (process.env.VERCEL && mongoose.connection.readyState !== 1) {
-    try {
-      await connectDB();
-    } catch (err) {
-      console.error('DB connection middleware error:', err);
-      return res.status(500).json({ error: 'Database connection failed' });
-    }
-  }
-  next();
-});
-
 app.use("/api/news", newsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/notifications", notificationRoutes);
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded files - skip in serverless
+if (!process.env.VERCEL) {
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+}
 app.use("/api/mentorship", mentorshipRoutes);
+
+// Ignore favicon and static file requests in serverless
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.png', (req, res) => res.status(204).end());
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -200,5 +193,6 @@ if (!process.env.VERCEL) {
   });
 }
 
-// Export the Express app directly for Vercel
+// Export the Express app and connectDB for Vercel
+export { connectDB };
 export default app;
