@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import AnimatedBackground from '../components/AnimatedBackground';
 
 export const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
+    <>
+      <AnimatedBackground />
+      <div className="min-h-screen relative">
       <nav className="bg-white shadow">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">BracuNet</h1>
@@ -47,5 +50,6 @@ export const Home = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };

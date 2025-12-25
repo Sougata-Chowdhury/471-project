@@ -5,6 +5,7 @@ import { fetchGroups, requestJoinGroup } from '../api';
 import GroupCard from '../components/GroupCard';
 import { io } from 'socket.io-client';
 import config from '../config';
+import AnimatedBackground from '../components/AnimatedBackground';
 
 export default function Groups() {
   const navigate = useNavigate();
@@ -71,31 +72,36 @@ export default function Groups() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4"></div>
-          <p className="text-white text-lg font-medium">Loading groups...</p>
+      <>
+        <AnimatedBackground />
+        <div className="min-h-screen relative flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4"></div>
+            <p className="text-white text-lg font-medium">Loading groups...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
+    <>
+      <AnimatedBackground />
+      <div className="min-h-screen relative">
       {/* Modern Sticky Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200">
+      <nav className="sticky top-0 z-50 bg-white/10 backdrop-blur-md shadow-lg border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 👥
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold text-white">
                   Interest Groups
                 </h1>
-                <p className="text-xs text-gray-500">Connect & Collaborate</p>
+                <p className="text-xs text-white/70">Connect & Collaborate</p>
               </div>
             </div>
 
@@ -104,7 +110,7 @@ export default function Groups() {
               {user && user.role === 'admin' && (
                 <button
                   onClick={() => navigate('/groups/create')}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                  className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg shadow-md hover:bg-white/30 hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2 border border-white/30"
                 >
                   <span className="text-lg">+</span>
                   <span className="hidden sm:inline">Create Group</span>
@@ -112,7 +118,7 @@ export default function Groups() {
               )}
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                className="px-4 py-2 text-sm font-medium text-white hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200 border border-white/30"
               >
                 ← Dashboard
               </button>
@@ -174,7 +180,7 @@ export default function Groups() {
             {user?.role === 'admin' && (
               <button
                 onClick={() => navigate('/groups/create')}
-                className="px-6 py-3 bg-white hover:bg-gray-50 text-blue-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="px-6 py-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/30"
               >
                 Create First Group
               </button>
@@ -189,7 +195,7 @@ export default function Groups() {
                   {!user ? (
                     <button
                       onClick={() => navigate('/login')}
-                      className="flex-1 px-4 py-2.5 bg-white hover:bg-gray-50 text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+                      className="flex-1 px-4 py-2.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-white/30"
                     >
                       🔐 Login to Join
                     </button>
@@ -211,7 +217,7 @@ export default function Groups() {
                       </button>
                       <button
                         onClick={() => addToDashboard(group)}
-                        className="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200"
+                        className="px-4 py-2.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-white/30"
                         title="Add to Dashboard"
                       >
                         📌
@@ -227,7 +233,7 @@ export default function Groups() {
                       </button>
                       <button
                         onClick={() => addToDashboard(group)}
-                        className="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200"
+                        className="px-4 py-2.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-white/30"
                         title="Add to Dashboard"
                       >
                         📌
@@ -241,5 +247,6 @@ export default function Groups() {
         )}
       </div>
     </div>
+    </>
   );
 }
