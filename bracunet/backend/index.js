@@ -1,23 +1,22 @@
 // Vercel serverless entry point
-import app, { connectDB } from './src/index.js';
+import mongoose from 'mongoose';
+import app from './src/index.js';
+import { config } from './src/config/index.js';
 
-// Ensure DB connection before handling requests
-let dbConnected = false;
+// Connect to MongoDB on cold start
+mongoose
+  .connect(config.mongodb.uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log('✅ Connected to MongoDB');
+  })
+  .catch((error) => {
+    console.error('❌ MongoDB connection error:', error);
+  });
 
-export default async function handler(req, res) {
-  // Connect to DB on first request (cold start)
-  if (!dbConnected) {
-    try {
-      await connectDB();
-      dbConnected = true;
-    } catch (error) {
-      console.error('DB connection failed:', error);
-      // Continue anyway - some routes don't need DB
-    }
-  }
-  
-  // Handle the request
-  return app(req, res);
-}
+// Export for Vercel
+export default app;
 
 

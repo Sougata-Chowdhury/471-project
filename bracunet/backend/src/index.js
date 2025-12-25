@@ -35,34 +35,6 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Connect to MongoDB
-let isConnected = false;
-
-const connectDB = async () => {
-  if (isConnected && mongoose.connection.readyState === 1) {
-    console.log('✓ Using existing MongoDB connection');
-    return;
-  }
-  
-  try {
-    await mongoose.connect(config.mongodb.uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = true;
-    console.log('✅ MongoDB connected');
-    
-    // Seed badges on startup (non-blocking with timeout) - only in non-serverless
-    if (!process.env.VERCEL) {
-      seedBadges().catch(err => console.error('Badge seeding error:', err));
-    }
-  } catch (error) {
-    console.error('❌ MongoDB connection failed:', error.message);
-    isConnected = false;
-    throw error;
-  }
-};
-
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -156,38 +128,48 @@ app.use((err, req, res, next) => {
 
 // For local development only
 if (!process.env.VERCEL) {
-  connectDB().then(() => {
-    const server = app.listen(config.server.port, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${config.server.port}`);
-      console.log(`✓ Environment: ${config.server.env}`);
-      console.log(`✓ CORS Origin: ${config.cors.origin}`);
-    });
+  mongoose
+    .connect(config.mongodb.uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then(() => {
+      console.log('✅ Connected to MongoDB');
+      
+      // Seed badges after connection
+      seedBadges().catch(err => console.error('Badge seeding error:', err));
+      
+      const server = app.listen(config.server.port, '0.0.0.0', () => {
+        console.log(`🚀 Server running on port ${config.server.port}`);
+        console.log(`✓ Environment: ${config.server.env}`);
+        console.log(`✓ CORS Origin: ${config.cors.origin}`);
+      });
 
-    // Initialize Socket.IO (only in local mode)
-    initializeSocket(server, config);
+      // Initialize Socket.IO (only in local mode)
+      initializeSocket(server, config);
 
-    server.on('error', (error) => {
-      console.error('✗ Server error:', error.message);
-      process.exit(1);
-    });
+      server.on('error', (error) => {
+        console.error('✗ Server error:', error.message);
+        process.exit(1);
+      });
 
-    // Handle graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received, closing server...');
-      server.close(() => {
-        console.log('Server closed');
-        mongoose.connection.close(false, () => {
-          console.log('MongoDB connection closed');
-          process.exit(0);
+      // Handle graceful shutdown
+      process.on('SIGTERM', () => {
+        console.log('SIGTERM received, closing server...');
+        server.close(() => {
+          console.log('Server closed');
+          mongoose.connection.close(false, () => {
+            console.log('MongoDB connection closed');
+            process.exit(0);
+          });
         });
       });
+    })
+    .catch((error) => {
+      console.error('❌ MongoDB connection error:', error);
+      process.exit(1);
     });
-  }).catch(error => {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  });
 }
 
-// Export for Vercel serverless
-export { connectDB };
+// Export for Vercel
 export default app;
