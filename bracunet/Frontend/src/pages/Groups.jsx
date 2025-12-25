@@ -71,7 +71,7 @@ export default function Groups() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4"></div>
           <p className="text-white text-lg font-medium">Loading groups...</p>
@@ -81,7 +81,7 @@ export default function Groups() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
       {/* Modern Sticky Navbar */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

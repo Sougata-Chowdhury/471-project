@@ -129,8 +129,8 @@ export const Dashboard = () => {
               {/* Notification Bell */}
               <NotificationBell />
 
-              {/* Verification Badge */}
-              {getVerificationBadge()}
+              {/* Verification Badge - Hidden for admin */}
+              {user.role !== 'admin' && getVerificationBadge()}
 
               {/* Role Badge */}
               <span

@@ -76,10 +76,25 @@ function CreateEvent() {
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setFormData((prev) => {
+      const updates = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+      
+      // When toggling virtual event, clear the opposite field
+      if (name === "isVirtual") {
+        if (checked) {
+          // Switching to virtual - clear location
+          updates.location = "";
+        } else {
+          // Switching to physical - clear meeting link
+          updates.meetingLink = "";
+        }
+      }
+      
+      return updates;
+    });
   };
   
   const handleImageChange = (e) => {
@@ -151,6 +166,11 @@ function CreateEvent() {
     
     if (formData.isVirtual && !formData.meetingLink) {
       setError("Please provide a meeting link for virtual events");
+      return;
+    }
+    
+    if (!formData.isVirtual && !formData.location) {
+      setError("Please provide a location for in-person events");
       return;
     }
     
@@ -331,50 +351,63 @@ function CreateEvent() {
             </div>
             
             {/* Virtual Event Toggle */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isVirtual"
-                name="isVirtual"
-                checked={formData.isVirtual}
-                onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <label htmlFor="isVirtual" className="text-sm font-medium text-gray-700">
-                This is a virtual event
-              </label>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-2 border-gray-200">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="isVirtual"
+                  name="isVirtual"
+                  checked={formData.isVirtual}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <label htmlFor="isVirtual" className="text-sm font-semibold text-gray-700 cursor-pointer">
+                  🌐 This is a virtual event (online meeting)
+                </label>
+              </div>
+              {formData.isVirtual && (
+                <p className="text-xs text-gray-600 mt-2 ml-8">
+                  ℹ️ You'll need to provide a meeting link (Zoom, Google Meet, etc.)
+                </p>
+              )}
             </div>
             
             {/* Location or Meeting Link */}
             {formData.isVirtual ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Meeting Link <span className="text-red-500">*</span>
+                  🔗 Meeting Link <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="url"
                   name="meetingLink"
                   value={formData.meetingLink}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://zoom.us/j/..."
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="https://zoom.us/j/123456789 or https://meet.google.com/abc-defg-hij"
                   required={formData.isVirtual}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Provide the full URL for the online meeting (Zoom, Google Meet, Teams, etc.)
+                </p>
               </div>
             ) : (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Location <span className="text-red-500">*</span>
+                  📍 Location <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., University Auditorium"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="e.g., University Auditorium, Room 301, BRAC University"
                   required={!formData.isVirtual}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Provide the physical address or venue name where the event will take place
+                </p>
               </div>
             )}
             
@@ -388,6 +421,19 @@ function CreateEvent() {
                 name="capacity"
                 value={formData.capacity}
                 onChange={handleChange}
+                onKeyDown={(e) => {
+                  // Prevent: e, E, +, -, . (decimal)
+                  if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => {
+                  // Prevent pasting non-numeric content
+                  const pasteData = e.clipboardData.getData('text');
+                  if (!/^\d+$/.test(pasteData)) {
+                    e.preventDefault();
+                  }
+                }}
                 min="1"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Maximum number of attendees"

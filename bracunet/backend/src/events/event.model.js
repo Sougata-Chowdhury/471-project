@@ -29,7 +29,9 @@ const eventSchema = new mongoose.Schema(
     },
     location: { 
       type: String, 
-      required: true 
+      required: function() {
+        return !this.isVirtual;
+      }
     },
     isVirtual: { 
       type: Boolean, 
@@ -37,7 +39,9 @@ const eventSchema = new mongoose.Schema(
     },
     meetingLink: { 
       type: String, 
-      default: null 
+      required: function() {
+        return this.isVirtual;
+      }
     },
     capacity: { 
       type: Number, 

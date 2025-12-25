@@ -44,40 +44,74 @@ const MyInterestGroups = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-blue-600 hover:text-blue-700 mb-3 flex items-center gap-1"
-            >
-              ← Back to Dashboard
-            </button>
-            <h1 className="text-3xl font-bold">My Groups</h1>
-            <p className="text-gray-600">Groups you created or joined</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
+      {/* Modern Navbar */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg">
+                👥
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                My Groups
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/interest-groups/create')}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+              >
+                ✨ Create Group
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 font-semibold"
+              >
+                ← Dashboard
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => navigate('/interest-groups/create')}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
-          >
-            + Create Group
-          </button>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="text-6xl mb-4">👥</div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+            My Interest Groups
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            Connect with like-minded individuals and collaborate on shared interests
+          </p>
         </div>
 
-        {/* Groups List */}
+        {/* Groups Grid */}
         {loading ? (
-          <p className="text-center text-gray-600">Loading...</p>
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+            <p className="text-gray-600">Loading your groups...</p>
+          </div>
         ) : groups.length === 0 ? (
-          <div className="text-center bg-white rounded-lg shadow-md p-12">
-            <p className="text-gray-600 mb-4">You haven't created or joined any groups yet</p>
-            <button
-              onClick={() => navigate('/interest-groups')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
-            >
-              Browse Groups
-            </button>
+          <div className="bg-white rounded-2xl shadow-xl p-12 text-center border border-gray-100">
+            <div className="text-6xl mb-4">📭</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">No Groups Yet</h3>
+            <p className="text-gray-600 mb-6">You haven't created or joined any groups yet</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => navigate('/interest-groups')}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+              >
+                🔍 Browse Groups
+              </button>
+              <button
+                onClick={() => navigate('/interest-groups/create')}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+              >
+                ✨ Create Group
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -85,29 +119,33 @@ const MyInterestGroups = () => {
               const isCreator = group.creator?._id === group.creator?._id;
 
               return (
-                <div key={group._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                    <span className="text-4xl text-white font-bold">{group.name.charAt(0).toUpperCase()}</span>
+                <div key={group._id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:scale-105 border border-gray-100">
+                  <div className="h-32 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <span className="text-5xl text-white font-bold z-10">{group.name.charAt(0).toUpperCase()}</span>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg mb-1">{group.name}</h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{group.description}</p>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{group.name}</h3>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{group.description}</p>
 
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
                         {group.category.charAt(0).toUpperCase() + group.category.slice(1)}
                       </span>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold border border-green-200">
                         ✓ Active
                       </span>
                     </div>
 
-                    <p className="text-xs text-gray-600 mb-4">{group.members.length} members</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                      <span>👤</span>
+                      <span>{group.members?.length || 0} members</span>
+                    </div>
 
                     <div className="flex gap-2">
                       <button
                         onClick={() => navigate(`/interest-groups/${group._id}/chat`)}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-semibold"
+                        className="flex-1 py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold text-sm"
                       >
                         💬 Chat
                       </button>
@@ -115,13 +153,15 @@ const MyInterestGroups = () => {
                         <>
                           <button
                             onClick={() => handleEdit(group._id)}
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm"
+                            className="py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl transition-all duration-200 font-semibold text-sm"
+                            title="Edit"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(group._id)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"
+                            className="py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all duration-200 font-semibold text-sm"
+                            title="Delete"
                           >
                             🗑️
                           </button>
