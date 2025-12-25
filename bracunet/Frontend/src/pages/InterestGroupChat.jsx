@@ -64,6 +64,7 @@ const InterestGroupChat = () => {
 
     let socket = socketRef.current;
     if (!socket) {
+      console.log('🔌 Connecting to Socket.IO for interest group:', groupId);
       socket = io(config.socketUrl, {
         autoConnect: true,
         reconnection: true,
@@ -74,35 +75,55 @@ const InterestGroupChat = () => {
       socketRef.current = socket;
 
       socket.on('connect', () => {
-        console.log('✅ Socket connected to interest group');
+        console.log('✅ Socket connected to interest group, ID:', socket.id);
         socket.emit('joinInterestGroupRoom', { groupId });
+        console.log('📍 Joined interest group room:', groupId);
       });
 
-      socket.on('disconnect', () => {
-        console.warn('Socket disconnected');
+      socket.on('connect_error', (err) => {
+        console.error('❌ Socket.IO connection error:', err.message);
       });
-    }
 
-    // Always set up the message listener
-    socket.off('groupMessage'); // Remove old listener
-    socket.on('groupMessage', (msg) => {
-      console.log('📨 Received group message:', msg._id, 'for group:', msg.groupId);
-      const msgGroupId = typeof msg.groupId === 'object' ? String(msg.groupId?._id || msg.groupId) : String(msg.groupId);
-      if (msgGroupId === String(groupId)) {
-        setMessages((prev) => [...prev, msg]);
+      socket.on('disconnect', (reason) => {
+        console.warn('🔌 Socket disconnected:', reason);
+      });
+
+      socket.on('groupMessage', (msg) => {
+        console.log('📨 Received group message:', msg._id, 'for group:', msg.groupId);
+        const msgGroupId = normalizeId(msg.groupId);
+        const currentGroupId = normalizeId(groupId);
+        
+        if (msgGroupId === currentGroupId) {
+          setMessages((prev) => {
+            // Prevent duplicate messages
+            if (prev.some(m => normalizeId(m._id) === normalizeId(msg._id))) {
+              console.log('⚠️ Duplicate message detected, skipping');
+              return prev;
+            }
+            console.log('✅ Adding message to state');
+            return [...prev, msg];
+          });
+        } else {
+          console.log('⚠️ Message for different group, ignoring');
+        }
+      });
+    } else {
+      if (socket.connected) {
+        socket.emit('joinInterestGroupRoom', { groupId });
+        console.log('📍 Re-joined interest group room:', groupId);
       }
-    });
-
-    // Join room when component mounts or groupId changes
-    if (socket.connected) {
-      socket.emit('joinInterestGroupRoom', { groupId });
     }
 
     return () => {
-      try {
-        socket.emit('leaveInterestGroupRoom', { groupId });
-      } catch (e) {}
-      socket.off('groupMessage');
+      const socket = socketRef.current;
+      if (socket) {
+        try {
+          socket.emit('leaveInterestGroupRoom', { groupId });
+          console.log('👋 Left interest group room:', groupId);
+        } catch (e) {
+          console.error('Error leaving room:', e);
+        }
+      }
     };
   }, [groupId, currentUserId]);
 
