@@ -35,7 +35,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Connect to MongoDB - Define early for use in middleware
+// Connect to MongoDB
 let isConnected = false;
 
 const connectDB = async () => {
@@ -45,22 +45,19 @@ const connectDB = async () => {
   }
   
   try {
-    // Serverless-friendly MongoDB connection options
-    const options = {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    };
-    
-    await mongoose.connect(config.mongodb.uri, options);
+    await mongoose.connect(config.mongodb.uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     isConnected = true;
-    console.log('✓ MongoDB connected');
+    console.log('✅ MongoDB connected');
     
     // Seed badges on startup (non-blocking with timeout) - only in non-serverless
     if (!process.env.VERCEL) {
       seedBadges().catch(err => console.error('Badge seeding error:', err));
     }
   } catch (error) {
-    console.error('✗ MongoDB connection failed:', error.message);
+    console.error('❌ MongoDB connection failed:', error.message);
     isConnected = false;
     throw error;
   }
@@ -100,11 +97,13 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Root route
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'BracuNet Backend API',
+    message: '✅ BracuNet Backend API is running on Vercel!',
     status: 'online',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -148,18 +147,20 @@ app.get('/api/dashboard/admin', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: 'Internal server error' });
+  console.error('❌ Server Error:', err.message);
+  res.status(err.status || 500).json({ 
+    message: err.message || 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 // For local development only
 if (!process.env.VERCEL) {
   connectDB().then(() => {
-    const server = app.listen(config.server.port, () => {
-      console.log(`✓ Server running on port ${config.server.port}`);
+    const server = app.listen(config.server.port, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${config.server.port}`);
       console.log(`✓ Environment: ${config.server.env}`);
       console.log(`✓ CORS Origin: ${config.cors.origin}`);
-      console.log(`✓ Server is listening and ready to accept connections`);
     });
 
     // Initialize Socket.IO (only in local mode)
@@ -182,17 +183,11 @@ if (!process.env.VERCEL) {
       });
     });
   }).catch(error => {
-    console.error('Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
-  });
-} else {
-  // For Vercel serverless - connect on cold start
-  console.log('⚡ Running in Vercel serverless mode');
-  connectDB().catch(err => {
-    console.error('❌ Initial MongoDB connection failed:', err.message);
   });
 }
 
-// Export the Express app and connectDB for Vercel
+// Export for Vercel serverless
 export { connectDB };
 export default app;
