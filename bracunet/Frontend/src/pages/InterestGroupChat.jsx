@@ -94,6 +94,8 @@ const InterestGroupChat = () => {
       socket.on('reconnect', (attemptNumber) => {
         console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
         joinRoom();
+        // Refresh messages after reconnection
+        fetchMessages();
       });
 
       socket.on('reconnect_attempt', (attemptNumber) => {
@@ -153,7 +155,13 @@ const InterestGroupChat = () => {
       }
     }
 
+    // Polling fallback: check for new messages every 3 seconds as backup
+    const pollInterval = setInterval(() => {
+      fetchMessages();
+    }, 3000);
+
     return () => {
+      clearInterval(pollInterval);
       const socket = socketRef.current;
       if (socket) {
         try {
