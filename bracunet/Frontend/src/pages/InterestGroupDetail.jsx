@@ -107,14 +107,16 @@ const InterestGroupDetail = () => {
 
       socket.on('groupPost', (newPost) => {
         console.log('📝 Received new group post:', newPost._id);
-        if (newPost.groupId === groupId) {
+        const newPostGroupId = typeof newPost.groupId === 'object' ? String(newPost.groupId?._id || newPost.groupId) : String(newPost.groupId);
+        if (newPostGroupId === String(groupId)) {
           setPosts((prev) => [newPost, ...prev]);
         }
       });
 
       socket.on('groupPostUpdated', (updatedPost) => {
         console.log('✏️ Post updated:', updatedPost._id);
-        if (updatedPost.groupId === groupId) {
+        const updatedPostGroupId = typeof updatedPost.groupId === 'object' ? String(updatedPost.groupId?._id || updatedPost.groupId) : String(updatedPost.groupId);
+        if (updatedPostGroupId === String(groupId)) {
           setPosts((prev) => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
         }
       });

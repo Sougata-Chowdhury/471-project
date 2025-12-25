@@ -141,24 +141,23 @@ const MentorshipChat = () => {
     if (socket.connected) joinRoom();
     socket.on('connect', joinRoom);
 
-    // Add message listener once
-    if (!socket.__mentorshipListenerAdded) {
-      socket.on('mentorshipMessage', (msg) => {
-        console.log('📨 Received real-time message:', msg._id, msg.message);
-        if (msg.mentorshipId === selectedMentorship) {
-          setMessages((prev) => [...prev, msg]);
-          const senderId = normalizeId(msg.sender);
-          const receiverId = normalizeId(msg.receiver);
-          const addressedToMe = receiverId && myNormId && receiverId === myNormId;
-          const sentByMe = senderId && myNormId && senderId === myNormId;
-          if (addressedToMe && !sentByMe && msg.read === false && !msg.isCallEvent) {
-            setUnreadCountForThread((c) => c + 1);
-          }
-          fetchConversations();
+    // Always set up the message listener (remove old one first)
+    socket.off('mentorshipMessage');
+    socket.on('mentorshipMessage', (msg) => {
+      console.log('📨 Received real-time message:', msg._id, msg.message, 'for mentorship:', msg.mentorshipId);
+      const msgMentorshipId = typeof msg.mentorshipId === 'object' ? String(msg.mentorshipId?._id || msg.mentorshipId) : String(msg.mentorshipId);
+      if (msgMentorshipId === String(selectedMentorship)) {
+        setMessages((prev) => [...prev, msg]);
+        const senderId = normalizeId(msg.sender);
+        const receiverId = normalizeId(msg.receiver);
+        const addressedToMe = receiverId && myNormId && receiverId === myNormId;
+        const sentByMe = senderId && myNormId && senderId === myNormId;
+        if (addressedToMe && !sentByMe && msg.read === false && !msg.isCallEvent) {
+          setUnreadCountForThread((c) => c + 1);
         }
-      });
-      socket.__mentorshipListenerAdded = true;
-    }
+        fetchConversations();
+      }
+    });
 
     return () => {
       try { socket.emit('leaveMentorshipRoom', { mentorshipId: selectedMentorship }); } catch(e) {}

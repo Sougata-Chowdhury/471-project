@@ -78,17 +78,23 @@ const InterestGroupChat = () => {
         socket.emit('joinInterestGroupRoom', { groupId });
       });
 
-      socket.on('groupMessage', (msg) => {
-        console.log('📨 Received group message:', msg._id);
-        if (msg.groupId === groupId) {
-          setMessages((prev) => [...prev, msg]);
-        }
-      });
-
       socket.on('disconnect', () => {
         console.warn('Socket disconnected');
       });
-    } else {
+    }
+
+    // Always set up the message listener
+    socket.off('groupMessage'); // Remove old listener
+    socket.on('groupMessage', (msg) => {
+      console.log('📨 Received group message:', msg._id, 'for group:', msg.groupId);
+      const msgGroupId = typeof msg.groupId === 'object' ? String(msg.groupId?._id || msg.groupId) : String(msg.groupId);
+      if (msgGroupId === String(groupId)) {
+        setMessages((prev) => [...prev, msg]);
+      }
+    });
+
+    // Join room when component mounts or groupId changes
+    if (socket.connected) {
       socket.emit('joinInterestGroupRoom', { groupId });
     }
 
@@ -96,6 +102,7 @@ const InterestGroupChat = () => {
       try {
         socket.emit('leaveInterestGroupRoom', { groupId });
       } catch (e) {}
+      socket.off('groupMessage');
     };
   }, [groupId, currentUserId]);
 
