@@ -295,7 +295,7 @@ export const Dashboard = () => {
 
           <div
             className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer border-l-4 border-indigo-500"
-            onClick={() => navigate('/groups')}
+            onClick={() => navigate('/interest-groups')}
           >
             <div className="text-3xl mb-3">👥</div>
             <h3 className="font-bold text-gray-800 text-lg mb-2">Interest Groups</h3>

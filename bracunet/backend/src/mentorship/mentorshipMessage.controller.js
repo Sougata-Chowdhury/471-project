@@ -43,9 +43,23 @@ export const sendMessage = async (req, res) => {
       console.error('⚠️ Notification error:', notifyErr?.message || notifyErr);
     }
 
-    // Emit real-time event
+    // Emit real-time events
     if (global.io) {
+      // To participants currently viewing this mentorship thread
       global.io.to(`mentorship_${mentorshipId}`).emit('mentorshipMessage', { ...populated.toObject(), mentorshipId });
+      // To receiver's personal inbox so the sidebar updates even if thread isn't open
+      try {
+        global.io.to(`user-${receiverId}`).emit('mentorshipMessageInbox', {
+          mentorshipId,
+          messageId: populated._id,
+          sender: populated.sender,
+          receiver: populated.receiver,
+          isCallEvent: populated.isCallEvent || false,
+          createdAt: populated.createdAt,
+        });
+      } catch (e) {
+        console.warn('⚠️ Failed to emit inbox event:', e?.message || e);
+      }
     }
 
     res.status(201).json(populated);

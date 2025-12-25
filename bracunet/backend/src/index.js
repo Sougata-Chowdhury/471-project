@@ -28,6 +28,7 @@ import donationRoutes from './donations/donation.routes.js';
 import careerRoutes from './career/career.routes.js';
 import recommendationRoutes from './career/recommendation.routes.js';
 import analyticsRoutes from './analytics/analytics.routes.js';
+import interestGroupRoutes from './interestGroups/interestGroup.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,6 +72,7 @@ app.use('/api/donations', donationRoutes);
 app.use('/api/career', careerRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/interest-groups', interestGroupRoutes);
 
 // Ensure join endpoint is also available directly on the app in case router mounting fails
 app.post('/api/groups/:id/join', protect, joinGroup);
@@ -191,6 +193,24 @@ const connectDB = async () => {
       socket.on('mentorshipMessage', (msg) => {
         if (msg && msg.mentorshipId) {
           io.to(`mentorship_${msg.mentorshipId}`).emit('mentorshipMessage', msg);
+        }
+      });
+
+      // Interest group messaging
+      socket.on('joinInterestGroupRoom', ({ groupId }) => {
+        if (groupId) {
+          socket.join(`interestGroup_${groupId}`);
+          console.log(`User joined interest group room: ${groupId}`);
+        }
+      });
+
+      socket.on('leaveInterestGroupRoom', ({ groupId }) => {
+        if (groupId) socket.leave(`interestGroup_${groupId}`);
+      });
+
+      socket.on('interestGroupMessage', (msg) => {
+        if (msg && msg.groupId) {
+          io.to(`interestGroup_${msg.groupId}`).emit('groupMessage', msg);
         }
       });
 
