@@ -36,17 +36,36 @@ export default function GroupDetail() {
     // Socket.IO real-time setup
     console.log('🔌 Connecting to Socket.IO for group:', id);
     const socket = io(config.socketUrl, { 
-      transports: ['websocket', 'polling'],
+      autoConnect: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 500,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      transports: ['polling', 'websocket'],
+      upgrade: true,
     });
     socketRef.current = socket;
     
+    const joinRoom = () => {
+      if (socket.connected) {
+        socket.emit('joinGroupRoom', { groupId: id });
+        console.log('📍 Joined group room:', id);
+      }
+    };
+
     socket.on('connect', () => {
       console.log('✅ Socket connected, ID:', socket.id);
-      socket.emit('joinGroupRoom', { groupId: id });
-      console.log('📍 Joined group room:', id);
+      joinRoom();
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
+      joinRoom();
+    });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('🔄 Reconnection attempt', attemptNumber);
     });
 
     socket.on('connect_error', (err) => {
@@ -55,6 +74,9 @@ export default function GroupDetail() {
 
     socket.on('disconnect', (reason) => {
       console.warn('🔌 Socket disconnected:', reason);
+      if (reason === 'io server disconnect') {
+        socket.connect();
+      }
     });
 
     socket.on('groupMessage', (m) => {

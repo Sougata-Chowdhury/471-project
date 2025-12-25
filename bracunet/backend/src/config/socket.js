@@ -7,6 +7,12 @@ export const initializeSocket = (server, config) => {
       methods: ['GET', 'POST'],
       credentials: true,
     },
+    transports: ['polling', 'websocket'],
+    allowUpgrades: true,
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    connectTimeout: 45000,
+    upgradeTimeout: 10000,
   });
 
   // Export io for use in controllers globally

@@ -70,14 +70,42 @@ const InterestGroupChat = () => {
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 500,
-        transports: ['websocket', 'polling'],
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        transports: ['polling', 'websocket'],
+        upgrade: true,
+        forceNew: false,
+        multiplex: true,
       });
       socketRef.current = socket;
 
+      const joinRoom = () => {
+        if (socket.connected) {
+          socket.emit('joinInterestGroupRoom', { groupId });
+          console.log('📍 Joined interest group room:', groupId);
+        }
+      };
+
       socket.on('connect', () => {
         console.log('✅ Socket connected to interest group, ID:', socket.id);
-        socket.emit('joinInterestGroupRoom', { groupId });
-        console.log('📍 Joined interest group room:', groupId);
+        joinRoom();
+      });
+
+      socket.on('reconnect', (attemptNumber) => {
+        console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
+        joinRoom();
+      });
+
+      socket.on('reconnect_attempt', (attemptNumber) => {
+        console.log('🔄 Reconnection attempt', attemptNumber);
+      });
+
+      socket.on('reconnect_error', (err) => {
+        console.error('❌ Reconnection error:', err.message);
+      });
+
+      socket.on('reconnect_failed', () => {
+        console.error('❌ Reconnection failed - max attempts reached');
       });
 
       socket.on('connect_error', (err) => {
@@ -86,6 +114,10 @@ const InterestGroupChat = () => {
 
       socket.on('disconnect', (reason) => {
         console.warn('🔌 Socket disconnected:', reason);
+        if (reason === 'io server disconnect') {
+          // Server disconnected the socket, try to reconnect manually
+          socket.connect();
+        }
       });
 
       socket.on('groupMessage', (msg) => {
@@ -107,10 +139,17 @@ const InterestGroupChat = () => {
           console.log('⚠️ Message for different group, ignoring');
         }
       });
+
+      // Initial join attempt
+      joinRoom();
     } else {
+      // Re-join room when groupId changes
       if (socket.connected) {
         socket.emit('joinInterestGroupRoom', { groupId });
         console.log('📍 Re-joined interest group room:', groupId);
+      } else {
+        // If not connected, connect and join when ready
+        socket.connect();
       }
     }
 
