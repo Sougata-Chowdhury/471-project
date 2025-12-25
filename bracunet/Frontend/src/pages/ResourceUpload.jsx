@@ -100,6 +100,7 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { API_BASE } from '../config';
 
 export default function ResourceUpload({ onUploaded }) {
   const { user } = useContext(AuthContext);
@@ -129,7 +130,7 @@ export default function ResourceUpload({ onUploaded }) {
       setMessage("");
 
       const res = await axios.post(
-        "http://localhost:3000/api/resources",
+        `${API_BASE}/api/resources`,
         formData,
         {
           withCredentials: true,

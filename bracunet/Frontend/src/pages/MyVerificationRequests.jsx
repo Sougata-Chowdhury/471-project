@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 
 export const MyVerificationRequests = () => {
   const { user, logout } = useAuth();
@@ -18,7 +19,7 @@ export const MyVerificationRequests = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/verification/my-requests', {
+      const response = await fetch(`${API_BASE}/api/verification/my-requests`, {
         credentials: 'include',
       });
       const data = await response.json();

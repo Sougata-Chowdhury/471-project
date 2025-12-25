@@ -68,10 +68,11 @@
 
 
 // src/api/index.js
-const API_BASE = "http://localhost:3000/api";
+import { API_BASE } from '../config.js';
+const API_BASE_WITH_PATH = `${API_BASE}/api`;
 
 async function request(path, options = {}) {
-  const url = path.startsWith('/') ? `${API_BASE}${path}` : `${API_BASE}/${path}`;
+  const url = path.startsWith('/') ? `${API_BASE_WITH_PATH}${path}` : `${API_BASE_WITH_PATH}/${path}`;
   
   // Add Bearer token to headers if available
   const token = localStorage.getItem('token');

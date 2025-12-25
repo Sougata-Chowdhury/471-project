@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from 'socket.io-client';
-import config from '../config';
+import config, { API_BASE } from '../config';
 
 export default function ResourceList({ currentUser }) {
   const [resources, setResources] = useState([]);
@@ -14,7 +14,7 @@ export default function ResourceList({ currentUser }) {
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:3000/api/resources");
+      const res = await axios.get(`${API_BASE}/api/resources`);
       setResources(res.data);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -47,7 +47,7 @@ export default function ResourceList({ currentUser }) {
   // Delete resource
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/resources/${id}`, {
+      await axios.delete(`${API_BASE}/api/resources/${id}`, {
         withCredentials: true,
       });
       fetchResources();
@@ -60,7 +60,7 @@ export default function ResourceList({ currentUser }) {
   const handleApprove = async (id, approve = true) => {
     try {
       await axios.put(
-        `http://localhost:3000/api/resources/approve/${id}`,
+        `${API_BASE}/api/resources/approve/${id}`,
         { approve },
         { withCredentials: true }
       );

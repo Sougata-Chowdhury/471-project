@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import config from '../config';
+import config, { API_BASE } from '../config';
 
 export const Leaderboard = () => {
   const { user, getCurrentUser } = useAuth();
   const navigate = useNavigate();
-  const API_BASE = 'http://localhost:3000';
 
   const [leaderboard, setLeaderboard] = useState([]);
   const [timeframe, setTimeframe] = useState('all');

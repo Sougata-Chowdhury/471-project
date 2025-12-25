@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 
 export const Badges = () => {
   const { user, getCurrentUser } = useAuth();
   const navigate = useNavigate();
-  const API_BASE = 'http://localhost:3000';
 
   const [activity, setActivity] = useState(null);
   const [rank, setRank] = useState(null);

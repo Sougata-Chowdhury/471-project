@@ -70,6 +70,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from '../config';
 
 const VerificationRequest = () => {
   const { user } = useAuth();
@@ -113,7 +114,7 @@ const VerificationRequest = () => {
       formDataToSend.append('proofDocument', proofFile);
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/verification/request', {
+      const response = await fetch(`${API_BASE}/api/verification/request`, {
         method: 'POST',
         credentials: 'include',
         headers: {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import config from '../config';
+import config, { API_BASE } from '../config';
 
 export const AdminVerification = () => {
   const { user, logout } = useAuth();
@@ -49,7 +49,7 @@ export const AdminVerification = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/verification/requests?status=${filter}`, {
+      const response = await fetch(`${API_BASE}/api/verification/requests?status=${filter}`, {
         credentials: 'include',
       });
       const data = await response.json();
@@ -66,7 +66,7 @@ export const AdminVerification = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/verification/stats', {
+      const response = await fetch(`${API_BASE}/api/verification/stats`, {
         credentials: 'include',
       });
       const data = await response.json();
@@ -85,7 +85,7 @@ export const AdminVerification = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/verification/requests/${requestId}/approve`, {
+      const response = await fetch(`${API_BASE}/api/verification/requests/${requestId}/approve`, {
         method: 'PUT',
         credentials: 'include',
       });
@@ -110,7 +110,7 @@ export const AdminVerification = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/verification/requests/${requestId}/reject`, {
+      const response = await fetch(`${API_BASE}/api/verification/requests/${requestId}/reject`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

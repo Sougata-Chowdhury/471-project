@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import config from '../config';
+import config, { API_BASE } from '../config';
 
 export const AlumniDirectory = () => {
   const { user, logout, getCurrentUser } = useAuth();
@@ -54,7 +54,7 @@ export const AlumniDirectory = () => {
       if (filters.sortAlpha) params.append('sortAlpha', filters.sortAlpha);
 
       const response = await fetch(
-        `http://localhost:3000/api/verified-users/directory?${params}`,
+        `${API_BASE}/api/verified-users/directory?${params}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           credentials: 'include',
@@ -116,7 +116,7 @@ export const AlumniDirectory = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:3000/api/verified-users/admin/${userId}/toggle-visibility`, {
+      const response = await fetch(`${API_BASE}/api/verified-users/admin/${userId}/toggle-visibility`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
