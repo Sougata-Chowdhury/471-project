@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { API_BASE } from '../config';
+import config from '../config';
+import { io } from 'socket.io-client';
 
 const InterestGroupDetail = () => {
   const { groupId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const socketRef = useRef(null);
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -81,6 +84,54 @@ const InterestGroupDetail = () => {
       console.error('Failed to load posts', err);
     }
   };
+
+  // Socket.IO setup for real-time posts
+  useEffect(() => {
+    if (!groupId || !user) return;
+
+    let socket = socketRef.current;
+    if (!socket) {
+      socket = io(config.socketUrl, {
+        autoConnect: true,
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 500,
+        transports: ['websocket', 'polling'],
+      });
+      socketRef.current = socket;
+
+      socket.on('connect', () => {
+        console.log('✅ Socket connected to interest group detail');
+        socket.emit('joinInterestGroupRoom', { groupId });
+      });
+
+      socket.on('groupPost', (newPost) => {
+        console.log('📝 Received new group post:', newPost._id);
+        if (newPost.groupId === groupId) {
+          setPosts((prev) => [newPost, ...prev]);
+        }
+      });
+
+      socket.on('groupPostUpdated', (updatedPost) => {
+        console.log('✏️ Post updated:', updatedPost._id);
+        if (updatedPost.groupId === groupId) {
+          setPosts((prev) => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
+        }
+      });
+
+      socket.on('disconnect', () => {
+        console.warn('Socket disconnected from group detail');
+      });
+    } else {
+      socket.emit('joinInterestGroupRoom', { groupId });
+    }
+
+    return () => {
+      try {
+        socket.emit('leaveInterestGroupRoom', { groupId });
+      } catch (e) {}
+    };
+  }, [groupId, user]);
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this group? This cannot be undone.')) return;
@@ -172,7 +223,7 @@ const InterestGroupDetail = () => {
       });
       setPostText('');
       setPostImage(null);
-      fetchPosts();
+      // Socket.IO will emit groupPost event and update UI in real-time
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to post');
     } finally {
