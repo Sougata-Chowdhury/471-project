@@ -498,6 +498,13 @@ const MentorshipChat = () => {
                         {unreadCountForThread} new
                       </span>
                     )}
+                    {/* Back to Dashboard button */}
+                    <button
+                      onClick={() => navigate('/dashboard')}
+                      className="ml-3 px-3 py-1 bg-white/10 border border-gray-200 rounded text-sm text-blue-600 hover:bg-white/20"
+                    >
+                      ← Dashboard
+                    </button>
                   </div>
                 )}
               </div>
