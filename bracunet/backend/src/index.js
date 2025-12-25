@@ -132,7 +132,7 @@ const connectDB = async () => {
   }
 };
 
-// For local development
+// For local development only
 if (!process.env.VERCEL) {
   connectDB().then(() => {
     const server = app.listen(config.server.port, () => {
@@ -165,10 +165,8 @@ if (!process.env.VERCEL) {
     console.error('Failed to start server:', error);
     process.exit(1);
   });
-} else {
-  // For Vercel serverless - connect to MongoDB on first invocation
-  connectDB().catch(err => console.error('MongoDB connection error:', err));
 }
 
-// Export the Express app for Vercel serverless
+// Export for serverless and testing
+export { connectDB };
 export default app;
