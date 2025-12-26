@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import config, { API_BASE } from '../config';
+import config from '../config';
+import API from '../api/api';
 
 export const AdminVerification = () => {
   const { user, logout } = useAuth();
@@ -49,10 +50,8 @@ export const AdminVerification = () => {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/verification/requests?status=${filter}`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
+      const response = await API.get(`/verification/requests?status=${filter}`);
+      const data = response.data;
       
       if (data.success) {
         setRequests(data.data);
@@ -66,10 +65,8 @@ export const AdminVerification = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/verification/stats`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
+      const response = await API.get('/verification/stats');
+      const data = response.data;
       
       if (data.success) {
         setStats(data.data);
@@ -85,11 +82,8 @@ export const AdminVerification = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/verification/requests/${requestId}/approve`, {
-        method: 'PUT',
-        credentials: 'include',
-      });
-      const data = await response.json();
+      const response = await API.put(`/verification/requests/${requestId}/approve`);
+      const data = response.data;
 
       if (data.success) {
         alert('Request approved successfully!');
@@ -110,13 +104,10 @@ export const AdminVerification = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/verification/requests/${requestId}/reject`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ reason: rejectReason }),
-      });
-      const data = await response.json();
+      const response = await API.put(`/verification/requests/${requestId}/reject`, 
+        { reason: rejectReason }
+      );
+      const data = response.data;
 
       if (data.success) {
         alert('Request rejected');

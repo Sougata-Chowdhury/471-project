@@ -250,7 +250,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { API_BASE } from '../config.js';
+import API from '../api/api';
 
 function AdminNewsModeration() {
   const { user } = useAuth();
@@ -280,11 +280,10 @@ function AdminNewsModeration() {
         status: statusFilter, // backend e status filter
       });
 
-      const res = await fetch(
-        `${API_BASE}/api/news?${params.toString()}`,
-        { credentials: "include" }
+      const res = await API.get(
+        `/news?${params.toString()}`
       );
-      const data = await res.json();
+      const data = res.data;
       setItems(data.items || []);
     } catch (err) {
       console.error("Failed to fetch news for admin", err);
@@ -305,16 +304,9 @@ function AdminNewsModeration() {
   const handleStatusChange = async (id, status) => {
     if (!window.confirm(`Set this post as ${status}?`)) return;
     try {
-      const res = await fetch(`${API_BASE}/api/news/${id}/status`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      const res = await API.patch(`/news/${id}/status`, { status });
+      const data = res.data;
+      if (!data.success) {
         alert(data.message || "Failed to update status");
         return;
       }
@@ -329,12 +321,9 @@ function AdminNewsModeration() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this post permanently?")) return;
     try {
-      const res = await fetch(`${API_BASE}/api/news/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      const res = await API.delete(`/news/${id}`);
+      const data = res.data;
+      if (!data.success) {
         alert(data.message || "Failed to delete");
         return;
       }

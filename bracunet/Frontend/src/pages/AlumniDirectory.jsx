@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import config, { API_BASE } from '../config';
+import config from '../config';
+import API from '../api/api';
 
 export const AlumniDirectory = () => {
   const { user, logout, getCurrentUser } = useAuth();

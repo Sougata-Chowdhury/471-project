@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { io } from 'socket.io-client';
 import config from '../config';
-
-import { API_BASE } from '../config.js';
+import API from '../api/api';
 
 const categories = [
   { value: "all", label: "All" },
@@ -66,10 +65,8 @@ function NewsList() {
       if (isAdmin) {
         params.set("status", "all");
       }
-      const res = await fetch(`${API_BASE}/api/news?${params.toString()}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
+      const res = await API.get(`/news?${params.toString()}`);
+      const data = res.data;
       setItems(data.items || []);
     } catch (err) {
       console.error("Failed to fetch news", err);
@@ -81,10 +78,8 @@ function NewsList() {
   const fetchMyNews = async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${API_BASE}/api/news/me/mine`, {
-        credentials: "include",
-      });
-      const data = await res.json();
+      const res = await API.get('/news/me/mine');
+      const data = res.data;
       setMyItems(data.items || []);
     } catch (err) {
       console.error("Failed to fetch my news", err);
@@ -172,22 +167,14 @@ function NewsList() {
         setUploadingImage(false);
       }
 
-      const res = await fetch(`${API_BASE}/api/news`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newTitle,
-          body: newBody,
-          category: newCategory,
-          image: imageUrl,
-        }),
+      const res = await API.post('/news', {
+        title: newTitle,
+        body: newBody,
+        category: newCategory,
+        image: imageUrl,
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to create news");
-      }
+      const data = res.data;
 
       setNewTitle("");
       setNewBody("");
@@ -208,10 +195,7 @@ function NewsList() {
     if (!window.confirm("Do you really want to delete this post?")) return;
 
     try {
-      await fetch(`${API_BASE}/api/news/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      await API.delete(`/news/${id}`);
       setItems((prev) => prev.filter((n) => n._id !== id));
       setMyItems((prev) => prev.filter((n) => n._id !== id));
     } catch (err) {
@@ -223,13 +207,8 @@ function NewsList() {
   const handleStatusChange = async (id, status) => {
     if (!window.confirm(`Set this post as ${status}?`)) return;
     try {
-      const res = await fetch(`${API_BASE}/api/news/${id}/status`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
+      const res = await API.patch(`/news/${id}/status`, { status });
+      const data = res.data;
       if (!res.ok || !data.success) {
         alert(data.message || "Failed to update status");
         return;

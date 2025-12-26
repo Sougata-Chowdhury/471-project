@@ -2,8 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-
-import { API_BASE } from '../config.js';
+import API from '../api/api';
 
 function NewsCategoryPage({ title, category }) {
   const navigate = useNavigate();

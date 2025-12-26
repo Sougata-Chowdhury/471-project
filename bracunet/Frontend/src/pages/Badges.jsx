@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../config';
+import API from '../api/api';
 
 export const Badges = () => {
   const { user, getCurrentUser } = useAuth();

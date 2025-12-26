@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-import { API_BASE } from '../config.js';
+import API from '../api/api';
 
 function AdminUsers() {
   const { user } = useAuth();
@@ -24,10 +24,8 @@ function AdminUsers() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/users/admin/all`, {
-        credentials: "include",
-      });
-      const data = await res.json();
+      const res = await API.get('/users/admin/all');
+      const data = res.data;
       if (res.ok && data.success) {
         setUsers(data.users || []);
       } else {
@@ -46,12 +44,9 @@ function AdminUsers() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/users/${userId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const res = await API.delete(`/users/${userId}`);
+      const data = res.data;
+      if (data.success) {
         alert(`User "${userName}" has been deleted successfully.`);
         setUsers((prev) => prev.filter((u) => u._id !== userId));
       } else {

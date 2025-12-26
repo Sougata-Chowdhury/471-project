@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../config';
+import API from '../api/api';
 
 export const Settings = () => {
   const { user, getCurrentUser } = useAuth();
@@ -63,10 +63,8 @@ export const Settings = () => {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/settings/options`, {
-          credentials: 'include',
-        });
-        const data = await response.json();
+        const response = await API.get('/settings/options');
+        const data = response.data;
         if (data.success) {
           setOptions(data.options);
         }
@@ -83,19 +81,14 @@ export const Settings = () => {
     setMessage({ type: '', text: '' });
     
     try {
-      const response = await fetch(`${API_BASE}/api/settings/me/settings`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...profileForm,
-          skills: selectedSkills,
-          goals: selectedGoals,
-          interests: selectedInterests,
-        }),
+      const response = await API.patch('/settings/me/settings', {
+        ...profileForm,
+        skills: selectedSkills,
+        goals: selectedGoals,
+        interests: selectedInterests,
       });
       
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
@@ -122,14 +115,9 @@ export const Settings = () => {
     }
     
     try {
-      const response = await fetch(`${API_BASE}/api/settings/me/password`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordForm),
-      });
+      const response = await API.patch('/settings/me/password', passwordForm);
       
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         setMessage({ type: 'success', text: 'Password updated successfully!' });
@@ -169,13 +157,11 @@ export const Settings = () => {
     formData.append('profilePicture', profilePicture);
     
     try {
-      const response = await fetch(`${API_BASE}/api/settings/me/profile-picture`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
+      const response = await API.post('/settings/me/profile-picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         setMessage({ type: 'success', text: 'Profile picture updated!' });
@@ -196,12 +182,9 @@ export const Settings = () => {
     setMessage({ type: '', text: '' });
     
     try {
-      const response = await fetch(`${API_BASE}/api/settings/me/profile-picture`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
+      const response = await API.delete('/settings/me/profile-picture');
       
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         setMessage({ type: 'success', text: 'Profile picture removed!' });
