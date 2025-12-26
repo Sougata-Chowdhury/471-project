@@ -367,6 +367,20 @@ export const answerCall = async (req, res) => {
 			} catch (pusherErr) {
 				console.error("Pusher answer notification failed:", pusherErr.message);
 			}
+
+			// Notify receiver (answerer) to also show call active state
+			try {
+				await pusher.trigger(`user-${req.user.id}`, "call-active", {
+					callKey,
+					mentorshipId,
+					callType,
+					callerName: req.user.name, // In receiver's view, they are the answerer
+					callerId: timeoutMeta.callerId,
+				});
+				console.log(`📡 Call active event sent to answerer user-${req.user.id}`);
+			} catch (pusherErr) {
+				console.error("Pusher active notification failed:", pusherErr.message);
+			}
 		}
 
 		// Log call answered in chat

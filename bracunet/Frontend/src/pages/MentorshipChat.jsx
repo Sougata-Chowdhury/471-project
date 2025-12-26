@@ -547,6 +547,7 @@ const MentorshipChat = () => {
               {selectedMentorship && conversations.find((c) => getMentorshipId(c) === selectedMentorship) && (
                 <CallPanel
                   mentorshipId={selectedMentorship}
+                  currentUserId={myStableId}
                   otherPersonName={(() => {
                     const conv = conversations.find((c) => getMentorshipId(c) === selectedMentorship);
                     const otherPerson = myStableId && normalizeId(conv.mentorship?.student || conv.sender) === myStableId
