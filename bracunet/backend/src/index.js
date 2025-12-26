@@ -30,6 +30,7 @@ import recommendationRoutes from './career/recommendation.routes.js';
 import analyticsRoutes from './analytics/analytics.routes.js';
 import interestGroupRoutes from './interestGroups/interestGroup.routes.js';
 import { errorMiddleware } from './utils/errorHandler.js';
+import { ensureDbConnection } from './middleware/dbCheck.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +50,9 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
 );
+
+// Ensure DB connection for all API routes
+app.use('/api', ensureDbConnection);
 
 app.use("/api/news", newsRoutes);
 app.use("/api/events", eventRoutes);
