@@ -142,16 +142,30 @@ export const AuthProvider = ({ children }) => {
 
   const clearError = useCallback(() => setError(null), []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const data = await apiCall("/api/auth/me");
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      return data.user;
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      return null;
+    }
+  }, [apiCall]);
+
   return (
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         isLoading,
         error,
         register,
         login,
         logout,
         getCurrentUser,
+        refreshUser,
         clearError,
       }}
     >

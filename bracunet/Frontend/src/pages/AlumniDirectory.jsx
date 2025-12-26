@@ -6,10 +6,11 @@ import config from '../config';
 import API from '../api/api';
 
 export const AlumniDirectory = () => {
-  const { user, logout, getCurrentUser } = useAuth();
+  const { user, logout, getCurrentUser, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     department: 'all',
@@ -38,6 +39,20 @@ export const AlumniDirectory = () => {
       fetchDirectory();
     }
   }, [user, filters, pagination.page]);
+
+  // Auto-refresh user data when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        refreshUser();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, refreshUser]);
 
   const fetchDirectory = async () => {
     setLoading(true);
@@ -97,6 +112,18 @@ export const AlumniDirectory = () => {
       sortAlpha: 'asc',
     });
     setPagination({ ...pagination, page: 1 });
+  };
+
+  const handleRefreshData = async () => {
+    setRefreshing(true);
+    try {
+      await refreshUser();
+      await fetchDirectory();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const getActiveFilterCount = () => {
@@ -189,6 +216,14 @@ export const AlumniDirectory = () => {
                 className="px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 📰 News
+              </button>
+              <button
+                onClick={handleRefreshData}
+                disabled={refreshing}
+                className="px-3 sm:px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh user status and directory"
+              >
+                {refreshing ? '⏳' : '🔄'} Refresh
               </button>
               <button
                 onClick={() => navigate('/dashboard')}

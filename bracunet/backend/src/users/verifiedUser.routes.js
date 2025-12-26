@@ -48,6 +48,7 @@ router.get('/directory', verifyToken, async (req, res) => {
     const filter = { role: 'alumni' };
 
     console.log('Directory request from user:', req.user.role, req.user.email);
+    console.log('Query params:', { search, department, graduationYear, sortAlpha, page, limit });
     console.log('Initial filter:', filter);
 
     // Non-admin users only see visible alumni
@@ -55,7 +56,7 @@ router.get('/directory', verifyToken, async (req, res) => {
       filter.isVisible = true;
     }
 
-    console.log('Final filter:', filter);
+    console.log('Filter after visibility check:', filter);
 
     // Build search filter
     if (search) {
@@ -82,9 +83,13 @@ router.get('/directory', verifyToken, async (req, res) => {
       filter.graduationYear = parseInt(graduationYear);
     }
 
+    console.log('Final filter before query:', JSON.stringify(filter));
+
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const total = await VerifiedUser.countDocuments(filter);
+    
+    console.log('Total matching documents:', total);
     
     // Determine sort order
     const sortOrder = sortAlpha === 'desc' ? -1 : 1;
@@ -97,7 +102,7 @@ router.get('/directory', verifyToken, async (req, res) => {
       .limit(parseInt(limit));
 
     console.log('Found verified users:', verifiedUsers.length);
-    console.log('Total count:', total);
+    console.log('Sample user:', verifiedUsers[0]);
 
     // Get unique filter options
     const [departments, years] = await Promise.all([
