@@ -29,6 +29,7 @@ import careerRoutes from './career/career.routes.js';
 import recommendationRoutes from './career/recommendation.routes.js';
 import analyticsRoutes from './analytics/analytics.routes.js';
 import interestGroupRoutes from './interestGroups/interestGroup.routes.js';
+import { errorMiddleware } from './utils/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,17 +123,11 @@ app.get('/api/dashboard/admin', (req, res) => {
 
 // 404 Not Found handler
 app.use((req, res, next) => {
-  res.status(404).json({ message: '❌ Route not found', path: req.path });
+  res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('❌ Server Error:', err.message);
-  res.status(err.status || 500).json({ 
-    message: err.message || 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  });
-});
+// Global error handling middleware - MUST be last
+app.use(errorMiddleware);
 
 // For local development only
 if (!process.env.VERCEL) {

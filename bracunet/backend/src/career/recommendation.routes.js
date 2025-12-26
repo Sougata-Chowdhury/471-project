@@ -4,6 +4,7 @@ import { authMiddleware } from "../middleware/auth.js";
 import { supabaseLetterUpload } from "../middleware/supabaseUpload.js";
 import supabase from "../config/supabase.js";
 import { config } from "../config/index.js";
+import { sanitizeError } from "../utils/errorHandler.js";
 
 const router = express.Router();
 
@@ -13,7 +14,8 @@ router.get("/faculty", authMiddleware, async (req, res) => {
     const faculty = await recommendationService.getFacultyMembers();
     res.json(faculty);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching faculty:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -48,7 +50,7 @@ router.post(
       res.status(201).json(request);
     } catch (error) {
       console.error("Error creating recommendation request:", error);
-      res.status(500).json({ message: error.message });
+      res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
     }
   }
 );
@@ -59,7 +61,8 @@ router.get("/my-requests", authMiddleware, async (req, res) => {
     const requests = await recommendationService.getMyRequests(req.user._id);
     res.json(requests);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching my requests:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -72,7 +75,8 @@ router.get("/received", authMiddleware, async (req, res) => {
     const requests = await recommendationService.getReceivedRequests(req.user._id);
     res.json(requests);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching received requests:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -93,7 +97,8 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
     );
     res.json(request);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error updating request status:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -182,10 +187,7 @@ router.post("/:id/upload-letter", authMiddleware, (req, res, next) => {
     });
   } catch (error) {
     console.error("Letter upload error:", error);
-    res.status(500).json({ 
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -200,7 +202,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     res.json({ success: true, message: "Request deleted successfully" });
   } catch (error) {
     console.error("Delete request error:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 

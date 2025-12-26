@@ -1,7 +1,9 @@
-import express from 'express';
+﻿import express from 'express';
 import { verificationService } from './verification.service.js';
 import { protect, authorize } from '../middleware/auth.js';
-import cloudinaryUpload from '../middleware/upload.js'; import path from 'path';
+import cloudinaryUpload from '../middleware/upload.js';
+import path from 'path';
+import { sanitizeError } from '../utils/errorHandler.js';
 
 const router = express.Router();
 
@@ -48,14 +50,15 @@ router.post('/request', protect, (req, res, next) => {
     });
   } catch (error) {
     console.error('Verification request error:', error);
+    const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
     res.status(400).json({
       success: false,
-      message: error.message,
+      ...sanitized
     });
   }
 });
 
-// Get user's own verification requests
+// Get user''s own verification requests
 router.get('/my-requests', protect, async (req, res) => {
   try {
     const requests = await verificationService.getUserRequests(req.user._id);
@@ -65,9 +68,11 @@ router.get('/my-requests', protect, async (req, res) => {
       data: requests,
     });
   } catch (error) {
+    console.error('Error fetching user requests:', error);
+    const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
     res.status(400).json({
       success: false,
-      message: error.message,
+      ...sanitized
     });
   }
 });
@@ -87,9 +92,11 @@ router.get('/requests', protect, authorize('admin'), async (req, res) => {
       data: requests,
     });
   } catch (error) {
+    console.error('Error fetching all requests:', error);
+    const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
     res.status(400).json({
       success: false,
-      message: error.message,
+      ...sanitized
     });
   }
 });
@@ -108,9 +115,11 @@ router.put('/requests/:id/approve', protect, authorize('admin'), async (req, res
       data: request,
     });
   } catch (error) {
+    console.error('Error approving request:', error);
+    const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
     res.status(400).json({
       success: false,
-      message: error.message,
+      ...sanitized
     });
   }
 });
@@ -131,9 +140,11 @@ router.put('/requests/:id/reject', protect, authorize('admin'), async (req, res)
       data: request,
     });
   } catch (error) {
+    console.error('Error rejecting request:', error);
+    const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
     res.status(400).json({
       success: false,
-      message: error.message,
+      ...sanitized
     });
   }
 });
@@ -148,9 +159,11 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
       data: stats,
     });
   } catch (error) {
+    console.error('Error fetching stats:', error);
+    const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
     res.status(400).json({
       success: false,
-      message: error.message,
+      ...sanitized
     });
   }
 });

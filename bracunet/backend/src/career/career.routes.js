@@ -1,6 +1,7 @@
 import express from "express";
 import { protect } from "../middleware/auth.js";
 import { careerService } from "./career.service.js";
+import { sanitizeError } from "../utils/errorHandler.js";
 
 const router = express.Router();
 
@@ -13,7 +14,8 @@ router.get("/", protect, async (req, res) => {
     const opportunities = await careerService.getAllOpportunities();
     res.json(opportunities);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching opportunities:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -41,7 +43,8 @@ router.post("/", protect, async (req, res) => {
 
     res.status(201).json(opportunity);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error creating opportunity:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 
@@ -57,7 +60,8 @@ router.delete("/:id", protect, async (req, res) => {
     if (error.message === "Opportunity not found") {
       return res.status(404).json({ message: error.message });
     }
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting opportunity:', error);
+    res.status(500).json(sanitizeError(error, process.env.NODE_ENV === 'development'));
   }
 });
 

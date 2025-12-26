@@ -1,4 +1,5 @@
 import { donationService } from './donation.service.js';
+import { sanitizeError } from '../utils/errorHandler.js';
 
 export const donationController = {
   // Create a new donation campaign
@@ -11,9 +12,11 @@ export const donationController = {
         data: campaign,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -28,9 +31,11 @@ export const donationController = {
         data: campaigns,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -44,9 +49,11 @@ export const donationController = {
         data: campaign,
       });
     } catch (error) {
+      console.error('Error fetching campaign:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(404).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -60,9 +67,11 @@ export const donationController = {
         data: campaigns,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -81,9 +90,11 @@ export const donationController = {
         data: campaign,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -97,9 +108,11 @@ export const donationController = {
         message: 'Campaign deleted successfully',
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -120,9 +133,11 @@ export const donationController = {
         data: result,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -137,9 +152,11 @@ export const donationController = {
         data: result,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -153,9 +170,11 @@ export const donationController = {
         data: donations,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
@@ -169,10 +188,13 @@ export const donationController = {
         data: donations,
       });
     } catch (error) {
+      console.error('Error in donation controller:', error);
+      const sanitized = sanitizeError(error, process.env.NODE_ENV === 'development');
       res.status(400).json({
         success: false,
-        message: error.message,
+        ...sanitized
       });
     }
   },
 };
+
