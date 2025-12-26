@@ -31,10 +31,9 @@ export const AlumniDirectory = () => {
   useEffect(() => {
     if (!user) {
       getCurrentUser().catch(() => navigate('/login'));
+      return;
     }
-  }, [user, getCurrentUser, navigate]);
-
-  useEffect(() => {
+    
     if (user?.isVerified || user?.role === 'admin') {
       fetchDirectory();
     }
@@ -53,9 +52,13 @@ export const AlumniDirectory = () => {
       if (filters.graduationYear !== 'all') params.append('graduationYear', filters.graduationYear);
       if (filters.sortAlpha) params.append('sortAlpha', filters.sortAlpha);
 
+      console.log('Fetching directory with params:', params.toString());
+
       const response = await API.get(
         `/api/verified-users/directory?${params}`
       );
+
+      console.log('Directory response:', response.data);
 
       if (response.data.success) {
         setUsers(response.data.users);
@@ -64,6 +67,7 @@ export const AlumniDirectory = () => {
       }
     } catch (error) {
       console.error('Error fetching directory:', error);
+      console.error('Error response:', error.response?.data);
     } finally {
       setLoading(false);
     }

@@ -47,10 +47,15 @@ router.get('/directory', verifyToken, async (req, res) => {
     const { search, department, graduationYear, sortAlpha = 'asc', page = 1, limit = 12 } = req.query;
     const filter = { role: 'alumni' };
 
+    console.log('Directory request from user:', req.user.role, req.user.email);
+    console.log('Initial filter:', filter);
+
     // Non-admin users only see visible alumni
     if (req.user.role !== 'admin') {
       filter.isVisible = true;
     }
+
+    console.log('Final filter:', filter);
 
     // Build search filter
     if (search) {
@@ -90,6 +95,9 @@ router.get('/directory', verifyToken, async (req, res) => {
       .sort({ name: sortOrder })
       .skip(skip)
       .limit(parseInt(limit));
+
+    console.log('Found verified users:', verifiedUsers.length);
+    console.log('Total count:', total);
 
     // Get unique filter options
     const [departments, years] = await Promise.all([
