@@ -5,7 +5,11 @@ import { useAuth } from "../hooks/useAuth";
 import { API_BASE } from "../config";
 import CallPanel from "../components/CallPanel";
 import { io } from 'socket.io-client';
+import Pusher from 'pusher-js';
 import config from '../config.js';
+
+const PUSHER_KEY = import.meta.env.VITE_PUSHER_KEY || 'c581a5dcd7d22c9200e0';
+const PUSHER_CLUSTER = import.meta.env.VITE_PUSHER_CLUSTER || 'ap2';
 
 const MentorshipChat = () => {
   const { user } = useAuth();
@@ -142,6 +146,39 @@ const MentorshipChat = () => {
   useEffect(() => {
     if (!selectedMentorship) return;
 
+    // Setup Pusher for real-time messages (works on Vercel)
+    console.log('🔌 Setting up Pusher for mentorship:', selectedMentorship);
+    const pusher = new Pusher(PUSHER_KEY, {
+      cluster: PUSHER_CLUSTER,
+      encrypted: true,
+    });
+
+    const channelName = `mentorship-${selectedMentorship}`;
+    const channel = pusher.subscribe(channelName);
+
+    channel.bind('new-message', (msg) => {
+      console.log('📨 Pusher: Received new message:', msg._id);
+      setMessages((prev) => {
+        // Prevent duplicates
+        if (prev.some(m => String(m._id) === String(msg._id))) {
+          console.log('⚠️ Duplicate message, skipping');
+          return prev;
+        }
+        console.log('✅ Adding message to state via Pusher');
+        return [...prev, msg];
+      });
+
+      const senderId = normalizeId(msg.sender);
+      const receiverId = normalizeId(msg.receiver);
+      const addressedToMe = receiverId && myNormId && receiverId === myNormId;
+      const sentByMe = senderId && myNormId && senderId === myNormId;
+      if (addressedToMe && !sentByMe && msg.read === false && !msg.isCallEvent) {
+        setUnreadCountForThread((c) => c + 1);
+      }
+      fetchConversations();
+    });
+
+    // Socket.IO setup (for local development)
     const socket = socketRef.current || io(config.socketUrl, {
       autoConnect: true,
       reconnection: true,
@@ -207,10 +244,15 @@ const MentorshipChat = () => {
 
     return () => {
       clearInterval(pollInterval);
+      // Cleanup Pusher
+      channel.unbind_all();
+      channel.unsubscribe();
+      pusher.disconnect();
+      // Cleanup Socket.IO
       try { socket.emit('leaveMentorshipRoom', { mentorshipId: selectedMentorship }); } catch(e) {}
       // Keep socket alive for user room/inbox events
     };
-  }, [selectedMentorship]);
+  }, [selectedMentorship, myNormId]);
 
   const fetchConversations = async () => {
     try {

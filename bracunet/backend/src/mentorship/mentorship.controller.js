@@ -33,11 +33,25 @@ const logCallEvent = async ({
 		{ path: "receiver", select: "name email" },
 	]);
 
+	// Socket.IO for local development
 	if (global.io) {
 		global.io
 			.to(`mentorship_${mentorshipId}`)
 			.emit("mentorshipMessage", { ...populated.toObject(), mentorshipId });
 	}
+
+	// Pusher for production/Vercel
+	try {
+		await pusher.trigger(`mentorship-${mentorshipId}`, "new-message", {
+			...populated.toObject(),
+			mentorshipId
+		});
+		console.log(`📡 Call event pushed to mentorship-${mentorshipId}`);
+	} catch (pusherErr) {
+		console.error("Pusher call event failed:", pusherErr.message);
+	}
+
+	return populated;
 };
 
 
