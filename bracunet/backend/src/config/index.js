@@ -15,10 +15,22 @@ export const config = {
     env: process.env.NODE_ENV || 'development',
   },
   cors: {
-    // Support comma-separated origins; default stays aligned with .env (3001)
-    origin: (process.env.CORS_ORIGIN || 'http://localhost:3001')
-      .split(',')
-      .map((o) => o.trim()),
+    // Support comma-separated origins or use function for wildcard matching
+    origin: function(origin, callback) {
+      const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3001,https://bracu-net.vercel.app')
+        .split(',')
+        .map((o) => o.trim());
+      
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin matches any allowed origin or is a Vercel deployment
+      if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   },
   cloudinary: {
