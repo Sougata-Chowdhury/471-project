@@ -10,6 +10,7 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
   const [callKey, setCallKey] = useState(null);
   const [callStartTime, setCallStartTime] = useState(null);
   const [callDuration, setCallDuration] = useState(0);
+  const [callStatus, setCallStatus] = useState(""); // "calling", "answered", "rejected", ""
 
   const startCall = async (type) => {
     const roomName = `mentorship-${mentorshipId}`;
@@ -22,6 +23,7 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     setCallActive(true);
     setCallStartTime(Date.now());
     setCallDuration(0);
+    setCallStatus("calling");
 
     try {
       window.open(jitsiUrl, "_blank", "noopener,noreferrer");
@@ -39,6 +41,7 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
         setCallKey(response.data.callKey);
       } catch (err) {
         console.error('❌ Call notification failed:', err.response?.data || err.message);
+        setCallStatus("error");
       }
     } else {
       console.warn('⚠️ No otherPersonId provided');
@@ -80,6 +83,7 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     setCallKey(null);
     setCallStartTime(null);
     setCallDuration(0);
+    setCallStatus("");
   };
 
   // Update duration every second
@@ -107,6 +111,15 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
               <p className="font-bold text-gray-800">{callType.toUpperCase()} Call Active</p>
               <p className="text-sm text-gray-600">with {otherPersonName}</p>
               <p className="text-xs text-gray-500 font-mono">{formatDuration(callDuration)}</p>
+              {callStatus === "calling" && (
+                <p className="text-xs text-blue-600 animate-pulse">🔔 Calling...</p>
+              )}
+              {callStatus === "answered" && (
+                <p className="text-xs text-green-600">✅ Answered</p>
+              )}
+              {callStatus === "rejected" && (
+                <p className="text-xs text-red-600">❌ Call declined</p>
+              )}
             </div>
           </div>
           <button

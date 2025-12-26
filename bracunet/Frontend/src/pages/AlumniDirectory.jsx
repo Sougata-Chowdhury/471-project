@@ -219,14 +219,6 @@ export const AlumniDirectory = () => {
                 📰 News
               </button>
               <button
-                onClick={handleRefreshData}
-                disabled={refreshing}
-                className="px-3 sm:px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Refresh user status and directory"
-              >
-                {refreshing ? '⏳' : '🔄'} Refresh
-              </button>
-              <button
                 onClick={() => navigate('/dashboard')}
                 className="px-3 sm:px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
               >

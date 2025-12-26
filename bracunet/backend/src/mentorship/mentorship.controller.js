@@ -2,6 +2,7 @@ import Mentorship from "./mentorship.model.js";
 import { findMentorsForStudent } from "./mentorship.service.js";
 import { createNotification } from "../notifications/notification.service.js";
 import MentorshipMessage from "./mentorshipMessage.model.js";
+import pusher from "../config/pusher.js";
 
 // Store active call timeouts so we can cancel them when the caller ends the call
 const activeCallTimeouts = new Map();
@@ -219,9 +220,25 @@ export const notifyCall = async (req, res) => {
 			callDurationSeconds: 0,
 		});
 
+		// Send real-time call notification via Pusher
+		const startedAt = Date.now();
+		const callKey = `${mentorshipId}-${startedAt}`;
+		try {
+			await pusher.trigger(`user-${receiverId}`, "incoming-call", {
+				callKey,
+				mentorshipId,
+				callType,
+				callUrl,
+				callerName: req.user.name,
+				callerId: req.user.id,
+				timestamp: startedAt,
+			});
+			console.log(`📡 Pusher event sent to user-${receiverId}`);
+		} catch (pusherErr) {
+			console.error("Pusher notification failed:", pusherErr.message);
+		}
+
 			// Store the timeout so it can be cancelled if the caller ends the call
-			const startedAt = Date.now();
-			const callKey = `${mentorshipId}-${startedAt}`;
 			const timeoutId = setTimeout(async () => {
 				try {
 					await createNotification({
@@ -307,5 +324,106 @@ export const endCallNotify = async (req, res) => {
 		res.json({ success: true });
 	} catch (error) {
 		res.status(500).json({ message: "Error ending call notification", error: error.message });
+	}
+};
+
+// Called when receiver answers the call
+export const answerCall = async (req, res) => {
+	const { mentorshipId, callKey, callType } = req.body;
+	if (!mentorshipId || !callKey) {
+		return res.status(400).json({ message: "mentorshipId and callKey are required" });
+	}
+
+	try {
+		const timeoutMeta = activeCallTimeouts.get(callKey);
+		if (timeoutMeta) {
+			clearTimeout(timeoutMeta.timeoutId);
+			activeCallTimeouts.delete(callKey);
+			console.log(`✅ Call answered, timeout cleared for ${callKey}`);
+
+			// Notify caller that call was answered via Pusher
+			try {
+				await pusher.trigger(`user-${timeoutMeta.callerId}`, "call-answered", {
+					callKey,
+					mentorshipId,
+					answeredBy: req.user.name,
+					answeredById: req.user.id,
+				});
+				console.log(`📡 Call answered event sent to user-${timeoutMeta.callerId}`);
+			} catch (pusherErr) {
+				console.error("Pusher answer notification failed:", pusherErr.message);
+			}
+		}
+
+		// Log call answered in chat
+		await logCallEvent({
+			mentorshipId,
+			senderId: req.user.id,
+			receiverId: timeoutMeta?.callerId,
+			message: callType === "audio" ? "Answered audio call" : "Answered video call",
+			callType,
+			callStatus: "answered",
+			callDurationSeconds: 0,
+		});
+
+		res.json({ success: true });
+	} catch (error) {
+		res.status(500).json({ message: "Error answering call", error: error.message });
+	}
+};
+
+// Called when receiver rejects the call
+export const rejectCall = async (req, res) => {
+	const { mentorshipId, callKey, callType } = req.body;
+	if (!mentorshipId || !callKey) {
+		return res.status(400).json({ message: "mentorshipId and callKey are required" });
+	}
+
+	try {
+		const timeoutMeta = activeCallTimeouts.get(callKey);
+		if (timeoutMeta) {
+			clearTimeout(timeoutMeta.timeoutId);
+			activeCallTimeouts.delete(callKey);
+			console.log(`❌ Call rejected, timeout cleared for ${callKey}`);
+
+			// Notify caller that call was rejected
+			await createNotification({
+				userId: timeoutMeta.callerId,
+				type: "message_request",
+				title: callType === "audio" ? "Audio call declined 📞" : "Video call declined 📹",
+				message: `${req.user.name} declined your call.`,
+				relatedId: mentorshipId,
+				relatedModel: "Mentorship",
+				link: "/mentorship/chat",
+			});
+
+			// Send real-time rejection via Pusher
+			try {
+				await pusher.trigger(`user-${timeoutMeta.callerId}`, "call-rejected", {
+					callKey,
+					mentorshipId,
+					rejectedBy: req.user.name,
+					rejectedById: req.user.id,
+				});
+				console.log(`📡 Call rejected event sent to user-${timeoutMeta.callerId}`);
+			} catch (pusherErr) {
+				console.error("Pusher rejection notification failed:", pusherErr.message);
+			}
+		}
+
+		// Log call rejected in chat
+		await logCallEvent({
+			mentorshipId,
+			senderId: req.user.id,
+			receiverId: timeoutMeta?.callerId,
+			message: callType === "audio" ? "Declined audio call" : "Declined video call",
+			callType,
+			callStatus: "rejected",
+			callDurationSeconds: 0,
+		});
+
+		res.json({ success: true });
+	} catch (error) {
+		res.status(500).json({ message: "Error rejecting call", error: error.message });
 	}
 };

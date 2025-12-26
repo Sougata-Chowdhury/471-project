@@ -53,12 +53,14 @@ import CreateInterestGroup from './pages/CreateInterestGroup';
 import InterestGroupDetail from './pages/InterestGroupDetail';
 import InterestGroupChat from './pages/InterestGroupChat';
 import MyInterestGroups from './pages/MyInterestGroups';
+import GlobalCallManager from './components/GlobalCallManager';
 
 function App() {
 
   return (
     <Router>
       <AuthProvider>
+        <GlobalCallManager />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />

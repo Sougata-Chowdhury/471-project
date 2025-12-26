@@ -25,7 +25,7 @@ import {
 	getAnnouncements,
 	deleteAnnouncement,
 } from "./announcement.controller.js";
-import { notifyCall, endCallNotify } from "./mentorship.controller.js";
+import { notifyCall, endCallNotify, answerCall, rejectCall } from "./mentorship.controller.js";
 import { protect as auth, authorize } from "../middleware/auth.js";
 
 
@@ -56,6 +56,8 @@ router.get("/mentor-request/admin/pending", auth, authorize("admin"), getPending
 // Call notification route
 router.post("/call/notify", auth, notifyCall);
 router.post("/call/end", auth, endCallNotify);
+router.post("/call/answer", auth, answerCall);
+router.post("/call/reject", auth, rejectCall);
 
 // Announcement routes
 router.post("/announcement/create", auth, createAnnouncement);
