@@ -115,17 +115,10 @@ export const AlumniDirectory = () => {
       return;
     }
 
-    const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${API_BASE}/api/verified-users/admin/${userId}/toggle-visibility`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: 'include',
-      });
+      const response = await API.put(`/verified-users/admin/${userId}/toggle-visibility`);
 
-      const data = await response.json();
+      const data = response.data;
       if (data.success) {
         fetchDirectory();
         alert(data.message);

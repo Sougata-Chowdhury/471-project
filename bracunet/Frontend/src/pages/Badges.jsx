@@ -23,12 +23,12 @@ export const Badges = () => {
   const fetchData = async () => {
     try {
       const [activityRes, badgesRes] = await Promise.all([
-        fetch(`${API_BASE}/api/gamification/my-activity`, { credentials: 'include' }),
-        fetch(`${API_BASE}/api/gamification/badges`, { credentials: 'include' }),
+        API.get('/gamification/my-activity'),
+        API.get('/gamification/badges'),
       ]);
 
-      const activityData = await activityRes.json();
-      const badgesData = await badgesRes.json();
+      const activityData = activityRes.data;
+      const badgesData = badgesRes.data;
 
       if (activityData.success) {
         setActivity(activityData.activity);

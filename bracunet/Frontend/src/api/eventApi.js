@@ -1,5 +1,4 @@
 import api from "./api";
-import { API_BASE } from '../config.js';
 
 /**
  * Get all events
@@ -13,50 +12,40 @@ export const getAllEvents = async (params = {}) => {
     upcoming: params.upcoming || false,
   });
   
-  const response = await fetch(`${API_BASE}/api/events?${queryParams}`, {
-    credentials: "include",
-  });
-  return response.json();
+  const response = await api.get(`/events?${queryParams}`);
+  return response.data;
 };
 
 /**
  * Get single event by ID
  */
 export const getEventById = async (eventId) => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}`, {
-    credentials: "include",
-  });
-  return response.json();
+  const response = await api.get(`/events/${eventId}`);
+  return response.data;
 };
 
 /**
  * Get my created events
  */
 export const getMyEvents = async () => {
-  const response = await fetch(`${API_BASE}/api/events/my-events`, {
-    credentials: "include",
-  });
-  return response.json();
+  const response = await api.get('/events/my-events');
+  return response.data;
 };
 
 /**
  * Get my RSVPs
  */
 export const getMyRsvps = async () => {
-  const response = await fetch(`${API_BASE}/api/events/my-rsvps`, {
-    credentials: "include",
-  });
-  return response.json();
+  const response = await api.get('/events/my-rsvps');
+  return response.data;
 };
 
 /**
  * Get event analytics
  */
 export const getEventAnalytics = async (eventId) => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}/analytics`, {
-    credentials: "include",
-  });
-  return response.json();
+  const response = await api.get(`/events/${eventId}/analytics`);
+  return response.data;
 };
 
 /**
@@ -71,13 +60,11 @@ export const createEvent = async (eventData) => {
     }
   });
   
-  const response = await fetch(`${API_BASE}/api/events`, {
-    method: "POST",
-    credentials: "include",
-    body: formData,
+  const response = await api.post('/events', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
   });
   
-  return response.json();
+  return response.data;
 };
 
 /**
@@ -92,77 +79,51 @@ export const updateEvent = async (eventId, updates) => {
     }
   });
   
-  const response = await fetch(`${API_BASE}/api/events/${eventId}`, {
-    method: "PUT",
-    credentials: "include",
-    body: formData,
+  const response = await api.put(`/events/${eventId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
   });
   
-  return response.json();
+  return response.data;
 };
 
 /**
  * Delete event
  */
 export const deleteEvent = async (eventId) => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  
-  return response.json();
+  const response = await api.delete(`/events/${eventId}`);
+  return response.data;
 };
 
 /**
  * RSVP to event
  */
 export const rsvpToEvent = async (eventId, status = "going") => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}/rsvp`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ status }),
-  });
-  
-  return response.json();
+  const response = await api.post(`/events/${eventId}/rsvp`, { status });
+  return response.data;
 };
 
 /**
  * Cancel RSVP
  */
 export const cancelRsvp = async (eventId) => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}/rsvp`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  
-  return response.json();
+  const response = await api.delete(`/events/${eventId}/rsvp`);
+  return response.data;
 };
 
 /**
  * Check-in to event
  */
 export const checkInToEvent = async (eventId) => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}/check-in`, {
-    method: "POST",
-    credentials: "include",
-  });
-  
-  return response.json();
+  const response = await api.post(`/events/${eventId}/check-in`);
+  return response.data;
 };
 
 /**
  * Check-out from event
  */
 export const checkOutFromEvent = async (eventId) => {
-  const response = await fetch(`${API_BASE}/api/events/${eventId}/check-out`, {
-    method: "POST",
-    credentials: "include",
-  });
-  
-  return response.json();
+  const response = await api.post(`/events/${eventId}/check-out`);
+  return response.data;
 };
 
 export default {

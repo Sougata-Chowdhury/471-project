@@ -48,14 +48,9 @@ function NewsCategoryPage({ title, category }) {
     if (!window.confirm(`Set this post as ${status}?`)) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/news/${id}/status`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      const res = await API.patch(`/news/${id}/status`, { status });
+      const data = res.data;
+      if (!data.success) {
         alert(data.message || "Failed to update status");
         return;
       }
@@ -69,12 +64,9 @@ function NewsCategoryPage({ title, category }) {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this post permanently?")) return;
     try {
-      const res = await fetch(`${API_BASE}/api/news/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
+      const res = await API.delete(`/news/${id}`);
+      const data = res.data;
+      if (!data.success) {
         alert(data.message || "Failed to delete");
         return;
       }

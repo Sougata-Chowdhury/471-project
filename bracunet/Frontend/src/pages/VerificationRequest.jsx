@@ -70,7 +70,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { API_BASE } from '../config';
+import API from '../api/api';
 
 const VerificationRequest = () => {
   const { user } = useAuth();
@@ -113,21 +113,11 @@ const VerificationRequest = () => {
       formDataToSend.append('additionalInfo', formData.additionalInfo);
       formDataToSend.append('proofDocument', proofFile);
 
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/api/verification/request`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: formDataToSend,
+      const response = await API.post('/verification/request', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit verification request');
-      }
+      const data = response.data;
 
       setSuccess('Verification request submitted successfully! An admin will review it soon.');
       setTimeout(() => navigate('/dashboard'), 2000);
