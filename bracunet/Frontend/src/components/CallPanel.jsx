@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../api/api";
 import Pusher from "pusher-js";
 import { API_BASE } from "../config";
 
@@ -106,10 +106,8 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     if (otherPersonId) {
       try {
         console.log('📢 Sending notification to:', otherPersonId);
-        const response = await axios.post(
-          `${API_BASE}/api/mentorship/call/notify`,
-          { receiverId: otherPersonId, mentorshipId, callType: type, callUrl: jitsiUrl },
-          { withCredentials: true }
+        const response = await API.post('/mentorship/call/notify',
+          { receiverId: otherPersonId, mentorshipId, callType: type, callUrl: jitsiUrl }
         );
         console.log('✅ Notification sent, callKey:', response.data.callKey);
         setCallKey(response.data.callKey);
@@ -137,10 +135,8 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     if (callKey && otherPersonId) {
       try {
         console.log('📢 Sending call end notification to:', otherPersonId);
-        await axios.post(
-          `${API_BASE}/api/mentorship/call/end`,
-          { receiverId: otherPersonId, mentorshipId, callKey, callType, callDurationSeconds: duration },
-          { withCredentials: true }
+        await API.post('/mentorship/call/end',
+          { receiverId: otherPersonId, mentorshipId, callKey, callType, callDurationSeconds: duration }
         );
         console.log('✅ Call end notification sent');
       } catch (err) {
