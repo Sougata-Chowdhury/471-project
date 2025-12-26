@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
-import config from '../config';
 import API from '../api/api';
 
 export const AlumniDirectory = () => {
@@ -83,6 +81,9 @@ export const AlumniDirectory = () => {
     } catch (error) {
       console.error('Error fetching directory:', error);
       console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error message:', error.message);
+      console.error('Full error:', JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }

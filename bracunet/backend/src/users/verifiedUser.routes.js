@@ -106,8 +106,8 @@ router.get('/directory', verifyToken, async (req, res) => {
 
     // Get unique filter options
     const [departments, years] = await Promise.all([
-      VerifiedUser.distinct('department', { department: { $ne: null, $ne: '' } }),
-      VerifiedUser.distinct('graduationYear', { graduationYear: { $ne: null } }),
+      VerifiedUser.distinct('department', { role: 'alumni', department: { $ne: null, $ne: '' } }),
+      VerifiedUser.distinct('graduationYear', { role: 'alumni', graduationYear: { $ne: null } }),
     ]);
 
     res.json({
@@ -129,6 +129,71 @@ router.get('/directory', verifyToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch directory',
+    });
+  }
+});
+
+/**
+ * GET /api/verified-users/admin/stats
+ * Get statistics about verified users (admin only)
+ */
+router.get('/admin/stats', verifyToken, authorize('admin'), async (req, res) => {
+  try {
+    const [total, students, alumni, faculty] = await Promise.all([
+      VerifiedUser.countDocuments(),
+      VerifiedUser.countDocuments({ role: 'student' }),
+      VerifiedUser.countDocuments({ role: 'alumni' }),
+      VerifiedUser.countDocuments({ role: 'faculty' }),
+    ]);
+
+    res.json({
+      success: true,
+      stats: {
+        total,
+        students,
+        alumni,
+        faculty,
+      },
+    });
+  } catch (error) {
+    console.error('Get verified users stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch statistics',
+    });
+  }
+});
+
+/**
+ * PUT /api/verified-users/admin/:id/toggle-visibility
+ * Toggle alumni visibility in directory (admin only)
+ */
+router.put('/admin/:id/toggle-visibility', verifyToken, authorize('admin'), async (req, res) => {
+  try {
+    const verifiedUser = await VerifiedUser.findById(req.params.id);
+    
+    if (!verifiedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verified user not found',
+      });
+    }
+
+    const newVisibility = !verifiedUser.isVisible;
+    await VerifiedUser.findByIdAndUpdate(req.params.id, {
+      isVisible: newVisibility,
+    });
+
+    res.json({
+      success: true,
+      message: `Alumni ${newVisibility ? 'shown' : 'hidden'} in directory`,
+      isVisible: newVisibility,
+    });
+  } catch (error) {
+    console.error('Toggle visibility error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to toggle visibility',
     });
   }
 });
@@ -160,37 +225,6 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch verified user',
-    });
-  }
-});
-
-/**
- * GET /api/verified-users/stats
- * Get statistics about verified users (admin only)
- */
-router.get('/admin/stats', verifyToken, authorize('admin'), async (req, res) => {
-  try {
-    const [total, students, alumni, faculty] = await Promise.all([
-      VerifiedUser.countDocuments(),
-      VerifiedUser.countDocuments({ role: 'student' }),
-      VerifiedUser.countDocuments({ role: 'alumni' }),
-      VerifiedUser.countDocuments({ role: 'faculty' }),
-    ]);
-
-    res.json({
-      success: true,
-      stats: {
-        total,
-        students,
-        alumni,
-        faculty,
-      },
-    });
-  } catch (error) {
-    console.error('Get verified users stats error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch statistics',
     });
   }
 });
@@ -233,38 +267,5 @@ router.delete('/:id', verifyToken, authorize('admin'), async (req, res) => {
   }
 });
 
-/**
- * PUT /api/verified-users/admin/:id/toggle-visibility
- * Toggle alumni visibility in directory (admin only)
- */
-router.put('/admin/:id/toggle-visibility', verifyToken, authorize('admin'), async (req, res) => {
-  try {
-    const verifiedUser = await VerifiedUser.findById(req.params.id);
-    
-    if (!verifiedUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'Verified user not found',
-      });
-    }
-
-    const newVisibility = !verifiedUser.isVisible;
-    await VerifiedUser.findByIdAndUpdate(req.params.id, {
-      isVisible: newVisibility,
-    });
-
-    res.json({
-      success: true,
-      message: `Alumni ${newVisibility ? 'shown' : 'hidden'} in directory`,
-      isVisible: newVisibility,
-    });
-  } catch (error) {
-    console.error('Toggle visibility error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to toggle visibility',
-    });
-  }
-});
-
 export default router;
+
