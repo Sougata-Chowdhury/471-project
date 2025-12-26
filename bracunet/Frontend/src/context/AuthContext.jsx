@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback, useEffect } from "react";
 import { setAuthToken } from '../api/api';
 
 export const AuthContext = createContext();
@@ -153,6 +153,14 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   }, [apiCall]);
+
+  // Auto-refresh user data on mount if token exists
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && user) {
+      refreshUser();
+    }
+  }, []); // Only run once on mount
 
   return (
     <AuthContext.Provider
