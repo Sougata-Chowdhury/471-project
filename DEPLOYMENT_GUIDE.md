@@ -76,7 +76,7 @@ cd bracunet/frontend
 vercel --prod
 ```
 
-## Step 4: Update Backend CORS
+## Step 4: Update Backend CORS 
 1. Go to your backend Vercel project settings
 2. Update `CORS_ORIGIN` environment variable with your frontend URL
 3. Redeploy the backend

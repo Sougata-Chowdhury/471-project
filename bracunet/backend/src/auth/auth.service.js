@@ -65,14 +65,15 @@ export const register = async (req, res) => {
     // Set httpOnly cookie
     res.cookie('authToken', token, {
       httpOnly: true,
-      secure: config.server.env === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return res.status(201).json({
       message: 'User registered successfully',
       user: user.toJSON(),
+      token: token, // Also return token in response for localStorage
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -111,8 +112,8 @@ export const login = async (req, res) => {
     // Set httpOnly cookie
     res.cookie('authToken', token, {
       httpOnly: true,
-      secure: config.server.env === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -132,6 +133,7 @@ export const login = async (req, res) => {
     return res.status(200).json({
       message: 'Login successful',
       user: user.toJSON(),
+      token: token, // Also return token in response for localStorage
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -147,8 +149,8 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie('authToken', {
     httpOnly: true,
-    secure: config.server.env === 'production',
-    sameSite: 'lax',
+    secure: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   });
   return res.status(200).json({ message: 'Logged out successfully' });
 };
