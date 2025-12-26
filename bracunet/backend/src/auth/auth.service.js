@@ -117,18 +117,23 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Update login streak (non-blocking)
-    getUserActivity(user._id)
-      .then(activity => {
-        if (activity && activity.updateStreak) {
-          activity.updateStreak();
-          return activity.save();
-        }
-      })
-      .catch(error => {
-        console.error('Error updating login streak:', error);
-        // Don't fail login if streak update fails
-      });
+    // Update login streak (non-blocking) - wrap in try-catch for safety
+    try {
+      getUserActivity(user._id)
+        .then(activity => {
+          if (activity && activity.updateStreak) {
+            activity.updateStreak();
+            return activity.save();
+          }
+        })
+        .catch(error => {
+          console.error('Error updating login streak:', error);
+          // Don't fail login if streak update fails
+        });
+    } catch (streakError) {
+      console.error('Streak update wrapper error:', streakError);
+      // Continue with login even if streak fails
+    }
 
     return res.status(200).json({
       message: 'Login successful',
