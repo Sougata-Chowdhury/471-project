@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useContext } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from '../config';
@@ -32,8 +32,7 @@ const ResourceUpload = ({ onUploaded }) => {
       setLoading(true);
       setMessage("");
 
-      await axios.post(`${API_BASE}/api/resources`, formData, {
-        withCredentials: true, // cookie support
+      await API.post('/resources', formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -155,9 +154,7 @@ export default function ResourceLibrary() {
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE}/api/resources`, {
-        withCredentials: true,
-      });
+      const res = await API.get('/resources');
       setResources(res.data);
       setFilteredResources(res.data);
     } catch (err) {
@@ -207,10 +204,9 @@ export default function ResourceLibrary() {
 
   const handleApprove = async (id, approve = true) => {
     try {
-      await axios.put(
-        `${API_BASE}/api/resources/approve/${id}`,
-        { approve },
-        { withCredentials: true }
+      await API.put(
+        `/resources/approve/${id}`,
+        { approve }
       );
       fetchResources();
     } catch (err) {
@@ -220,9 +216,7 @@ export default function ResourceLibrary() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/api/resources/${id}`, {
-        withCredentials: true,
-      });
+      await API.delete(`/resources/${id}`);
       fetchResources();
     } catch (err) {
       alert("Delete failed");

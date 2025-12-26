@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import axios from 'axios';
+import API from '../api/api';
 import { io } from 'socket.io-client';
 import config from '../config';
 import { useNavigate } from 'react-router-dom';
@@ -47,23 +47,19 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
-
       console.log('Fetching analytics from:', `${API_BASE}/api/analytics`);
       console.log('Token:', token ? 'Present' : 'Missing');
 
       const [users, events, donations] = await Promise.all([
-        axios.get(`${API_BASE}/api/analytics/users`, config).catch(err => {
+        API.get('/analytics/users').catch(err => {
           console.error('Users API error:', err.response?.data || err.message);
           return { data: null };
         }),
-        axios.get(`${API_BASE}/api/analytics/events`, config).catch(err => {
+        API.get('/analytics/events').catch(err => {
           console.error('Events API error:', err.response?.data || err.message);
           return { data: null };
         }),
-        axios.get(`${API_BASE}/api/analytics/donations`, config).catch(err => {
+        API.get('/analytics/donations').catch(err => {
           console.error('Donations API error:', err.response?.data || err.message);
           return { data: null };
         })

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import API from '../api/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { API_BASE } from '../config';
@@ -36,9 +36,7 @@ const InterestGroupChat = () => {
 
   const fetchGroupDetails = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/interest-groups/${groupId}`, {
-        withCredentials: true,
-      });
+      const res = await API.get(`interest-groups/${groupId}`);
       setGroup(res.data);
     } catch (err) {
       console.error('Error fetching group:', err);
@@ -47,9 +45,7 @@ const InterestGroupChat = () => {
 
   const fetchMessages = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/interest-groups/${groupId}/messages`, {
-        withCredentials: true,
-      });
+      const res = await API.get(`interest-groups/${groupId}/messages`);
       setMessages(res.data);
       setLoading(false);
     } catch (err) {
@@ -187,11 +183,10 @@ const InterestGroupChat = () => {
       }
 
       console.log('📤 Sending message:', { groupId, message: newMessage, hasImage: !!selectedImage });
-      await axios.post(
-        `${API_BASE}/api/interest-groups/${groupId}/message`,
+      await API.post(
+        `interest-groups/${groupId}/message`,
         formData,
         { 
-          withCredentials: true,
           headers: { 'Content-Type': 'multipart/form-data' }
         }
       );

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from '../api/api';
 import { io } from 'socket.io-client';
 import config, { API_BASE } from '../config';
 
@@ -14,7 +14,7 @@ export default function ResourceList({ currentUser }) {
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE}/api/resources`);
+      const res = await API.get('resources');
       setResources(res.data);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -47,9 +47,7 @@ export default function ResourceList({ currentUser }) {
   // Delete resource
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/api/resources/${id}`, {
-        withCredentials: true,
-      });
+      await API.delete(`resources/${id}`);
       fetchResources();
     } catch (err) {
       alert(err.response?.data?.message || err.message);
@@ -59,10 +57,9 @@ export default function ResourceList({ currentUser }) {
   // Approve / Reject resource (admin)
   const handleApprove = async (id, approve = true) => {
     try {
-      await axios.put(
-        `${API_BASE}/api/resources/approve/${id}`,
-        { approve },
-        { withCredentials: true }
+      await API.put(
+        `resources/approve/${id}`,
+        { approve }
       );
       fetchResources();
     } catch (err) {
@@ -73,7 +70,7 @@ export default function ResourceList({ currentUser }) {
   // Download file
   const handleDownload = async (fileUrl, title) => {
     try {
-      const res = await axios.get(fileUrl, { responseType: "blob" });
+      const res = await API.get(fileUrl, { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;

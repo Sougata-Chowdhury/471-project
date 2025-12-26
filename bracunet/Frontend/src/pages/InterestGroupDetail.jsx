@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import API from '../api/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { API_BASE } from '../config';
@@ -38,9 +38,7 @@ const InterestGroupDetail = () => {
 
   const fetchGroupDetails = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/interest-groups/${groupId}`, {
-        withCredentials: true,
-      });
+      const res = await API.get(`interest-groups/${groupId}`);
       setGroup(res.data);
       
       const userIdStr = String(user?._id || user?.id || '');
@@ -61,7 +59,7 @@ const InterestGroupDetail = () => {
     if (!isCreator) return;
     try {
       setLoadingRequests(true);
-      const res = await axios.get(`${API_BASE}/api/interest-groups/${groupId}/join-requests`, { withCredentials: true });
+      const res = await API.get(`interest-groups/${groupId}/join-requests`);
       setJoinRequests(res.data || []);
     } catch (err) {
       console.error('Failed to load join requests', err);
@@ -78,7 +76,7 @@ const InterestGroupDetail = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/interest-groups/${groupId}/posts`);
+      const res = await API.get(`interest-groups/${groupId}/posts`);
       setPosts(res.data);
     } catch (err) {
       console.error('Failed to load posts', err);
@@ -139,9 +137,7 @@ const InterestGroupDetail = () => {
     if (!window.confirm('Are you sure you want to delete this group? This cannot be undone.')) return;
     
     try {
-      await axios.delete(`${API_BASE}/api/interest-groups/${groupId}`, {
-        withCredentials: true,
-      });
+      await API.delete(`interest-groups/${groupId}`);
       alert('Group deleted!');
       navigate('/interest-groups');
     } catch (err) {
@@ -156,9 +152,7 @@ const InterestGroupDetail = () => {
         description: editDescription,
         category: editCategory,
       };
-      const res = await axios.patch(`${API_BASE}/api/interest-groups/${groupId}`, payload, {
-        withCredentials: true,
-      });
+      const res = await API.patch(`interest-groups/${groupId}`, payload);
       setGroup(res.data);
       setEditMode(false);
       alert('Group updated');
@@ -169,9 +163,7 @@ const InterestGroupDetail = () => {
 
   const handleJoin = async () => {
     try {
-      const res = await axios.post(`${API_BASE}/api/interest-groups/${groupId}/join`, {}, {
-        withCredentials: true,
-      });
+      const res = await API.post(`interest-groups/${groupId}/join`, {});
       setGroup(res.data);
       setIsJoined(true);
       alert('Joined group!');
@@ -182,7 +174,7 @@ const InterestGroupDetail = () => {
 
   const handleRequestJoin = async () => {
     try {
-      const res = await axios.post(`${API_BASE}/api/interest-groups/${groupId}/request-join`, {}, { withCredentials: true });
+      const res = await API.post(`interest-groups/${groupId}/request-join`, {});
       setGroup(res.data);
       setHasRequested(true);
       alert('Join request sent');
@@ -193,7 +185,7 @@ const InterestGroupDetail = () => {
 
   const handleApproveRequest = async (userId) => {
     try {
-      const res = await axios.post(`${API_BASE}/api/interest-groups/${groupId}/join-requests/${userId}/approve`, {}, { withCredentials: true });
+      const res = await API.post(`interest-groups/${groupId}/join-requests/${userId}/approve`, {});
       setGroup(res.data);
       setJoinRequests((prev) => prev.filter((r) => String(r.userId?._id || r.userId) !== String(userId)));
       alert('Approved');
@@ -204,7 +196,7 @@ const InterestGroupDetail = () => {
 
   const handleRejectRequest = async (userId) => {
     try {
-      await axios.post(`${API_BASE}/api/interest-groups/${groupId}/join-requests/${userId}/reject`, {}, { withCredentials: true });
+      await API.post(`interest-groups/${groupId}/join-requests/${userId}/reject`, {});
       setJoinRequests((prev) => prev.filter((r) => String(r.userId?._id || r.userId) !== String(userId)));
       alert('Rejected');
     } catch (err) {
@@ -219,8 +211,7 @@ const InterestGroupDetail = () => {
       const formData = new FormData();
       formData.append('content', postText);
       if (postImage) formData.append('image', postImage);
-      await axios.post(`${API_BASE}/api/interest-groups/${groupId}/posts`, formData, {
-        withCredentials: true,
+      await API.post(`interest-groups/${groupId}/posts`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setPostText('');
@@ -235,7 +226,7 @@ const InterestGroupDetail = () => {
 
   const handleLike = async (postId) => {
     try {
-      const res = await axios.post(`${API_BASE}/api/interest-groups/posts/${postId}/like`, {}, { withCredentials: true });
+      const res = await API.post(`interest-groups/posts/${postId}/like`, {});
       setPosts((prev) => prev.map(p => p._id === postId ? res.data : p));
     } catch (err) {}
   };
@@ -243,7 +234,7 @@ const InterestGroupDetail = () => {
   const handleComment = async (postId, text) => {
     if (!text.trim()) return;
     try {
-      const res = await axios.post(`${API_BASE}/api/interest-groups/posts/${postId}/comment`, { text }, { withCredentials: true });
+      const res = await API.post(`interest-groups/posts/${postId}/comment`, { text });
       setPosts((prev) => prev.map(p => p._id === postId ? res.data : p));
     } catch (err) {}
   };
@@ -382,7 +373,7 @@ const InterestGroupDetail = () => {
             <button
               onClick={async () => {
                 try {
-                  const res = await axios.delete(`${API_BASE}/api/interest-groups/${groupId}/leave`, { withCredentials: true });
+                  const res = await API.delete(`interest-groups/${groupId}/leave`);
                   setGroup(res.data);
                   setIsJoined(false);
                   alert('You left the group');
@@ -544,7 +535,7 @@ const InterestGroupDetail = () => {
                     <button
                       onClick={async () => {
                         try {
-                          const res = await axios.delete(`${API_BASE}/api/interest-groups/${groupId}/members/${member.userId._id}`, { withCredentials: true });
+                          const res = await API.delete(`interest-groups/${groupId}/members/${member.userId._id}`);
                           setGroup(res.data);
                           alert('Member removed');
                         } catch (err) {

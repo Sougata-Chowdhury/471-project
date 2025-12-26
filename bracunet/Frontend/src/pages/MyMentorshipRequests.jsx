@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { API_BASE } from "../config";
 
 const MyMentorshipRequests = () => {
@@ -10,9 +10,8 @@ const MyMentorshipRequests = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await axios.get(
-          `${API_BASE}/api/mentorship/my-requests`,
-          { withCredentials: true }
+        const res = await API.get(
+          '/mentorship/my-requests'
         );
         setRequests(res.data || []);
       } catch (err) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { FiSearch, FiArrowLeft } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -27,8 +27,8 @@ const Mentorship = () => {
     const fetchMentors = async () => {
       try {
         const [mentorsRes, requestsRes] = await Promise.all([
-          axios.get(`${API_BASE}/api/mentorship/mentors`, { withCredentials: true }),
-          axios.get(`${API_BASE}/api/mentorship/my-requests`, { withCredentials: true }),
+          API.get('/mentorship/mentors'),
+          API.get('/mentorship/my-requests'),
         ]);
         setMentors(mentorsRes.data);
         setMyRequests(requestsRes.data || []);
@@ -55,29 +55,27 @@ const Mentorship = () => {
         return;
       }
       console.log('Sending mentorship request to:', mentorId);
-      const requestRes = await axios.post(
-        `${API_BASE}/api/mentorship/request`,
-        { mentorId },
-        { withCredentials: true }
+      const requestRes = await API.post(
+        '/mentorship/request',
+        { mentorId }
       );
 
       console.log('Request created:', requestRes.data);
 
       // Send initial message
-      const messageRes = await axios.post(
-        `${API_BASE}/api/mentorship/message/send`,
+      const messageRes = await API.post(
+        '/mentorship/message/send',
         {
           mentorshipId: requestRes.data._id,
           message: `Hi! I'd like to connect with you as my mentor.`,
           receiverId: mentorId,
-        },
-        { withCredentials: true }
+        }
       );
 
       console.log('Initial message sent:', messageRes.data);
       alert("Mentorship request sent ✅ Check your messages!");
       try {
-        const requestsRes = await axios.get(`${API_BASE}/api/mentorship/my-requests`, { withCredentials: true });
+        const requestsRes = await API.get('/mentorship/my-requests');
         setMyRequests(requestsRes.data || []);
       } catch {}
       navigate("/mentorship/chat");
@@ -102,20 +100,18 @@ const Mentorship = () => {
   const sendMessageToMentor = async () => {
     if (!selectedMentor || !messageDraft.trim()) return;
     try {
-      const convRes = await axios.post(
-        `${API_BASE}/api/mentorship/conversation/start`,
-        { mentorId: selectedMentor._id },
-        { withCredentials: true }
+      const convRes = await API.post(
+        '/mentorship/conversation/start',
+        { mentorId: selectedMentor._id }
       );
 
-      await axios.post(
-        `${API_BASE}/api/mentorship/message/send`,
+      await API.post(
+        '/mentorship/message/send',
         {
           mentorshipId: convRes.data._id,
           message: messageDraft,
           receiverId: selectedMentor._id,
-        },
-        { withCredentials: true }
+        }
       );
 
       setShowMessageModal(false);

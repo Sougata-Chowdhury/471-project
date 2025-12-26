@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import API from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 
@@ -26,7 +26,7 @@ const InterestGroups = () => {
         ...(category && { category }),
         ...(search && { search }),
       });
-      const res = await axios.get(`${API_BASE}/api/interest-groups?${params}`);
+      const res = await API.get(`interest-groups?${params}`);
       console.log('📦 API Response:', res.data);
       // Handle both response formats: direct array or {groups, pagination}
       setGroups(Array.isArray(res.data) ? res.data : (res.data.groups || []));

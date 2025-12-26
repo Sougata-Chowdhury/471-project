@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { FiArrowLeft, FiCheck, FiX, FiLoader } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
@@ -18,12 +18,8 @@ export default function MentorRequestsAdmin() {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await axios.get(
-        `${API_BASE}/mentorship/mentor-request/admin/pending`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const response = await API.get(
+        '/mentorship/mentor-request/admin/pending'
       );
       setRequests(response.data);
       setError("");
@@ -38,15 +34,11 @@ export default function MentorRequestsAdmin() {
   const handleApprove = async (requestId, userId, userName) => {
     setProcessingId(requestId);
     try {
-      const token = localStorage.getItem("authToken");
       const notes = adminNotes[requestId] || `Approved on ${new Date().toLocaleDateString()}`;
       
-      await axios.post(
-        `${API_BASE}/mentorship/mentor-request/${requestId}/approve`,
-        { adminNotes: notes },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      await API.post(
+        `/mentorship/mentor-request/${requestId}/approve`,
+        { adminNotes: notes }
       );
 
       setRequests(requests.filter((r) => r._id !== requestId));
@@ -71,13 +63,9 @@ export default function MentorRequestsAdmin() {
 
     setProcessingId(requestId);
     try {
-      const token = localStorage.getItem("authToken");
-      await axios.post(
-        `${API_BASE}/mentorship/mentor-request/${requestId}/reject`,
-        { adminNotes: notes },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      await API.post(
+        `/mentorship/mentor-request/${requestId}/reject`,
+        { adminNotes: notes }
       );
 
       setRequests(requests.filter((r) => r._id !== requestId));

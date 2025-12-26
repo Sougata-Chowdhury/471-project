@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiCheck, FiX, FiClock } from "react-icons/fi";
 import { API_BASE } from "../config";
@@ -16,12 +16,8 @@ export default function RequestMentorStatus() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `${API_BASE}/mentorship/mentor-request/status`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await API.get(
+          '/mentorship/mentor-request/status'
         );
         setStatus(response.data);
       } catch (err) {
@@ -44,13 +40,9 @@ export default function RequestMentorStatus() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await axios.post(
-        `${API_BASE}/mentorship/mentor-request/submit`,
-        { reason },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const response = await API.post(
+        '/mentorship/mentor-request/submit',
+        { reason }
       );
       setSuccessMsg("✓ Your mentor request has been submitted for approval");
       setReason("");

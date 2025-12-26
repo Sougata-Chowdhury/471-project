@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { API_BASE } from "../config";
@@ -214,9 +214,7 @@ const MentorshipChat = () => {
 
   const fetchConversations = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/mentorship/pending/requests`, {
-        withCredentials: true,
-      });
+      const res = await API.get('/mentorship/pending/requests');
       setConversations(res.data);
       setLoading(false);
     } catch (err) {
@@ -253,9 +251,8 @@ const MentorshipChat = () => {
       return;
     }
     try {
-      const res = await axios.get(`${API_BASE}/api/users/search/query`, {
-        params: { q: query },
-        withCredentials: true
+      const res = await API.get('/users/search/query', {
+        params: { q: query }
       });
       setMentorResults(res.data || []);
     } catch (e) {
@@ -267,20 +264,18 @@ const MentorshipChat = () => {
   const startChatWithMentor = async (mentor) => {
     try {
       // Ensure a mentorship conversation exists
-      const convRes = await axios.post(
-        `${API_BASE}/api/mentorship/conversation/start`,
-        { mentorId: mentor._id || mentor.id },
-        { withCredentials: true }
+      const convRes = await API.post(
+        '/mentorship/conversation/start',
+        { mentorId: mentor._id || mentor.id }
       );
       const mentorshipId = String(convRes.data?._id);
       // Send a first message to make the thread visible
       {
         const receiverId = mentor._id || mentor.id;
         const initial = draftMessage.trim() || "Hi! I'd like to connect.";
-        await axios.post(
-          `${API_BASE}/api/mentorship/message/send`,
-          { mentorshipId, receiverId, message: initial },
-          { withCredentials: true }
+        await API.post(
+          '/mentorship/message/send',
+          { mentorshipId, receiverId, message: initial }
         );
       }
       // Refresh list and open the new conversation
@@ -298,9 +293,8 @@ const MentorshipChat = () => {
 
   const fetchMessages = async (mentorshipId) => {
     try {
-      const res = await axios.get(
-        `${API_BASE}/api/mentorship/message/${mentorshipId}`,
-        { withCredentials: true }
+      const res = await API.get(
+        `/mentorship/message/${mentorshipId}`
       );
       setMessages(res.data);
 
@@ -311,10 +305,9 @@ const MentorshipChat = () => {
       setUnreadCountForThread(preUnread);
 
       // Mark as read
-      await axios.patch(
-        `${API_BASE}/api/mentorship/message/${mentorshipId}/read`,
-        {},
-        { withCredentials: true }
+      await API.patch(
+        `/mentorship/message/${mentorshipId}/read`,
+        {}
       );
       // Refresh sidebar to clear badges after marking read
       fetchConversations();
@@ -357,10 +350,9 @@ const MentorshipChat = () => {
 
       console.log('Sending message:', { mentorshipId: selectedMentorship, receiverId, message: newMessage });
 
-      await axios.post(
-        `${API_BASE}/api/mentorship/message/send`,
-        { mentorshipId: selectedMentorship, message: newMessage, receiverId },
-        { withCredentials: true }
+      await API.post(
+        '/mentorship/message/send',
+        { mentorshipId: selectedMentorship, message: newMessage, receiverId }
       );
 
       console.log('Message sent successfully');

@@ -98,7 +98,7 @@
 
 
 import React, { useState, useContext } from "react";
-import axios from "axios";
+import API from '../api/api';
 import { AuthContext } from "../context/AuthContext";
 import { API_BASE } from '../config';
 
@@ -129,11 +129,10 @@ export default function ResourceUpload({ onUploaded }) {
       setLoading(true);
       setMessage("");
 
-      const res = await axios.post(
-        `${API_BASE}/api/resources`,
+      const res = await API.post(
+        'resources',
         formData,
         {
-          withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
         }
       );

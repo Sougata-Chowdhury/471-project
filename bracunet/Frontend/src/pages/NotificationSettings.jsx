@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import axios from 'axios';
+import API from '../api/api';
 
 import { API_BASE } from '../config.js';
 
@@ -38,9 +38,7 @@ export default function NotificationSettings() {
   const fetchPreferences = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}/api/settings/notification-preferences`, {
-        withCredentials: true,
-      });
+      const response = await API.get('settings/notification-preferences');
       if (response.data.success && response.data.preferences) {
         setPreferences({ ...preferences, ...response.data.preferences });
       }
@@ -61,10 +59,9 @@ export default function NotificationSettings() {
     
     // Auto-save on toggle
     try {
-      await axios.put(
-        `${API_BASE}/api/settings/notification-preferences`,
-        { preferences: newPreferences },
-        { withCredentials: true }
+      await API.put(
+        'settings/notification-preferences',
+        { preferences: newPreferences }
       );
       setLastSaved(new Date());
       setMessage('✅ Saved');
@@ -82,10 +79,9 @@ export default function NotificationSettings() {
     try {
       setSaving(true);
       setMessage('');
-      const response = await axios.put(
-        `${API_BASE}/api/settings/notification-preferences`,
-        { preferences },
-        { withCredentials: true }
+      const response = await API.put(
+        'settings/notification-preferences',
+        { preferences }
       );
       if (response.data.success) {
         setMessage('✅ Preferences saved successfully!');

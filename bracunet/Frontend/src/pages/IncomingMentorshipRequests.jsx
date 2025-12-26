@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { API_BASE } from "../config";
@@ -17,9 +17,7 @@ const IncomingMentorshipRequests = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/mentorship/incoming`, {
-        withCredentials: true,
-      });
+      const res = await API.get('/mentorship/incoming');
       setRequests(res.data);
       setLoading(false);
     } catch (err) {
@@ -30,10 +28,9 @@ const IncomingMentorshipRequests = () => {
 
   const updateStatus = async (mentorshipId, status) => {
     try {
-      const res = await axios.patch(
-        `${API_BASE}/api/mentorship/${mentorshipId}`,
-        { status },
-        { withCredentials: true }
+      const res = await API.patch(
+        `/mentorship/${mentorshipId}`,
+        { status }
       );
 
       setRequests((prev) =>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import API from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 
@@ -32,10 +32,10 @@ const CreateInterestGroup = () => {
       formData.append('isPrivate', isPrivate);
       if (image) formData.append('image', image);
 
-      const res = await axios.post(
-        `${API_BASE}/api/interest-groups`,
+      const res = await API.post(
+        'interest-groups',
         formData,
-        { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       alert('Group created! You need to approve it before members can join.');
       navigate(`/interest-groups/${res.data._id}`);

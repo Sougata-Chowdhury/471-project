@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import API from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 
@@ -14,9 +14,7 @@ const MyInterestGroups = () => {
 
   const fetchUserGroups = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/interest-groups/me/my-groups`, {
-        withCredentials: true,
-      });
+      const res = await API.get('interest-groups/me/my-groups');
       setGroups(res.data);
       setLoading(false);
     } catch (err) {
@@ -33,9 +31,7 @@ const MyInterestGroups = () => {
     if (!window.confirm('Are you sure you want to delete this group?')) return;
     
     try {
-      await axios.delete(`${API_BASE}/api/interest-groups/${groupId}`, {
-        withCredentials: true,
-      });
+      await API.delete(`interest-groups/${groupId}`);
       setGroups(groups.filter(g => g._id !== groupId));
       alert('Group deleted!');
     } catch (err) {
