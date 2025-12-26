@@ -18,7 +18,7 @@ router.put('/notification-preferences', protect, updateNotificationPreferences);
 // Get current user settings
 router.get('/me/settings', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user._id).select('-password');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -33,7 +33,7 @@ router.patch('/me/settings', verifyToken, async (req, res) => {
   try {
     const { name, department, batch, graduationYear, studentId, skills, goals, interests } = req.body;
     
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -74,7 +74,7 @@ router.patch('/me/password', verifyToken, async (req, res) => {
     }
     
     // Select password explicitly for verification
-    const user = await User.findById(req.user.id).select('+password');
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -102,7 +102,7 @@ router.post('/me/profile-picture', verifyToken, upload.single('profilePicture'),
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
     
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -126,7 +126,7 @@ router.post('/me/profile-picture', verifyToken, upload.single('profilePicture'),
 // Delete profile picture
 router.delete('/me/profile-picture', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }

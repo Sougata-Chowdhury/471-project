@@ -25,7 +25,8 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only logout on 401 if it's actually an auth error, not a validation error
+    if (error.response?.status === 401 && error.response?.data?.message?.toLowerCase().includes('token')) {
       // Clear invalid token
       localStorage.removeItem('token');
       localStorage.removeItem('user');
