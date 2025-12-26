@@ -129,16 +129,31 @@ app.use((req, res, next) => {
 // Global error handling middleware - MUST be last
 app.use(errorMiddleware);
 
-// For local development only
-if (!process.env.VERCEL) {
-  mongoose
-    .connect(config.mongodb.uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    .then(() => {
+// MongoDB connection (for both Vercel and local)
+const connectDB = async () => {
+  try {
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(config.mongodb.uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
       console.log('✅ Connected to MongoDB');
-      
+    }
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
+};
+
+// For Vercel serverless: connect on first request
+if (process.env.VERCEL) {
+  connectDB().catch(err => console.error('Initial DB connection failed:', err));
+}
+
+// For local development
+if (!process.env.VERCEL) {
+  connectDB()
+    .then(() => {
       // Seed badges after connection
       seedBadges().catch(err => console.error('Badge seeding error:', err));
       
