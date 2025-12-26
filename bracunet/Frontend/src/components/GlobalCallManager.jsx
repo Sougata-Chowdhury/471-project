@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Pusher from 'pusher-js';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import IncomingCallModal from './IncomingCallModal';
 
 const PUSHER_KEY = import.meta.env.VITE_PUSHER_KEY || 'your-pusher-key';
