@@ -43,7 +43,6 @@ export const AlumniDirectory = () => {
   const fetchDirectory = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         page: pagination.page,
         limit: pagination.limit,
@@ -54,20 +53,14 @@ export const AlumniDirectory = () => {
       if (filters.graduationYear !== 'all') params.append('graduationYear', filters.graduationYear);
       if (filters.sortAlpha) params.append('sortAlpha', filters.sortAlpha);
 
-      const response = await fetch(
-        `${API_BASE}/api/verified-users/directory?${params}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: 'include',
-        }
+      const response = await API.get(
+        `/api/verified-users/directory?${params}`
       );
 
-      const data = await response.json();
-
-      if (data.success) {
-        setUsers(data.users);
-        setPagination(data.pagination);
-        setFilterOptions(data.filters);
+      if (response.data.success) {
+        setUsers(response.data.users);
+        setPagination(response.data.pagination);
+        setFilterOptions(response.data.filters);
       }
     } catch (error) {
       console.error('Error fetching directory:', error);
