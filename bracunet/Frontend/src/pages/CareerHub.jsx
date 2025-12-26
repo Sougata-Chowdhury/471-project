@@ -48,7 +48,7 @@ const CareerHub = () => {
       return;
     }
 
-    if (!user.isVerified) {
+    if (!user.isVerified && user.role !== 'admin') {
       setLoading(false);
       return;
     }
@@ -320,8 +320,8 @@ const CareerHub = () => {
     );
   }
 
-  // Not verified - show verification required page
-  if (!user.isVerified) {
+  // Not verified - show verification required page (except for admins)
+  if (!user.isVerified && user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
         {/* Header */}
