@@ -68,7 +68,7 @@ export const AlumniDirectory = () => {
       console.log('Fetching directory with params:', params.toString());
 
       const response = await API.get(
-        `/api/verified-users/directory?${params}`
+        `/verified-users/directory?${params}`
       );
 
       console.log('Directory response:', response.data);
