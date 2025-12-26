@@ -16,6 +16,12 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
   const [callDuration, setCallDuration] = useState(0);
   const [callStatus, setCallStatus] = useState(""); // "calling", "answered", "rejected", "active"
 
+  // Use ref to track latest callKey without causing re-renders
+  const callKeyRef = React.useRef(null);
+  React.useEffect(() => {
+    callKeyRef.current = callKey;
+  }, [callKey]);
+
   // Listen for call answer/reject events from receiver
   useEffect(() => {
     if (!currentUserId) return;
@@ -30,27 +36,33 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
 
     // For caller: when receiver answers
     channel.bind('call-answered', (data) => {
-      console.log('✅ Call answered by:', data.answeredBy);
-      if (callKey && data.callKey === callKey) {
+      console.log('✅ Call answered by:', data.answeredBy, 'callKey:', data.callKey, 'myCallKey:', callKeyRef.current);
+      if (callKeyRef.current && data.callKey === callKeyRef.current) {
         setCallStatus("answered");
       }
     });
 
     // For caller: when receiver rejects
     channel.bind('call-rejected', (data) => {
-      console.log('❌ Call rejected by:', data.rejectedBy);
-      if (callKey && data.callKey === callKey) {
+      console.log('❌ Call rejected by:', data.rejectedBy, 'callKey:', data.callKey, 'myCallKey:', callKeyRef.current);
+      if (callKeyRef.current && data.callKey === callKeyRef.current) {
         setCallStatus("rejected");
         // Auto end call after 3 seconds
         setTimeout(() => {
-          endCall();
+          setCallActive(false);
+          setCallType(null);
+          setRoomUrl("");
+          setCallKey(null);
+          setCallStartTime(null);
+          setCallDuration(0);
+          setCallStatus("");
         }, 3000);
       }
     });
 
     // For receiver: when they answer, activate their call panel
     channel.bind('call-active', (data) => {
-      console.log('📞 Call active event received:', data);
+      console.log('📞 Call active event received for mentorship:', data.mentorshipId);
       const roomName = `mentorship-${data.mentorshipId}`;
       const jitsiUrl = `https://meet.jit.si/${roomName}`;
       
@@ -63,17 +75,19 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     });
 
     return () => {
+      console.log('🔌 Cleaning up Pusher connection for user:', currentUserId);
       channel.unbind_all();
       channel.unsubscribe();
       pusher.disconnect();
     };
-  }, [currentUserId, callKey]);
+  }, [currentUserId]); // Only depend on currentUserId
 
   const startCall = async (type) => {
     const roomName = `mentorship-${mentorshipId}`;
     const jitsiUrl = `https://meet.jit.si/${roomName}`;
 
     console.log('📞 Starting call:', { mentorshipId, otherPersonId, otherPersonName, type });
+    console.log('📞 Setting state: callActive=true, callType=', type, 'roomUrl=', jitsiUrl);
 
     setRoomUrl(jitsiUrl);
     setCallType(type);
@@ -82,9 +96,12 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     setCallDuration(0);
     setCallStatus("calling");
 
+    console.log('📞 State set, opening Jitsi in new tab');
     try {
       window.open(jitsiUrl, "_blank", "noopener,noreferrer");
-    } catch {}
+    } catch (err) {
+      console.error('❌ Failed to open Jitsi:', err);
+    }
 
     if (otherPersonId) {
       try {
@@ -158,7 +175,10 @@ export default function CallPanel({ mentorshipId, otherPersonName, otherPersonId
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  console.log('🔍 CallPanel render - callActive:', callActive, 'roomUrl:', roomUrl, 'callType:', callType, 'callStatus:', callStatus);
+
   if (callActive && roomUrl) {
+    console.log('✅ Rendering active call UI');
     return (
       <div className="bg-gradient-to-br from-green-50 to-blue-50 p-4 rounded-lg border-2 border-green-400">
         <div className="flex items-center justify-between mb-3">
