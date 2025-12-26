@@ -1,5 +1,6 @@
 
 import React, { createContext, useState, useCallback } from "react";
+import { setAuthToken } from '../api/api';
 
 export const AuthContext = createContext();
 
@@ -73,6 +74,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token); // Save token
+        setAuthToken(data.token); // Set token in axios instance
         return data;
       } catch (err) {
         setError(err.message);
@@ -96,6 +98,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token); // Save token
+        setAuthToken(data.token); // Set token in axios instance
         return data;
       } catch (err) {
         setError(err.message);
@@ -115,6 +118,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       localStorage.removeItem("user");
       localStorage.removeItem("token"); // remove token
+      setAuthToken(null); // Clear token from axios instance
     } catch (err) {
       // Don't show logout errors - just clear the user
       setUser(null);
