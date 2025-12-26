@@ -11,7 +11,7 @@ export const donationService = {
   async createCampaign(campaignData, userId) {
     try {
       const user = await User.findById(userId);
-      if (!user || !user.isVerified) {
+      if (!user || (!user.isVerified && user.role !== 'admin')) {
         throw new Error('Only verified users can create donation campaigns');
       }
 
@@ -167,7 +167,7 @@ export const donationService = {
       }
 
       const user = await User.findById(donorId);
-      if (!user || !user.isVerified) {
+      if (!user || (!user.isVerified && user.role !== 'admin')) {
         throw new Error('Only verified users can make donations');
       }
 

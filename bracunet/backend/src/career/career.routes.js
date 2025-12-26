@@ -4,10 +4,10 @@ import { careerService } from "./career.service.js";
 
 const router = express.Router();
 
-// Get all opportunities (any verified user)
+// Get all opportunities (any verified user or admin)
 router.get("/", protect, async (req, res) => {
   try {
-    if (!req.user.isVerified) {
+    if (!req.user.isVerified && req.user.role !== 'admin') {
       return res.status(403).json({ message: "Only verified users can view opportunities" });
     }
     const opportunities = await careerService.getAllOpportunities();
@@ -17,10 +17,10 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// Create opportunity (faculty and alumni only)
+// Create opportunity (faculty, alumni, and admin)
 router.post("/", protect, async (req, res) => {
   try {
-    if (!req.user.isVerified) {
+    if (!req.user.isVerified && req.user.role !== 'admin') {
       return res.status(403).json({ message: "Only verified users can post opportunities" });
     }
     
