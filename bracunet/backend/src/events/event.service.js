@@ -310,7 +310,11 @@ export async function getMyRsvps(userId) {
     
   // Filter to include user's RSVP status
   return events.map((event) => {
-    const userRsvp = event.rsvps.find((r) => r.user.toString() === userId.toString());
+    // Since lean() is used, rsvps.user is already an ObjectId (not a document)
+    const userRsvp = event.rsvps.find((r) => {
+      const rsvpUserId = typeof r.user === 'object' ? r.user._id || r.user : r.user;
+      return rsvpUserId.toString() === userId.toString();
+    });
     return {
       ...event,
       myRsvpStatus: userRsvp ? userRsvp.status : null,
