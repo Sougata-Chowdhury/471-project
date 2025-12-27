@@ -1,4 +1,5 @@
 import Event from "./event.model.js";
+import mongoose from "mongoose";
 import { trackActivity } from "../gamification/gamification.service.js";
 import { createNotification, notificationTemplates } from "../notifications/notification.service.js";
 
@@ -303,23 +304,40 @@ export async function getMyEvents(userId) {
  * Get events user RSVP'd to
  */
 export async function getMyRsvps(userId) {
-  const events = await Event.find({ "rsvps.user": userId })
+  console.log("[getMyRsvps] Looking for RSVPs for user:", userId);
+  
+  // Ensure userId is a proper ObjectId
+  const userObjectId = mongoose.Types.ObjectId.isValid(userId) 
+    ? new mongoose.Types.ObjectId(userId) 
+    : userId;
+  
+  const events = await Event.find({ "rsvps.user": userObjectId })
     .populate("organizer", "name email")
     .sort({ eventDate: 1 })
     .lean();
+  
+  console.log(`[getMyRsvps] Found ${events.length} events with user RSVPs`);
     
   // Filter to include user's RSVP status
-  return events.map((event) => {
+  const result = events.map((event) => {
     // Since lean() is used, rsvps.user is already an ObjectId (not a document)
     const userRsvp = event.rsvps.find((r) => {
       const rsvpUserId = typeof r.user === 'object' ? r.user._id || r.user : r.user;
-      return rsvpUserId.toString() === userId.toString();
+      return rsvpUserId.toString() === userObjectId.toString();
     });
+    
+    if (!userRsvp) {
+      console.log(`[getMyRsvps] Warning: Event ${event._id} in results but no matching RSVP found`);
+    }
+    
     return {
       ...event,
       myRsvpStatus: userRsvp ? userRsvp.status : null,
     };
   });
+  
+  console.log(`[getMyRsvps] Returning ${result.length} events`);
+  return result;
 }
 
 /**

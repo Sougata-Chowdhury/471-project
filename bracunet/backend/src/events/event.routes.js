@@ -58,7 +58,9 @@ router.get("/my-events", protect, async (req, res) => {
  */
 router.get("/my-rsvps", protect, async (req, res) => {
   try {
+    console.log("[my-rsvps route] User:", req.user._id, req.user.name);
     const events = await getMyRsvps(req.user._id);
+    console.log("[my-rsvps route] Returning", events.length, "events");
     res.status(200).json({ success: true, events });
   } catch (err) {
     console.error("Get my RSVPs error:", err);
