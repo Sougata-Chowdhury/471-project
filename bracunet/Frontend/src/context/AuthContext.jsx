@@ -115,14 +115,18 @@ export const AuthProvider = ({ children }) => {
     setError(null); // Clear any existing errors
     try {
       await apiCall("/api/auth/logout", { method: "POST" });
-      setUser(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token"); // remove token
-      setAuthToken(null); // Clear token from axios instance
     } catch (err) {
-      // Don't show logout errors - just clear the user
-      setUser(null);
+      // Continue with logout even if API call fails
     } finally {
+      // Clear all authentication data
+      setUser(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      setAuthToken(null);
+      
+      // Prevent back navigation to protected pages
+      window.history.replaceState(null, '', '/login');
+      
       setIsLoading(false);
     }
   }, [apiCall]);

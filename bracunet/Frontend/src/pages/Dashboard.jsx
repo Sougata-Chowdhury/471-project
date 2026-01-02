@@ -20,6 +20,22 @@ export const Dashboard = () => {
     }
   }, [user, getCurrentUser, navigate]);
 
+  // Handle back button press - clear authentication and redirect
+  useEffect(() => {
+    const handlePopState = () => {
+      // User pressed back button, clear everything and redirect
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace('/login');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
@@ -49,7 +65,9 @@ export const Dashboard = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/login');
   };
   
 

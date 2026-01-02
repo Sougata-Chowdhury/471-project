@@ -11,17 +11,30 @@ export const Login = () => {
     password: '',
   });
 
+  // Clear all authentication data when login page mounts
+  useEffect(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    clearError();
+    
+    // Prevent back navigation from login page
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [clearError]);
+
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
     if (user) {
       window.location.replace('/dashboard');
     }
   }, [user]);
-
-  // Clear any previous errors when login page mounts
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
