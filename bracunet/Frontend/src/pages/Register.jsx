@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';
 
 export const Register = () => {
-  const { register, isLoading, error } = useAuth();
+  const { user, register, isLoading, error } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -13,6 +13,13 @@ export const Register = () => {
     confirmPassword: '',
     role: 'student',
   });
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +36,7 @@ export const Register = () => {
         formData.confirmPassword,
         formData.role
       );
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       // Error is handled by context
     }

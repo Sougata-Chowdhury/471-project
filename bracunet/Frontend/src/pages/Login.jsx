@@ -4,12 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';
 
 export const Login = () => {
-  const { login, isLoading, error, clearError } = useAuth();
+  const { user, login, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   // Clear any previous errors when login page mounts
   useEffect(() => {
@@ -25,7 +32,7 @@ export const Login = () => {
     e.preventDefault();
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       // Error is handled by context
     }
