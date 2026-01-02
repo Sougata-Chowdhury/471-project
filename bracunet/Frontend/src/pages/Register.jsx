@@ -17,9 +17,9 @@ export const Register = () => {
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true });
+      window.location.replace('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +36,7 @@ export const Register = () => {
         formData.confirmPassword,
         formData.role
       );
-      navigate('/dashboard', { replace: true });
+      window.location.replace('/dashboard');
     } catch (err) {
       // Error is handled by context
     }

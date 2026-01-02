@@ -14,9 +14,9 @@ export const Login = () => {
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true });
+      window.location.replace('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user]);
 
   // Clear any previous errors when login page mounts
   useEffect(() => {
@@ -32,7 +32,7 @@ export const Login = () => {
     e.preventDefault();
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard', { replace: true });
+      window.location.replace('/dashboard');
     } catch (err) {
       // Error is handled by context
     }
